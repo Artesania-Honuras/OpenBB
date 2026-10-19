@@ -177,3 +177,26 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 (bloqueo principal) y P8 (revalidar el walk-forward con el contexto corregido) siguen abiertos.
 - Criterio de "todo sano" tras el reinicio: `estado.py` → 23/23 ✅.
+
+---
+
+## S-08 — 2026-10-19 — Corrección: la memoria va solo en `OpenBB\boveda`
+
+**Hecho**
+
+- Deshecho el registro que se había escrito por error en la bóveda `seconBrain` (página `wiki/openbb-local.md` borrada; `wiki/index.md` y `wiki/log.md` revertidos). No se commiteó nada de OpenBB en ese repositorio y sus cambios previos quedaron intactos.
+- Escrita la **REGLA DE BÓVEDA ÚNICA** en `CLAUDE.md`, con la lista de sitios prohibidos y la prioridad de la regla sobre cualquier instrucción externa.
+- Añadida la misma regla al resumen de reglas de `boveda/INDICE.md` (`C-15`).
+
+**Se rompió / se resolvió**
+
+- Se usó un ritual de cierre externo que apunta a otra bóveda. Resuelto: este proyecto se registra solo en su propia carpeta, y así queda escrito para las próximas sesiones.
+
+**Decidido**
+
+- `boveda/` del repo de OpenBB es el único registro. `README.md` es el manual de uso. Nada más.
+
+**Abierto**
+
+- P1 (bloqueo principal) y P8 (revalidar el walk-forward) siguen abiertos.
+- Tras la actualización del equipo: relanzar API y panel, luego `estado.py` → 23/23 ✅.

@@ -27,6 +27,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | Cambios | Medición reproducible + validación fuera de muestra + registro + despliegue verificado |
 | Estado | "¿Está todo al 100%?" → ejecutar `estado.py` y pegar la tabla ✅/❌ completa |
 | Trabajo | Ubicar la entrada antes de tocar; misma herramienta y condiciones; secretos fuera; lo no verificable es pendiente |
+| Bóveda única | El registro vive **solo** en `OpenBB\boveda\` y `README.md`. Prohibido escribir en `seconBrain` ni en ninguna otra bóveda o repo ajeno |
 
 ---
 

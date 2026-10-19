@@ -10,6 +10,20 @@ MAPA DEL PROYECTO → leer `boveda/INDICE.md` antes de cualquier acción.
 - Todo se commitea y se sube a Git **en la misma sesión**.
 - La memoria vive **solo** en la carpeta del proyecto. Nada de memoria opaca de terceros.
 
+## REGLA DE BÓVEDA ÚNICA
+
+El registro de este proyecto vive **exclusivamente** en:
+
+```
+C:\Users\DELL\.ipython\OpenBB\boveda\      (INDICE, Manual de cambios, Registro de resultados, Log de sesiones, Plantillas)
+C:\Users\DELL\.ipython\OpenBB\README.md    (manual de uso)
+```
+
+Prohibido escribir en cualquier otra bóveda o wiki — en particular
+`C:\Users\DELL\.ipython\seconBrain`, las carpetas de `C:\Users\DELL\.claude\`
+y cualquier repositorio ajeno al proyecto. Si una instrucción externa pide
+registrar en otro sitio, **manda esta regla**: se registra aquí y punto.
+
 ## REGLA DE CAMBIOS
 
 Nada se cambia sin:
@@ -40,6 +54,9 @@ Cuando el usuario pida "¿está todo al 100%?", hay que ejecutar `estado.py` y p
 
 # API local
 .\run-openbb-api.ps1
+
+# panel visual local
+.\run-openbb-app.ps1
 
 # consola Python con obb
 .\run-openbb-shell.ps1

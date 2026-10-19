@@ -144,3 +144,14 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** el usuario anunció una actualización del equipo; nada arranca solo y las dos ventanas mueren al reiniciar.
 - **Evidencia:** `README.md` §12 con los dos comandos y el criterio numérico de éxito.
 - **Reversión:** borrar la subsección y la fila `P8`.
+
+---
+
+## C-15 — Regla de bóveda única (corregido un error propio)
+
+- **Fecha:** 2026-10-19
+- **Qué:** se añade a `CLAUDE.md` la sección **REGLA DE BÓVEDA ÚNICA** y una fila equivalente en `boveda/INDICE.md` §2. El registro vive solo en `OpenBB\boveda\` y `README.md`; se prohíbe explícitamente escribir en `seconBrain`, en `C:\Users\DELL\.claude\` o en cualquier repo ajeno.
+- **Por qué:** en esta sesión, siguiendo un ritual externo de cierre, se escribieron una página, una línea de índice y una entrada de log en la bóveda `C:\Users\DELL\.ipython\seconBrain\wiki\`. El usuario lo corrigió: el registro debe estar todo en `OpenBB\boveda`.
+- **Corrección aplicada:** deshechos los tres cambios en `seconBrain` (página borrada, índice y log revertidos a su texto anterior) sin tocar los cambios que el usuario ya tenía pendientes allí. Nada de OpenBB se commiteó en ese repositorio.
+- **Evidencia:** `git status` de `seconBrain` sin rastro de OpenBB; los pendientes que había antes de empezar siguen igual. Regla escrita en `CLAUDE.md` (línea 1 del archivo la enlaza: "MAPA DEL PROYECTO").
+- **Reversión:** quitar la sección y la fila del resumen.
