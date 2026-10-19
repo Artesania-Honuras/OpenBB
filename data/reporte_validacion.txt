@@ -1,0 +1,18 @@
+﻿====================================================================================================
+RESUMEN MULTI-ACTIVO  |  2021-01-01 -> 2026-10-01  |  sizing 10%
+====================================================================================================
+     pair  oos_%  exp_% ventanas  acierto_%  p50_%  p_perder_%   bh_%  bh_ajustado_%
+ ADA_USDT    3.2   35.0     5/11       31.9    2.8        43.0   17.1            5.7
+AVAX_USDT   18.9   29.5     4/11       36.2   18.4        15.3  155.6           31.9
+ BNB_USDT    5.2   40.7     5/11       33.0    5.1        34.7 1875.7          236.3
+ BTC_USDT    7.6   43.8     6/11       33.3    7.5        21.3  178.6           56.7
+ ETH_USDT   14.1   45.6     8/11       32.2   14.1        12.9  226.0           71.3
+ SOL_USDT    9.0   29.4     5/11       34.4    9.1        25.0 6496.8          242.0
+ XRP_USDT    4.2   26.5     3/11       33.1    4.2        37.5  475.8           58.9
+
+  activos con retorno OOS positivo:       7/7
+  activos que baten su referencia:        0/7
+
+### VEREDICTO GLOBAL
+  SIN ventaja consistente entre activos.
+  El cruce EMA 20/50 no es una base sobre la que integrar el bot.

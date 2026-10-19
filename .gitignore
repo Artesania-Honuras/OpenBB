@@ -1,0 +1,28 @@
+# Entornos y dependencias
+venvs/
+repos/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos binarios regenerables
+data/cache/
+data/context/*.csv
+freqtrade_bridge/user_data/
+
+# Secretos (nunca versionar)
+.env
+.env.*
+*.pem
+*.key
+user_settings.json
+secrets.json
+
+# Logs y temporales
+*.log
+*.tmp
