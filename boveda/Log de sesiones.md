@@ -106,3 +106,29 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 **Abierto**
 
 - Sin cambios: P1 sigue siendo el bloqueo principal.
+
+---
+
+## S-05 — 2026-10-19 — Panel visual local
+
+**Hecho**
+
+- Detectado que OpenBB Workspace ya no existe: `workspace.brightquery.com` muestra "BQ Workspace — coming soon", sin login.
+- Instalado Streamlit 1.66.0 en el venv.
+- Creado `app.py` (7 pestañas) y `run-openbb-app.ps1`.
+- Verificado con `AppTest`: 0 excepciones, 7 pestañas, 16 métricas.
+- Panel corriendo en `http://127.0.0.1:8501`; añadido al checklist (`estado.py`).
+
+**Se rompió / se resolvió**
+
+- Avisos de `use_container_width` obsoleto → migrado a `width="stretch"`.
+- Streamlit degradó `pillow` 13.0.0 → 12.3.0; sin impacto en OpenBB (no se usa para datos).
+
+**Decidido**
+
+- La interfaz visual es local (Streamlit), no cloud. El backend sigue siendo la API del 6900.
+
+**Abierto**
+
+- P1 sigue siendo el bloqueo principal.
+- El panel es de solo lectura; no ejecuta órdenes ni escribe datos.

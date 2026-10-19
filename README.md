@@ -97,7 +97,9 @@ OpenBB\
 ├── boveda\                    Memoria del proyecto (5 archivos)
 ├── CLAUDE.md                  Reglas obligatorias
 ├── estado.py                  Checklist de estado (solo lectura)
+├── app.py                     Panel visual (Streamlit)
 ├── run-openbb-api.ps1         Lanzador de la API
+├── run-openbb-app.ps1         Lanzador del panel visual
 ├── run-openbb-shell.ps1       Consola Python con obb
 └── NOTAS-INSTALACION.md       Notas técnicas de instalación
 ```
@@ -151,7 +153,20 @@ consultar('vix', lambda: obb.index.price.historical('VIX', provider='cboe')).tai
 exit()
 ```
 
-### 4.3 Swagger (navegador)
+### 4.3 Panel visual (la app)
+
+```powershell
+.\run-openbb-app.ps1
+```
+
+- Abre en **http://127.0.0.1:8501** (y en el navegador automáticamente).
+- Requiere la API arriba (paso 4.1).
+- 7 pestañas: Resumen, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, API.
+- 100 % local: no usa nube ni login.
+- Cambiar puerto: `.\run-openbb-app.ps1 -Port 8502`
+- Detener: `Ctrl+C` en su ventana.
+
+### 4.4 Swagger (navegador)
 
 Con la API arriba: **http://127.0.0.1:6900/docs**
 
@@ -250,6 +265,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Objetivo | Comando |
 |---|---|
 | Arrancar API | `.\run-openbb-api.ps1` |
+| Abrir panel visual | `.\run-openbb-app.ps1` |
 | Consola OpenBB | `.\run-openbb-shell.ps1` |
 | Estado completo | `.\venvs\openbb\Scripts\python.exe estado.py` |
 | Refrescar contexto | `.\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --exportar` |
@@ -274,6 +290,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | `results: []` | Proveedor requiere clave | Ver sección 11 (FRED/EIA) |
 | Primera consulta tarda 30-60 s | Proveedor externo lento | Normal; las siguientes usan caché |
 | Contexto desactualizado | No se reexportó | `puente_freqtrade.py --exportar` |
+| Panel 8501 no abre | La API está caída | Arrancar `.\run-openbb-api.ps1` y refrescar |
 | `git push` rechazado | Remoto adelantado | `git pull --rebase` y reintentar |
 | `estado.py` marca ❌ Repo | Cambios sin commit | `git add -A && git commit && git push` |
 

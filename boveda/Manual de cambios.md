@@ -102,3 +102,13 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** el usuario necesita revisarlo fuera de la sesión, directamente en GitHub, sin depender del chat.
 - **Evidencia:** documento de 12 secciones con índice enlazado; enlace añadido en `boveda\INDICE.md`.
 - **Reversión:** borrar `README.md` y la línea de referencia en el índice.
+
+---
+
+## C-11 — Panel visual 100 % local (Streamlit)
+
+- **Fecha:** 2026-10-19
+- **Qué:** `app.py` + `run-openbb-app.ps1`. Panel con 7 pestañas (Resumen, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, API) que consume la API local en `127.0.0.1:6900`; se abre en `127.0.0.1:8501`.
+- **Por qué:** OpenBB Workspace fue reemplazado por BQ Workspace, que aún no está disponible ("coming soon"), así que la única forma de tener interfaz visual es local.
+- **Evidencia:** `AppTest` → 0 excepciones, 7 pestañas, 16 métricas; panel respondiendo en 4 s; `estado.py` → 23/23 ✅.
+- **Reversión:** borrar `app.py` y `run-openbb-app.ps1`; desinstalar `streamlit` si se desea.

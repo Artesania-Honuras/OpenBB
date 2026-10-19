@@ -121,6 +121,9 @@ def revisar() -> list[dict]:
     ok, detalle, _ = _http(f"{API}/docs", timeout=10)
     add("Servicio", "Swagger /docs", ok, detalle)
 
+    add("Servicio", "Panel visual 8501", _puerto(8501),
+        "escuchando" if _puerto(8501) else "detenido (run-openbb-app.ps1)")
+
     try:
         with urlopen(
             f"{API}/api/v1/fixedincome/rate/effr?provider=federal_reserve", timeout=60
