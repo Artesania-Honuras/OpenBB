@@ -92,3 +92,13 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** memoria auditable dentro del propio proyecto, versionada, sin dependencias de terceros.
 - **Evidencia:** repo público `https://github.com/Artesania-Honuras/OpenBB`, commit inicial `f4fe7b5` con 22 archivos (0,6 MB); `estado.py` → 22/22 chequeos ✅.
 - **Reversión:** `git revert` del commit de memoria o borrar `boveda\` y `CLAUDE.md`.
+
+---
+
+## C-10 — Manual de uso en el repositorio
+
+- **Fecha:** 2026-10-19
+- **Qué:** `README.md` con el manual completo: qué es, requisitos, estructura, arranque, verificación, uso diario, comandos, problemas, datos, reglas, estado y cómo retomar.
+- **Por qué:** el usuario necesita revisarlo fuera de la sesión, directamente en GitHub, sin depender del chat.
+- **Evidencia:** documento de 12 secciones con índice enlazado; enlace añadido en `boveda\INDICE.md`.
+- **Reversión:** borrar `README.md` y la línea de referencia en el índice.

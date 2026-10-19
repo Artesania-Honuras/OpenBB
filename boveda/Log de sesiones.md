@@ -84,3 +84,25 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 **Abierto**
 
 - P1 (gatillo con ventaja), P2 (refresco automático), P6 (tests).
+
+---
+
+## S-04 — 2026-10-19 — Manual de uso publicado
+
+**Hecho**
+
+- README.md con el manual completo en 12 secciones e índice enlazado.
+- Referencia al manual añadida en oveda\INDICE.md.
+- Registro del cambio como C-10.
+
+**Se rompió / se resolvió**
+
+- Nada nuevo. Se reutilizó el estado verificado de la sesión (22/22).
+
+**Decidido**
+
+- El manual vive en la raíz del repo para que GitHub lo muestre al abrirlo.
+
+**Abierto**
+
+- Sin cambios: P1 sigue siendo el bloqueo principal.

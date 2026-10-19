@@ -40,6 +40,8 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | `Log de sesiones.md` | Bitácora: qué se hizo, qué se rompió, qué se decidió, qué quedó abierto |
 | `Plantillas.md` | Formatos vacíos para que el registro sea consistente |
 
+> Manual de uso completo (instalación, arranque, comandos, problemas): `README.md` en la raíz.
+
 ---
 
 ## 4. Estado actual — decisiones vivas con evidencia
