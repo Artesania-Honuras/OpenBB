@@ -13,7 +13,7 @@ Cada serie se retrasa segun cuando se publica de verdad:
 
 | Serie              | Retraso | Motivo                                  |
 |--------------------|---------|-----------------------------------------|
-| tasas, VIX, SPX, FX| 1 dia   | cierre del dia anterior                 |
+| tasas, VIX, SPX, FX, funding | 1 dia   | cierre del dia anterior      |
 | COT                | 3 dias  | se publica el viernes con datos del martes |
 | CPI, PIB           | 45 dias | rezago estadistico real                 |
 | factores Fama-French | 31 dias | el retorno del mes no se conoce hasta que termina |
@@ -32,13 +32,14 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from obb_env import consultar, obb_local  # noqa: E402
+from fuentes_externas import funding_diario  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTEXT_DIR = ROOT / "data" / "context"
 CONTEXT_FILE = CONTEXT_DIR / "contexto_diario.parquet"
 
 # Retrasos de publicacion en dias (ver tabla del docstring)
-DELAYS = {"cpi_yoy": 45, "gdp_yoy": 45, "cot_net": 3}
+DELAYS = {"cpi_yoy": 45, "gdp_yoy": 45, "cot_net": 3, "funding_btc_anual": 1}
 DELAY_DEFAULT = 1
 DELAY_PREFIX = {"ff_": 31}
 
@@ -114,6 +115,12 @@ def construir_contexto(forzar: bool = False) -> pd.DataFrame:
     ff.index = pd.to_datetime(ff.index)
     for col in ("mkt_rf", "smb", "hml"):
         piezas[f"ff_{col}"] = ff[col].astype(float)
+
+    # --- capa rapida: derivados de cripto (fuente externa, ver fuentes_externas.py)
+    # El funding de perpetuos es lo que cuesta estar largo. Senal de apalancamiento
+    # y de euforia/panico, no de direccion. Se expresa en % anual.
+    funding = funding_diario("BTCUSDT", forzar=forzar)
+    piezas["funding_btc_anual"] = funding.astype(float)
 
     contexto = pd.DataFrame(piezas).sort_index()
 

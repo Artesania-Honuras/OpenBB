@@ -46,7 +46,7 @@ aplicada a una estrategia que necesita capa rápida.
 
 | # | Fuente | Ruta | Para qué | Relación con Freqtrade |
 |---|---|---|---|---|
-| F1 | Funding de perpetuos + APR | `deribit/rates/funding_history`, `apr_history` | Coste de mantener un largo; extremos = apalancamiento excesivo | Filtro: no comprar con funding disparado |
+| F1 | Funding de perpetuos + APR ✅ **probado en `E-08`** | ~~`deribit/rates/funding_history`~~ → solo 31 días; se trae de Binance (`fuentes_externas.py`) | Coste de mantener un largo; extremos = apalancamiento excesivo | Resultado: **no sirve como filtro de entrada**; sí como termómetro de estado |
 | F2 | Curva de futuros y basis | `derivatives/futures/curve` | Contango/backwardation = sesgo real del mercado | Filtro de tendencia |
 | F3 | Volumen e interés por instrumento | `deribit/market/trade_volumes` | Apalancamiento creciendo | Confirmación de entrada |
 | F4 | Volatilidad cripto (realizada + DVOL) | `deribit/volatility/realized`, `index` | Régimen de volatilidad **de los pares operados**, mejor que el VIX | Tamaño de posición y distancia de stop |
@@ -162,7 +162,7 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | Paso | Qué | Puerta para pasar al siguiente |
 |---|---|---|
 | 0 | **P8:** revalidar los 7 pares con el contexto corregido (`C-13`) | ✅ **cerrado** (`E-07`): 0/7 → 1/7, el veredicto no cambia |
-| 1 | Pack A (4 features) | Debe reducir drawdown sin romper el P&L |
+| 1 | **F1 funding** ✅ `E-08` · **F4 volatilidad cripto** ⚠️ revisar historial | Cada feature: si no bate la referencia, se descarta y queda registrado |
 | 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |

@@ -249,3 +249,30 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 (bloqueo principal), P2 (refresco automático) y P9 (panel) siguen abiertos.
 - El usuario debe elegir pack (A recomendado) y pasar la lista de repositorios que mencionó.
+
+---
+
+## S-11 — 2026-10-19 — Pack A, paso 1: funding de perpetuos
+
+**Hecho**
+
+- Inspeccionados los endpoints de derivados de OpenBB: **solo dan ventanas cortas** (funding 31 días, volatilidad realizada 17, índice 1). Sirven para el estado vivo, no para validar.
+- Descartado añadir `ccxt` (no está en el venv): el funding se trae del endpoint público de Binance con `urllib`, sin dependencias nuevas. Nuevo `scripts/fuentes_externas.py` con caché (2.118 días desde 2021).
+- Columna `funding_btc_anual` añadida al contexto (13 → 14 columnas), con retraso de 1 día. Actualizados `estado.py` y `app.py`.
+- Validador ampliado con `funding_max` / `funding_min` (`C-19`) y experimento medido en tres variantes (`E-08`).
+- Salidas crudas: `data/reporte_validacion.txt`, `data/reporte_funding_ab.txt`.
+
+**Se rompió / se resolvió**
+
+- Nada roto. El hallazgo que obligó a cambiar de rumbo: la capa rápida de OpenBB no tiene historial suficiente para backtest.
+
+**Decidido**
+
+- El funding **no** se usa como filtro de entrada: evitar el funding alto resta 8 puntos de mediana (0/7) y exigir funding positivo sube 2,1 puntos pero sigue en 1/7.
+- La columna se conserva como información de estado en vivo.
+- La conclusión que importa del experimento: el cuello de botella no es el filtro macro ni el de derivados, sino que la **exposición del 30-45 % no captura el retorno de comprar y mantener**. Con esa exposición, batir la referencia es casi imposible por diseño.
+
+**Abierto**
+
+- P1 sigue siendo el bloqueo principal.
+- Siguiente paso natural del pack A: **F4 volatilidad cripto**, y si también carece de historial, replantear el pack hacia features de la propia vela (velocidad, rango, volumen) en vez de fuentes externas.

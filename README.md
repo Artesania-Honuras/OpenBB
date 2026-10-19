@@ -78,6 +78,7 @@ OpenBB\
 ├── repos\OpenBB\              Clon upstream (NO se versiona)
 ├── scripts\
 │   ├── obb_env.py             Entorno + caché parquet
+│   ├── fuentes_externas.py    Capa rápida: funding de perpetuos (Binance, sin clave)
 │   ├── puente_freqtrade.py    Exportar contexto / fusionar velas
 │   ├── validar_estrategia.py  Walk-forward + Monte Carlo
 │   └── verificar_familias.py  Verificación de las 8 familias
@@ -301,7 +302,7 @@ relanzar una tercera. Anotar el síntoma y los logs.
 
 ## 9. Datos y configuración
 
-### 9.1 Contexto diario (13 columnas)
+### 9.1 Contexto diario (14 columnas)
 
 | Columna | Fuente | Retraso aplicado |
 |---|---|---|
@@ -314,6 +315,17 @@ relanzar una tercera. Anotar el síntoma y los logs.
 | `gdp_yoy` | OECD | 45 días |
 | `cot_net` | CFTC | 3 días |
 | `ff_mkt_rf`, `ff_smb`, `ff_hml` | Fama-French | 31 días |
+
+Y una columna de **capa rápida**, de fuente externa a OpenBB:
+
+| Columna | Fuente | Retraso aplicado |
+|---|---|---|
+| `funding_btc_anual` | Binance (`fapi/v1/fundingRate`) | 1 día |
+
+El funding es lo que cuesta estar largo en el perpetuo de BTC, expresado en %
+anual. Positivo = los largos pagan a los cortos (euforia, apalancamiento);
+negativo = pánico. Medido en `E-08`: **no sirve como filtro de entrada**, pero
+sí como termómetro de estado.
 
 El retraso replica la fecha real de publicación: evita look-ahead. La fusión con
 velas usa `merge_asof(direction="backward")`.
@@ -386,6 +398,21 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
 **7/7 positivos, 1/7 baten la referencia** (y el único lo hace por 0,3 puntos, un
 empate estadístico). Antes del arreglo del contexto era 0/7. El criterio exige
 ≥ 2/3 de los activos. El cruce EMA 20/50 no tiene alfa: `E-07`.
+
+### Filtro de funding de perpetuos (`E-08`)
+
+Primera feature de la capa rápida. Misma herramienta y ventana, tres variantes:
+
+| Variante | OOS mediano | Exposición | Baten la referencia |
+|---|---|---|---|
+| Sin filtro (base) | +8,2% | 35,7% | 1/7 |
+| `funding_max = 20` (evitar largos caros) | +3,0% | 30,3% | 0/7 |
+| `funding_min = 0` (solo con funding positivo) | **+15,2%** | 34,3% | 1/7 |
+
+**Veredicto: no pasa la puerta.** La dirección importa (filtrar el funding alto
+resta 8 puntos de mediana), pero ninguna variante alcanza ≥ 2/3. El cuello de
+botella real está en la exposición del 30-45%, que no captura el retorno de
+comprar y mantener.
 
 ### Pendientes
 

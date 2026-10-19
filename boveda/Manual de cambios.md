@@ -178,3 +178,24 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Conclusión:** el defecto `C-13` no era la causa de la falta de edge. `D-08` (no integrar) sigue vigente; `P1` sigue siendo el bloqueo.
 - **Impacto:** solo documentación y una medición. **Nada** se cambió en el código, en los datos de contexto ni en los bots.
 - **Reversión:** revertir el commit.
+
+---
+
+## C-18 — Capa rápida: fuente externa de funding y 14ª columna del contexto
+
+- **Fecha:** 2026-10-19
+- **Qué:** nuevo `scripts/fuentes_externas.py` que trae el **funding de perpetuos** desde el endpoint público de Binance (`fapi/v1/fundingRate`), paginado desde 2021, con caché en `data/cache/`. El puente añade la columna `funding_btc_anual` (media diaria, en % anual, retraso de 1 día). El contexto pasa de 13 a **14 columnas**. Actualizados `estado.py` (esquema 14) y `app.py` (etiqueta en español y métrica en la pestaña Contexto).
+- **Por qué:** el paso 1 del pack A. Los endpoints de derivados de OpenBB (`deribit/*`) solo devuelven ventanas cortas —funding 31 días, volatilidad realizada 17, índice 1— así que sirven para el estado en vivo pero **no** para validar 2021-2026. Se descartó añadir `ccxt`: el endpoint público se consume solo con `urllib`, sin dependencias nuevas.
+- **Evidencia:** 2.118 días de funding (2021-01-01 → 2026-10-19); media +10,7 % anual, rango −93 % a +178 %; contexto exportado 36.636 × 14.
+- **Reversión:** borrar `scripts/fuentes_externas.py`, quitar la columna del puente y volver los contadores a 13.
+
+---
+
+## C-19 — Dimensiones de funding en el validador
+
+- **Fecha:** 2026-10-19
+- **Qué:** `validar_estrategia.py` acepta `funding_max` y `funding_min` como filtros de entrada. `funding_max` entra en el grid con dos opciones (None / 20 %); `funding_min` se deja con una sola opción (None) para que los experimentos dirigidos la activen sin ampliar la búsqueda por defecto. La tabla del walk-forward muestra si cada ventana eligió filtro.
+- **Por qué:** sin una dimensión en el validador, añadir la columna no se podría medir, y el proyecto exige medición antes que cambio.
+- **Evidencia:** corrida por defecto 54 → 108 combinaciones; A/B dirigido en `data/reporte_funding_ab.txt`; resultado en `E-08`.
+- **Impacto declarado:** ampliar la búsqueda aumenta el riesgo de sobreajuste. Queda anotado en `E-08`.
+- **Reversión:** quitar ambas claves y el bloque de filtro en `simular()`.

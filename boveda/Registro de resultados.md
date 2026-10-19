@@ -83,3 +83,24 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Comparación con E-05** (mismo método, contexto defectuoso): 0/7 → 1/7. Todos los OOS suben algo (SOL +9,0 → +14,2; ETH +14,1 → +18,6); las referencias apenas se mueven.
 - **Veredicto:** ❌ **sin ventaja consistente**, igual que E-05. La única "victoria" es un empate estadístico: 0,3 puntos sobre una referencia de 5,5 %. El criterio exige ≥ 2/3 de los activos y solo lo cumple 1/7. Confirma que el defecto `C-13` **no** era la causa de la falta de edge.
 - **Cierra:** pendiente **P8**.
+
+---
+
+## E-08 — Filtro de funding de perpetuos (capa rápida, primera prueba)
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** el funding de perpetuos mide el apalancamiento y el sesgo del mercado; usarlo como filtro debería mejorar el cruce EMA 20/50.
+- **Fuente:** Binance `fapi/v1/fundingRate` (público, sin clave, sin dependencia nueva), paginado desde 2021 → 2.118 días. Columna nueva `funding_btc_anual` en el contexto (14 columnas), retraso de 1 día.
+- **Método:** la misma herramienta (`validar_estrategia.py`), misma ventana 2021-01-01 → 2026-10-01, 18 meses train / 6 test, sizing 10 %. Tres mediciones: (A) sin filtro — línea base que reproduce E-07; (B) `funding_max = 20` (no comprar si estar largo cuesta más de 20 % anual); (C) `funding_min = 0` (solo comprar con funding positivo).
+- **N:** 7 activos, 11 ventanas. Además, corrida por defecto con la dimensión de funding **dentro** de la búsqueda (108 combinaciones en vez de 54).
+- **Números (OOS mediano / exposición media / baten la referencia):**
+  - A) sin filtro: **+8,2 %** · 35,7 % · **1/7**
+  - B) `funding_max = 20`: **+3,0 %** · 30,3 % · **0/7**
+  - C) `funding_min = 0`: **+15,2 %** · 34,3 % · **1/7**
+  - Con la dimensión dentro de la búsqueda (54 → 108 combinaciones): **0/7**
+- **Detalle por par (A → B → C, referencia):** ADA 5,8 → −0,0 → 15,6 (5,5) · AVAX 16,1 → 3,4 → 15,2 (32,6) · BNB 5,6 → −6,4 → 7,7 (197,6) · BTC 8,2 → 3,0 → 7,0 (57,1) · ETH 18,6 → 10,6 → 16,1 (71,7) · SOL 14,2 → 8,8 → 21,0 (285,6) · XRP 4,6 → −7,7 → 10,4 (60,8).
+- **Veredicto:** ❌ **no pasa la puerta**. Dos hallazgos:
+  1. **La dirección importa y mucho.** Evitar el funding alto resta 8 puntos de mediana (0/7): en cripto, el funding alto coincide con tendencias alcistas, así que filtrarlo deja fuera lo bueno. Exigir funding positivo suma 2,1 puntos de mediana y mejora 4 de 7 pares.
+  2. **Ni así alcanza.** Sigue 1/7 contra la referencia de misma exposición, y el criterio exige ≥ 2/3. El problema de fondo no es el filtro: es que la exposición del 30-45 % no captura el retorno de comprar y mantener.
+- **Se conserva:** la columna `funding_btc_anual` queda en el contexto (es informativa para el estado en vivo), pero **no** se usa como filtro de entrada.
+- **Coste de búsqueda declarado:** probar tres variantes más el aumento de 54 a 108 combinaciones eleva el riesgo de sobreajuste. El resultado en contra es, por tanto, más fiable que si hubiera salido a favor.

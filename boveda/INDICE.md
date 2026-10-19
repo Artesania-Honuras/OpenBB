@@ -55,9 +55,11 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-03 | Provider `eia` excluido | Su build hook exige `EIA_API_KEY` en vivo y aborta la instalación | 2026-10-19 |
 | D-04 | SSL forzado a certifi | `EURUSD` vía BCE devuelve 7.117 filas | 2026-10-19 |
 | D-05 | `OPENBB_AUTO_BUILD=false` | Arranque ~60 s sin cuelgues | 2026-10-19 |
-| D-06 | Contexto diario con retrasos de publicación | 36.636 filas × 13 columnas, 1926→2026, 0 NaN en 2026 | 2026-10-19 |
+| D-06 | Contexto diario con retrasos de publicación | 36.636 filas × 14 columnas, 1926→2026, 0 NaN en 2026 | 2026-10-19 |
 | D-07 | Puente por archivo (parquet), no por HTTP | Merge con 14.886 velas 4h sin look-ahead | 2026-10-19 |
 | D-08 | **No integrar** la estrategia al bot | Walk-forward revalidado con el contexto corregido (`E-07`): 7/7 OOS positivos, **1/7** baten la referencia ajustada por exposición (y por 0,3 puntos) | 2026-10-19 |
+| D-09 | El funding de perpetuos **no** se usa como filtro | `E-08`: evitar el funding alto resta 8 puntos de mediana; exigir funding positivo sube 2,1 pero sigue en 1/7. Se conserva como dato de estado | 2026-10-19 |
+| D-10 | La capa rápida se trae de fuera de OpenBB | Los endpoints `deribit/*` solo dan ventanas cortas (funding 31 días); el historial se toma del endpoint público de Binance, sin claves y sin dependencias | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -84,6 +86,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | Código | `scripts\`, `strategies\` | Lo que corre |
 | Contexto | `data\context\contexto_diario.parquet` | Evidencia del puente; 13 columnas |
 | Medición | `scripts\validar_estrategia.py` | La misma herramienta siempre |
+| Capa rápida | `scripts\fuentes_externas.py` | Funding de perpetuos (Binance, sin clave, con caché) |
 | Estado | `estado.py` | Solo lectura, tabla ✅/❌ |
 | Historia | `boveda\*` | Cambios, resultados, sesiones |
 | Upstream | `repos\OpenBB` @ `78020ee4b86` (develop) | Referencia, no se edita |

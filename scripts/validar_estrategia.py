@@ -53,6 +53,12 @@ GRID = {
     "ema_slow": [50, 80, 100],
     "vix_max": [18, 25, 32],
     "usar_slope": [False, True],
+    # Capa rapida: funding anualizado del perpetuo de BTC (%).
+    # None = sin filtro; 20 = no entrar cuando estar largo cuesta mas de 20% al anio.
+    "funding_max": [None, 20.0],
+    # Solo-positivo se deja en una sola opcion: los experimentos dirigidos la
+    # activan sin ampliar el espacio de busqueda por defecto.
+    "funding_min": [None],
 }
 
 
@@ -98,6 +104,14 @@ def simular(df: pd.DataFrame, params: dict) -> tuple[np.ndarray, float]:
     if params["usar_slope"]:
         entrada = entrada & (d["slope_10y_2y"].to_numpy() > 0)
     entrada = entrada & (d["vix"].to_numpy() < params["vix_max"])
+
+    # Filtro de la capa rapida (solo si la columna existe y hay dato)
+    if "funding_btc_anual" in d.columns:
+        fnd = pd.to_numeric(d["funding_btc_anual"], errors="coerce").to_numpy()
+        if params.get("funding_max") is not None:
+            entrada = entrada & ((fnd < params["funding_max"]) | np.isnan(fnd))
+        if params.get("funding_min") is not None:
+            entrada = entrada & ((fnd >= params["funding_min"]) | np.isnan(fnd))
 
     close = d["close"].to_numpy()
     low = d["low"].to_numpy()
@@ -180,6 +194,8 @@ def walk_forward(
             "ema": f"{mejor['ema_fast']}/{mejor['ema_slow']}",
             "vix_max": mejor["vix_max"],
             "slope": "si" if mejor["usar_slope"] else "no",
+            "fund": "si" if (mejor.get("funding_max") is not None
+                            or mejor.get("funding_min") is not None) else "no",
             "train_%": round(mejor_ret * 100, 1),
             "test_%": round(retorno_compuesto(ret_test, stake) * 100, 1),
             "exp_%": round(exp_test * 100, 1),

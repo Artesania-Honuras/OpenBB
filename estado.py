@@ -146,8 +146,8 @@ def revisar() -> list[dict]:
             add("Datos", "contexto_diario.parquet", edad <= 2,
                 f"{len(df):,} x {len(df.columns)} · ultimo {ultima} ({edad} d)",
                 critico=True)
-            faltan = 13 - len(df.columns)
-            add("Datos", "Esquema 13 columnas", faltan <= 0,
+            faltan = 14 - len(df.columns)
+            add("Datos", "Esquema 14 columnas", faltan <= 0,
                 f"{len(df.columns)} columnas, faltan {max(0, faltan)}")
         except Exception as e:  # noqa: BLE001
             add("Datos", "contexto_diario.parquet", False, type(e).__name__, critico=True)

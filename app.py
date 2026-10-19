@@ -118,6 +118,7 @@ MAPA_CTX = {
     "ff_mkt_rf": "Factor mercado (%)",
     "ff_smb": "Factor tamaño (%)",
     "ff_hml": "Factor valor (%)",
+    "funding_btc_anual": "Funding BTC (% anual)",
 }
 
 
@@ -386,6 +387,7 @@ distinto con el VIX a 12 que con el VIX a 35.
 | **PIB** | Crecimiento real | Cae = desaceleración | Confirma el ciclo |
 | **COT** | Posicionamiento especulativo | Extremos = posible agotamiento | Contrario solo en extremos |
 | **Fama-French** | Factores mercado, tamaño, valor | Explican retornos por estilo | Diagnóstico, no señal |
+| **Funding BTC** | Coste de estar largo en el perpetuo | Positivo = los largos pagan (euforia) · negativo = pánico | Termómetro de apalancamiento, no filtro |
 """
     )
 
@@ -398,8 +400,10 @@ distinto con el VIX a 12 que con el VIX a 35.
 
     st.warning(
         "**Lo que ya medimos:** este contexto, aplicado a un cruce EMA 20/50, no batió "
-        "a la referencia de misma exposición en 0 de 7 pares (2021-2026). Sirve como "
-        "filtro de riesgo, no como fuente de alfa."
+        "a la referencia de misma exposición en 0 de 7 pares (2021-2026). El funding se "
+        "probó como filtro de entrada y tampoco pasa la puerta: evitar el funding alto "
+        "resta 8 puntos de mediana; exigir funding positivo sube 2,1 puntos, pero sigue "
+        "en 1 de 7. Sirve como termómetro, no como fuente de alfa."
     )
 
     st.subheader("Glosario rápido")
@@ -588,14 +592,22 @@ with tab_contexto:
             c1.metric("VIX", f"{ctx['vix'].iloc[-1]:.1f}")
             c2.metric("Curva 10a-2a", f"{ctx['slope_10y_2y'].iloc[-1] * PB:+.0f} pb")
             c3.metric("Inflación interanual", f"{ctx['cpi_yoy'].iloc[-1]:.1f}%")
-            c4.metric("COT neto", f"{ctx['cot_net'].iloc[-1]:,.0f} mil")
+            if "funding_btc_anual" in ctx.columns:
+                c4.metric(
+                    "Funding BTC",
+                    f"{ctx['funding_btc_anual'].iloc[-1]:+.1f}% anual",
+                    help="Lo que cuesta estar largo en el perpetuo. Positivo = los largos "
+                         "pagan a los cortos (euforia); negativo = pánico.",
+                )
+            else:
+                c4.metric("COT neto", f"{ctx['cot_net'].iloc[-1]:,.0f} mil")
 
             st.subheader("Series del contexto")
             traducido = ctx.rename(columns=MAPA_CTX)
             elegidas = st.multiselect(
                 "Columnas",
                 options=list(traducido.columns),
-                default=["VIX", "Inflación interanual (%)"],
+                default=["VIX", "Inflación interanual (%)", "Funding BTC (% anual)"],
             )
             if elegidas:
                 st.line_chart(traducido[elegidas])
