@@ -287,3 +287,34 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** sin homogeneidad no se puede comparar nada: el `ffill` convierte un par desfasado en un par con el precio quieto. Y sin `--pares`, ampliar el universo destruía la reproducibilidad de `E-10`/`E-11`.
 - **Evidencia:** `E-13`; `--pares` de 7 reproduce `E-11` B exacto con datos limpios (+1.538,1 % / −80,0 % / Calmar 19,22).
 - **Reversión:** restaurar los archivos desde `data/cache/velas_antes_2026-10-19/` y quitar `--pares`.
+
+---
+
+## C-28 — Configuración fija en el validador (`--fijo`)
+
+- **Fecha:** 2026-10-19
+- **Qué:** `--fijo "L,K,rebal[;...]"`: simula **un solo juego de parámetros** de principio a fin (sin re-optimizar), con la nube al azar usando esos mismos parámetros y el desglose ventana a ventana. Imprime la tabla de todas las configuraciones pedidas para no ocultar la dispersión.
+- **Por qué:** el walk-forward elige parámetros en cada ventana; eso es out-of-sample legítimo pero **no es lo que se instala**. Sin esta medición, el número que se lleva a Freqtrade sería una extrapolación.
+- **Evidencia:** `E-14`, `data/reporte_momentum_fijo.txt`.
+- **Reversión:** quitar `fijo()`, el bloque `--fijo` y el argumento.
+
+---
+
+## C-29 — Dimensionado del sleeve (`scripts/dimensionar.py`)
+
+- **Fecha:** 2026-10-19
+- **Qué:** bootstrap por bloques de 7 días (1.000 caminos) sobre la curva de la configuración fija, con fracción de sleeve **constante**, y tabla de CAGR / drawdown típico / drawdown al 5 % peor / P(DD>20 %) / P(año perdedor) para 5-30 % de capital. Escribe `data/reporte_dimensionado.txt` y `.csv`.
+- **Por qué:** la puerta pide `DD < 20 %`, y eso solo tiene sentido **a nivel de cartera**. Traducir el −82,5 % del sleeve a un número de cartera no es una regla de tres: hace falta la distribución.
+- **Error corregido durante el desarrollo:** la primera versión modelaba el sleeve **sin rebalanceo** y daba un drawdown del 31 % con solo el 5 % invertido — imposible. El modelo estaba mal (un sleeve que crece acaba siendo el 80 % de la cartera), no el riesgo alto. Se cambió a fracción constante y quedó documentado en `E-15`.
+- **Evidencia:** `E-15`.
+- **Reversión:** borrar el script y sus dos reportes.
+
+---
+
+## C-30 — Huella de versión en la barra lateral
+
+- **Fecha:** 2026-10-19
+- **Qué:** la barra lateral muestra `Versión del panel: AAAA-MM-DD HH:MM · N reportes`, tomando la fecha de modificación de `app.py` y contando los `data/reporte_*.txt`.
+- **Por qué:** el usuario ha dicho **tres veces** que «la app sigue igual». El problema real es que una pestaña abierta antes de un reinicio se queda con la imagen vieja y **no hay forma de distinguirlo mirando la pantalla**. Con la huella, la pregunta «¿estoy viendo la versión nueva?» se responde en un segundo: si la hora no coincide con la última modificación de `app.py`, es una pestaña vieja.
+- **Evidencia:** PID reiniciado 16:35:51, `app.py` modificado 16:35:26, health `ok`.
+- **Reversión:** quitar las dos líneas de `st.caption` del final del bloque de la barra lateral.

@@ -415,3 +415,31 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 - `P15`: **cuánto capital** darle a un sleeve cuya caída natural es del ~87 %. Es una decisión del dueño del capital; el backtest solo informa.
 - `P14`: medir la versión mercado-neutral (largo-corto), que es el mecanismo estándar contra este drawdown. **No sirve para sus bots** (son spot), así que es para saber, no para operar.
 - `P3`: instalar en Freqtrade deja de estar bloqueado por un gatillo y pasa a estarlo por el tamaño (`P15`).
+
+---
+
+## S-17 — 2026-10-19 — De investigación a algo instalable: +820 % y 10 %
+
+**Hecho**
+
+- Confirmado con datos que el panel sí servía el código nuevo (proceso 16:16:10 posterior al cambio de 16:13:19). El usuario seguía viendo «igual» por la pestaña vieja: **tercera vez**. Añadida una **huella de versión** en la barra lateral (`C-30`) para que deje de ser un problema de fe.
+- `--fijo` en el validador (`C-28`): medir un solo juego de parámetros, de principio a fin. Cinco configuraciones, con la propuesta elegida **a priori** en `E-10`.
+- `scripts/dimensionar.py` (`C-29`): bootstrap por bloques para traducir el drawdown del sleeve a drawdown de cartera.
+
+**Resultado**
+
+- **`E-14`: la regla que se instala da +820 %, no +3.118 %.** L=30/K=3/semanal: CAGR +47,2 %, DD −82,5 %, Calmar 9,95, 7/11 ventanas, P(azar ≥) 0,5 %. La diferencia con el titular es la re-optimización semestral, que habría que automatizar.
+- Sensibilidad brutal: la misma idea con `K=5` y `L=60` da **+68 % y Calmar 0,78**. Funciona en una región, no en general.
+- **`E-15`: sleeve del 10 %.** Caída típica −13,0 %, 5 % peor −22,0 %, un año perdedor de cada cinco, ningún camino pierde más del 25 % en un año. Al 15 % la probabilidad de superar el −20 % de DD salta al 42 %.
+- **Error propio corregido en el camino:** el primer dimensionado, sin rebalanceo, daba −31 % con el 5 % invertido. Era el modelo el que estaba mal, no alto el riesgo. Cambiado a fracción constante y anotado en `E-15`.
+
+**Decidido**
+
+- `D-24`: el número desplegable es el de la configuración fija.
+- `D-25`: **10 %** de sleeve, declarando que incumple `DD p95 < 20 %` por 2 puntos. Si se aplica al pie de la letra, 5 %.
+- `D-26`: la puerta se cumple a nivel de **cartera**, que es el riesgo que el dueño del capital ve.
+
+**Abierto**
+
+- `P3`: escribir la estrategia de rotación en Freqtrade (long-only, 24 pares, K=3, semanal) con `stake` equivalente al 10 %. **No tocar los bots que están corriendo** hasta que el puente esté probado.
+- `P16`: automatizar la re-optimización semestral, solo si se quiere aspirar al número grande. La regla fija ya es suficiente para empezar.

@@ -315,6 +315,67 @@ def evaluar_config(
 
 
 # --------------------------------------------------------------------------
+# Configuracion FIJA (lo que se instalaria)
+# --------------------------------------------------------------------------
+def fijo(
+    m: pd.DataFrame, inicio: str, fin: str, L: int, K: int, rebal: int, sims: int,
+    senales: dict | None = None,
+) -> dict:
+    """Una sola configuracion, sin re-optimizar, sobre todo el periodo.
+
+    El walk-forward elige L/K cada 6 meses: para operarlo hay que automatizar
+    esa re-optimizacion. Esto mide lo otro, lo simple: los mismos parametros de
+    principio a fin. Es lo que un humano puede instalar y auditar.
+
+    La supervivencia se mide en ventanas de 6 meses, cada una simulada aparte
+    (igual que el walk-forward: cada ventana arranca en caja).
+    """
+    desde = pd.Timestamp(inicio, tz="UTC")
+    hasta = pd.Timestamp(fin, tz="UTC")
+    m_oos = m[(m.index >= desde) & (m.index < hasta)]
+    params = dict(lookback_dias=int(L), top_k=int(K), rebal_dias=int(rebal))
+    ret = simular(m_oos, params, senales=senales)
+
+    comp, dd = compuesto(ret), max_dd(ret)
+    ret_bh = m_oos.pct_change().mean(axis=1).fillna(0.0).to_numpy()
+    comp_bh, dd_bh = compuesto(ret_bh), max_dd(ret_bh)
+
+    fechas = pd.date_range(desde, hasta, freq="6MS")
+    filas = []
+    for i in range(len(fechas) - 1):
+        t = m[(m.index >= fechas[i]) & (m.index < fechas[i + 1])]
+        if len(t) < 100:
+            continue
+        r = simular(t, params, senales=senales)
+        filas.append({
+            "periodo": f"{fechas[i].date()} -> {fechas[i + 1].date()}",
+            "test_%": round(compuesto(r) * 100, 1),
+            "test_dd_%": round(max_dd(r) * 100, 1),
+        })
+
+    nube = np.empty(sims)
+    for s in range(sims):
+        nube[s] = compuesto(simular(m_oos, params, semilla=s, senales=senales))
+
+    return {
+        "L": int(L), "K": int(K), "rebal": int(rebal),
+        "oos_%": comp * 100,
+        "dd_%": dd * 100,
+        "calmar": calmar(ret),
+        "cesta_%": comp_bh * 100,
+        "cesta_dd_%": dd_bh * 100,
+        "cesta_calmar": calmar(ret_bh),
+        "ventanas": f"{int(sum(f['test_%'] > 0 for f in filas))}/{len(filas)}",
+        "peor_ventana_%": min((f["test_%"] for f in filas), default=0.0),
+        "percentil_azar": float((nube < comp).mean() * 100),
+        "azar_p50_%": float(np.percentile(nube, 50)) * 100,
+        "P(azar>=esta)": float((nube >= comp).mean() * 100),
+        "cagr_%": ((1 + comp) ** (1 / max(((m_oos.index[-1] - m_oos.index[0]).days / 365.25), 1e-9)) - 1) * 100,
+        "_ventanas": filas,
+    }
+
+
+# --------------------------------------------------------------------------
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--inicio", default="2021-01-01")
@@ -330,6 +391,9 @@ def main() -> None:
     ap.add_argument("--pares", default=None,
                     help="subconjunto separado por comas (por defecto, todos los del directorio). "
                          "Sirve para reproducir una medicion anterior tras ampliar el universo.")
+    ap.add_argument("--fijo", default=None,
+                    help="configuracion FIJA, sin re-optimizar: 'L,K,rebal' o varias separadas por ';' "
+                         "(ej. '30,3,7;30,5,7'). Mide lo que se instalaria de verdad.")
     args = ap.parse_args()
 
     if args.pares:
@@ -349,6 +413,49 @@ def main() -> None:
     r_bh[1:] = (bh_m.to_numpy()[1:] / bh_m.to_numpy()[:-1] - 1).mean(axis=1)
     print(f"cesta a peso igual: {compuesto(r_bh)*100:+.1f}%  |  DD {max_dd(r_bh)*100:.1f}%  "
           f"|  Calmar {calmar(r_bh):.2f}")
+
+    if args.fijo:
+        configs = []
+        for trozo in args.fijo.split(";"):
+            partes = [p.strip() for p in trozo.split(",") if p.strip()]
+            if len(partes) != 3:
+                raise SystemExit(f"Configuracion mal escrita: '{trozo}' (se espera L,K,rebal)")
+            configs.append(tuple(int(x) for x in partes))
+
+        senales_f = preparar_senales(m)
+        print("\n### CONFIGURACION FIJA (sin re-optimizar) — lo que se instalaria")
+        print(f"azar = {args.sims} semillas, mismos parametros y mismo periodo\n")
+        res = []
+        for L, K, rebal in configs:
+            r = fijo(m, args.inicio, args.fin, L, K, rebal, args.sims, senales=senales_f)
+            res.append(r)
+            print(f"  L={L}d K={K} rebal={rebal}d -> "
+                  f"{r['oos_%']:+.1f}%  DD {r['dd_%']:.1f}%  Calmar {r['calmar']:.2f}  "
+                  f"ventanas {r['ventanas']}  percentil {r['percentil_azar']:.0f}  "
+                  f"P(azar>=) {r['P(azar>=esta)']:.1f}%")
+
+        print("\n" + pd.DataFrame([{
+            "L": r["L"], "K": r["K"], "rebal": r["rebal"],
+            "oos_%": round(r["oos_%"], 1), "dd_%": round(r["dd_%"], 1),
+            "calmar": round(r["calmar"], 2), "cagr_%": round(r["cagr_%"], 1),
+            "ventanas": r["ventanas"], "peor_%": r["peor_ventana_%"],
+            "pct_azar": round(r["percentil_azar"], 1), "P(azar>=)": round(r["P(azar>=esta)"], 1),
+        } for r in res]).to_string(index=False))
+
+        # Detalle de la configuracion elegida A PRIORI en E-10 (no la mejor de esta tabla)
+        pri = next((r for r in res if (r["L"], r["K"], r["rebal"]) == (30, 3, 7)), res[0])
+        print(f"\n### DETALLE de la configuracion elegida A PRIORI en E-10: "
+              f"L={pri['L']}d K={pri['K']} rebal={pri['rebal']}d")
+        print(f"  retorno compuesto:   {pri['oos_%']:+.1f}%   (CAGR {pri['cagr_%']:+.1f}%)")
+        print(f"  drawdown maximo:     {pri['dd_%']:.1f}%")
+        print(f"  Calmar:              {pri['calmar']:.2f}   (cesta {pri['cesta_calmar']:.2f})")
+        print(f"  ventanas positivas:  {pri['ventanas']}   (peor ventana {pri['peor_ventana_%']:+.1f}%)")
+        print(f"  azar (mediana):      {pri['azar_p50_%']:+.1f}%   percentil {pri['percentil_azar']:.0f}   "
+              f"P(azar >= esta) {pri['P(azar>=esta)']:.1f}%")
+        print("\n  ventana a ventana (mismos parametros, cada una desde caja):")
+        for f in pri["_ventanas"]:
+            print(f"    {f['periodo']}   {f['test_%']:+8.1f}%   DD {f['test_dd_%']:6.1f}%")
+        return
 
     if args.riesgo:
         print("\n### VARIANTES DE CONTROL DE RIESGO (18 combinaciones por variante, azar = 200 semillas)\n")

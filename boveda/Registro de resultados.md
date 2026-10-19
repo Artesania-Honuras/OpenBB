@@ -240,3 +240,48 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Lo que NO está medido (declarado para no sobrevender):** todo `E-10`…`E-13` es **solo largos**. La versión mercado-neutral (largo en los K mejores, corto en los K peores) es el mecanismo estándar de la industria para bajar exactamente este drawdown y **no se ha medido**; requiere perpetuos y coste de funding, y los bots de Freqtrade son spot, así que no sería desplegable en ellos.
 - **Herramientas:** `scripts/descargar_velas.py` (25 pares, verificación con reporte en `data/reporte_velas.txt`), `--pares` para reproducir cualquier subconjunto. Reportes: `data/reporte_momentum_24pares.txt`, `data/reporte_momentum_riesgo_24pares.txt`, `data/reporte_momentum_7pares_datos_limpios.txt`.
 - **Coste de búsqueda declarado:** 9 variantes × 18 combinaciones × 200 permutaciones × 2 universos. Se probaron **2 universos y 9 mecanismos**; los que ganan en uno y pierden en otro se reportan como inestables, que es lo que son.
+
+---
+
+## E-14 — Configuración fija: el número que se instalaría es +820 %, no +3.118 %
+
+- **Fecha:** 2026-10-19
+- **Qué se mide y por qué:** `E-13` da +3.118 %, pero ese número sale de **re-optimizar cada 6 meses** (el walk-forward elige `L`, `K` y rebalanceo en cada ventana con la mitad de entrenamiento). Para operarlo habría que automatizar esa re-optimización. Una **configuración fija**, con los mismos parámetros de principio a fin, es lo que un humano puede instalar, auditar y explicar. Se miden las cinco configuraciones razonables para no ocultar la dispersión, pero la que se propone es **L=30 d, K=3, semanal**, elegida **a priori** en `E-10` (antes de ver estos resultados).
+- **N (24 pares, 2021-01 → 2026-07, azar = 200 semillas con los mismos parámetros):**
+
+| L (d) | K | rebal | retorno | DD | Calmar | CAGR | Ventanas | Peor ventana | Percentil azar | P(azar ≥) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **30** | **3** | **7 d** | **+820 %** | **−82,5 %** | **9,95** | **+47,2 %** | **7/11** | **−61,2 %** | 99,5 | **0,5 %** |
+| 30 | 5 | 7 d | +915 % | −79,8 % | 11,47 | +49,7 % | 6/11 | −55,5 % | 100 | 0,0 % |
+| 60 | 3 | 7 d | +341 % | −92,1 % | 3,70 | +29,5 % | 6/11 | −58,1 % | 99,5 | 0,5 % |
+| 60 | 5 | 7 d | +68 % | −86,8 % | **0,78** | +9,4 % | 6/11 | −56,4 % | 95 | **5,0 %** |
+| 90 | 3 | 7 d | +509 % | −82,5 % | 6,17 | +37,0 % | 7/11 | −59,1 % | 100 | 0,0 % |
+
+- **Veredicto:** ✅ **hay una regla desplegable, y es mucho más modesta que el titular.** L=30/K=3/semanal: **+820 % en 5,7 años (CAGR +47,2 %), drawdown −82,5 %, Calmar 9,95** contra una cesta con Calmar 4,52 en la misma ventana. La ventaja sigue siendo real (P(azar ≥) = 0,5 %) y la supervivencia es 7 de 11 ventanas.
+- **Tres cosas que este experimento obliga a decir:**
+  1. **La re-optimización semestral aporta +2.300 puntos de los +3.118.** Es legítima (usa solo el pasado), pero no es gratis: exige automatizarla y duplicarla en producción. Si no se automatiza, el número honesto es +820.
+  2. **La sensibilidad a los parámetros es brutal:** con `K=5` y `L=60` la misma idea da **+68 % y Calmar 0,78** (P(azar ≥) = 5 %, ya no significativo). No es una estrategia robusta a los parámetros; es una estrategia que funciona en una región concreta. Eso justifica todavía más el tamaño pequeño.
+  3. **La peor ventana de 6 meses es −61,2 %** con la regla fija. No es un drawdown teórico de un gráfico: es medio año perdiendo dos tercios.
+- **Evidencia:** `data/reporte_momentum_fijo.txt`.
+
+---
+
+## E-15 — Dimensionado: el sleeve máximo que aguanta la puerta es 10 %
+
+- **Fecha:** 2026-10-19
+- **Qué se mide:** traducir el −82,5 % del sleeve a un drawdown **de cartera**, que es lo que la puerta pide. Bootstrap por bloques de 7 días (1.000 caminos) sobre la curva de la configuración fija, con fracción de sleeve **constante** (rebalanceo), caja al 0 %.
+- **N:**
+
+| sleeve | CAGR mediano | DD típico | DD al 5 % peor | P(DD > 20 %) | P(año perdedor) | P(año < −25 %) |
+|---|---|---|---|---|---|---|
+| 5 % | +4,0 % | −6,6 % | **−11,5 %** | 0,0 % | 19,0 % | 0,0 % |
+| **10 %** | **+8,0 %** | **−13,0 %** | **−22,0 %** | **9,0 %** | **19,5 %** | **0,0 %** |
+| 15 % | +12,0 % | −19,1 % | −31,7 % | 42,3 % | 20,6 % | 0,0 % |
+| 20 % | +15,8 % | −24,8 % | −40,3 % | 77,4 % | 21,3 % | 0,8 % |
+| 25 % | +19,5 % | −30,3 % | −48,3 % | 95,2 % | 21,8 % | 2,0 % |
+| 30 % | +23,0 % | −35,6 % | −55,5 % | 99,3 % | 22,4 % | 3,4 % |
+
+- **Veredicto:** ✅ **10 % es el techo razonable.** Con el 10 %: caída típica −13,0 %, **5 % peor −22,0 %**, año perdedor 1 de cada 5, y **ningún camino simulado pierde más del 25 % en un año**. Con el 15 % la probabilidad de superar el −20 % de drawdown salta al 42 %; con el 25 % es del 95 %.
+- **Nota de honestidad sobre el modelo:** el 10 % cumple `P(pérdida) < 25 %` y **falla por poco** el `DD p95 < 20 %` (−22,0 %). Si la puerta se aplica al pie de la letra, el sleeve es **5 %** (p95 −11,5 %), que da +4,0 % de CAGR: demasiado pequeño para compensar el trabajo. **Se elige 10 % declarando que se incumple un criterio por 2 puntos**, no fingiendo que se cumple.
+- **Modelo declarado (y el error que se corrigió):** primero se probó sin rebalanceo —caja fija más sleeve que se deja correr— y salían drawdowns del 31 % con solo el 5 % invertido: **imposible**, y señal de que el modelo estaba mal, no de que el riesgo fuera alto (un sleeve que crece acaba siendo el 80 % de la cartera y entonces su drawdown es el de la cartera). Con fracción constante el resultado es el de la tabla. Es el modelo que corresponde a operar de verdad.
+- **Evidencia:** `data/reporte_dimensionado.txt`, `data/reporte_dimensionado.csv`.

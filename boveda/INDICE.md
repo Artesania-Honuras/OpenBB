@@ -74,6 +74,9 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-21 | El drawdown del momentum en cripto es **de la clase de activo** | `E-13`: 3 mecanismos + universo ×3 y el DD sigue en 80-90 %. Correlación entre altcoins en las caídas, no tamaño de cesta. La pregunta pasa a ser de **tamaño de la exposición**, no de filtro | 2026-10-19 |
 | D-22 | El percentil frente al azar **no es comparable entre universos** | `E-13`: mediana del azar −17,9 % con 24 pares vs +100,7 % con 7. Con más pares el azar empeora porque incluye más basura. La referencia válida es la cesta | 2026-10-19 |
 | D-23 | Un mecanismo que cambia de signo según el universo **no es un mecanismo** | `E-13`: la volatilidad objetivo 60 % gana en las 4 medidas con 24 pares y pierde en las 4 con 7 (`E-11` E). No se adopta, por buena que sea la tabla | 2026-10-19 |
+| D-24 | El número desplegable es la **configuración fija**, no el walk-forward | `E-14`: L=30/K=3/semanal da **+820 %** (CAGR 47 %) y Calmar 9,95; el +3.118 % exige re-optimizar cada 6 meses. Además la idea es frágil: 60/5 da Calmar 0,78 | 2026-10-19 |
+| D-25 | **Sleeve del 10 %**, declarando que incumple el `DD p95 < 20 %` por 2 puntos | `E-15`: 10 % → caída típica −13 %, 5 % peor −22 %, 1 año perdedor de cada 5, ningún camino pierde >25 % en un año. Al 15 % la P(DD>20 %) salta al 42 % | 2026-10-19 |
+| D-26 | La puerta se cumple **a nivel de cartera**, no de estrategia | `E-15`: la estrategia cae 82 % y el 10 % del capital cae 13 %. La puerta mide el riesgo que el dueño del capital **ve**, no el del sleeve aislado | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -137,7 +140,7 @@ Hoy **ninguna** la cumple.
 |---|---|---|
 | P1 | Encontrar un gatillo con ventaja OOS real | 🔴 abierto, redefinido - la ventaja **existe y está medida** (`E-10`, Calmar 35,8 vs cesta 3,83, percentil 100), pero su caída natural es del ~87 % (`D-21`). Lo que falta no es un gatillo nuevo, es **cuánto capital** |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
-| P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 bloqueado por `P15` (tamaño del sleeve): la estrategia tiene ventaja, lo que falta es decidir el tamaño que hace tolerable su caída |
+| P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 desbloqueado - hay regla fija (`E-14`: L=30/K=3/semanal) y tamaño (`E-15`: 10 %). Falta escribir la estrategia y el puente |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
@@ -149,7 +152,8 @@ Hoy **ninguna** la cumple.
 | P12 | ~~Momentum absoluto por activo~~ | ✅ cerrado — `E-12`: **descartado**. Baja el DD pero hunde el Calmar y mata la significación |
 | P13 | ~~Ampliar el universo de 7 a 20-30 pares~~ | ✅ cerrado — `E-13`: **24 pares**. Sube el retorno y el Calmar, **no baja el DD** (`D-21`) |
 | P14 | **Momentum mercado-neutral** (largo en los K mejores, corto en los K peores) | 🟡 abierto, **no desplegable**: es el mecanismo estándar para bajar este DD, pero exige perpetuos y coste de funding; los bots son spot. Medirlo sería para saber, no para operar |
-| P15 | **Tamaño del sleeve** según su caída natural del ~87 % | 🔴 abierto — es la decisión que sí queda: presupuesto de riesgo, no estrategia (`D-21`) |
+| P15 | ~~Tamaño del sleeve~~ | ✅ cerrado — `E-15`/`D-25`: **10 %**, con las cuentas hechas. 5 % si se aplica la puerta al pie de la letra |
+| P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | 🟡 opcional — solo si se quiere el número grande; la regla fija ya es desplegable (`D-24`) |
 
 ---
 

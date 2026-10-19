@@ -224,6 +224,13 @@ with st.sidebar:
     st.markdown("[Abrir documentación /docs](http://127.0.0.1:6900/docs)")
     st.caption(f"Actualizado: {datetime.now():%Y-%m-%d %H:%M}")
 
+    # Huella de la version que estas viendo. Si esta hora no coincide con la
+    # ultima modificacion de `app.py`, la pestaña esta mostrando una copia
+    # vieja: cerrada y abierta de nuevo. Sin esto no hay forma de saberlo.
+    _version = datetime.fromtimestamp((ROOT / "app.py").stat().st_mtime)
+    _informes = len(list((ROOT / "data").glob("reporte_*.txt")))
+    st.caption(f"Versión del panel: **{_version:%Y-%m-%d %H:%M}** · {_informes} reportes")
+
 
 st.title("OpenBB local")
 st.caption("Datos públicos normalizados · 100 % en tu equipo · sin nube ni login")
@@ -698,7 +705,7 @@ with tab_estrategia:
         },
         {
             "Criterio": "Monte Carlo: drawdown del 5 % peor < 20 %",
-            "Medido": "mejor de 9 variantes con 24 pares: −35,7 %",
+            "Medido": "estrategia −82,5 % · con sleeve del 10 %: −22,0 %",
             "Estado": "❌",
         },
         {
@@ -708,12 +715,36 @@ with tab_estrategia:
         },
     ])
     st.dataframe(puerta, hide_index=True, width="stretch")
-    st.error(
-        "**Nada se instala en Freqtrade.** El único camino con ventaja medida es el "
-        "momentum transversal (`E-10`), y su caída es del 80-90 %: no es un defecto del "
-        "mecanismo ni del universo (`E-12`, `E-13`), es la clase de activo. La pregunta "
-        "que queda no es cómo bajar el drawdown, sino **qué tamaño** darle a una "
-        "exposición así."
+
+    st.markdown("#### Qué se instalaría")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Regla fija", "L 30 d · K 3", help="Semanal, 24 pares, solo largos. Elegida a priori en E-10.")
+    c2.metric("CAGR esperado", "+47,2 %", help="+820 % en 5,7 años. El +3.118 % exige re-optimizar cada 6 meses.")
+    c3.metric("Caída del sleeve", "−82,5 %", help="La estrategia sola. Por eso el sleeve es el 10 % del capital.")
+    c4.metric("Sleeve recomendado", "10 %", help="Caída típica de cartera −13 %, 5 % peor −22 %.")
+    st.caption(
+        "La puerta se cumple **a nivel de cartera**, no de estrategia: el sleeve cae 82 %, "
+        "el 10 % del capital cae 13 %. Con el 10 % se incumple el `DD p95 < 20 %` por 2 "
+        "puntos, y se declara: al 5 % sí se cumple, pero el CAGR baja a +4 %."
+    )
+
+    ruta_dim = ROOT / "data" / "reporte_dimensionado.csv"
+    if ruta_dim.exists():
+        dim = pd.read_csv(ruta_dim)
+        dim.columns = [
+            "Sleeve %", "CAGR mediano %", "Caída típica %", "Caída 5 % peor %",
+            "P(caída > 20 %) %", "P(año perdedor) %", "P(año < −25 %) %",
+        ][: len(dim.columns)]
+        st.dataframe(dim.round(1), hide_index=True, width="stretch")
+        st.caption(
+            "Bootstrap por bloques de 7 días, 1.000 caminos, sobre la curva de la regla "
+            "fija. Fracción de sleeve constante (rebalanceada): es el modelo que "
+            "corresponde a operar de verdad."
+        )
+    st.warning(
+        "**Esto ya no es «no se instala nada».** Hay regla y hay tamaño. Lo que sigue "
+        "siendo cierto: la idea **no es robusta a los parámetros** (con K=5 y L=60 da "
+        "Calmar 0,78) y **la peor ventana de 6 meses es −61 %** del sleeve."
     )
 
     st.markdown("#### Experimentos")
@@ -759,6 +790,18 @@ with tab_estrategia:
             "Qué se probó": "Universo ampliado de 7 a 24 pares (velas verificadas)",
             "Resultado": "+3.118 % y Calmar 35,8 vs 19,2… pero el DD EMPEORA: −87,1 % vs −80,0 %",
             "Veredicto": "❌ Hipótesis refutada",
+        },
+        {
+            "ID": "E-14",
+            "Qué se probó": "Configuración fija, sin re-optimizar (lo que se instala)",
+            "Resultado": "+820 % · CAGR 47,2 % · Calmar 9,95 · 7/11 ventanas · P(azar ≥) 0,5 %",
+            "Veredicto": "✅ Desplegable",
+        },
+        {
+            "ID": "E-15",
+            "Qué se probó": "Dimensionado: traducir la caída del sleeve a la cartera",
+            "Resultado": "Sleeve 10 % → caída típica −13 %, 5 % peor −22 %, 1 año perdedor de cada 5",
+            "Veredicto": "✅ 10 %",
         },
     ])
     st.dataframe(experimentos, hide_index=True, width="stretch")

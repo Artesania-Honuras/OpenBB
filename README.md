@@ -292,6 +292,8 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Validar momentum transversal | `... validar_momentum.py --sims 200` |
 | Variantes de riesgo del momentum | `... validar_momentum.py --riesgo --sims 200` |
 | Reproducir una medición previa | `... validar_momentum.py --pares BTC_USDT,ETH_USDT,... --sims 200` |
+| Configuración fija (lo instalable) | `... validar_momentum.py --fijo "30,3,7" --sims 200` |
+| Dimensionar el sleeve | `... scripts\dimensionar.py --sleeves 5,10,15,20` |
 | Momentum absoluto por activo (`E-12`) | `... validar_momentum.py --tendencia 200 --sims 200` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
@@ -575,6 +577,45 @@ capital. Es una decisión de asignación, no de estrategia.
 mercado-neutral (largo en los mejores, corto en los peores) es el mecanismo
 estándar contra este drawdown y no se ha medido; exige perpetuos y coste de
 funding, y los bots de Freqtrade son spot.
+
+### Configuración fija (`E-14`) — el número que se instala es +820 %
+
+El +3.118 % sale de **re-optimizar cada 6 meses**. Para operarlo hay que
+automatizar eso. Una regla fija —mismos parámetros de principio a fin— es lo que
+se puede instalar y auditar. La propuesta, **elegida a priori en `E-10`**, es
+`L=30 d`, `K=3`, semanal:
+
+| L | K | retorno | DD | Calmar | CAGR | Ventanas | P(azar ≥) |
+|---|---|---|---|---|---|---|---|
+| **30** | **3** | **+820 %** | **−82,5 %** | **9,95** | **+47,2 %** | **7/11** | **0,5 %** |
+| 30 | 5 | +915 % | −79,8 % | 11,47 | +49,7 % | 6/11 | 0,0 % |
+| 60 | 3 | +341 % | −92,1 % | 3,70 | +29,5 % | 6/11 | 0,5 % |
+| 60 | 5 | +68 % | −86,8 % | **0,78** | +9,4 % | 6/11 | 5,0 % |
+
+La ventaja sigue siendo real (P(azar ≥) 0,5 %) y la supervivencia 7/11. Pero **la
+sensibilidad a los parámetros es brutal**: la misma idea con `K=5` y `L=60` da
++68 % y Calmar 0,78. Funciona en una región, no en general. Y la peor ventana de
+6 meses es **−61,2 %**.
+
+### Dimensionado (`E-15`) — sleeve del 10 %
+
+| sleeve | CAGR mediano | caída típica | 5 % peor | P(caída > 20 %) | P(año perdedor) |
+|---|---|---|---|---|---|
+| 5 % | +4,0 % | −6,6 % | −11,5 % | 0,0 % | 19,0 % |
+| **10 %** | **+8,0 %** | **−13,0 %** | **−22,0 %** | **9,0 %** | **19,5 %** |
+| 15 % | +12,0 % | −19,1 % | −31,7 % | 42,3 % | 20,6 % |
+| 20 % | +15,8 % | −24,8 % | −40,3 % | 77,4 % | 21,3 % |
+
+**Se elige el 10 %** y se declara que **incumple el `DD p95 < 20 %` por 2 puntos**
+(−22,0 %). Si la puerta se aplica al pie de la letra, el sleeve es el 5 % y el
+CAGR cae a +4 %: demasiado pequeño para compensar el trabajo. Al 15 % la
+probabilidad de superar el −20 % de drawdown salta al 42 %.
+
+Modelo: bootstrap por bloques de 7 días (1.000 caminos), fracción de sleeve
+**constante** (rebalanceada), caja al 0 %. La primera versión se hizo sin
+rebalanceo y daba −31 % con el 5 % invertido — imposible: era el modelo el que
+estaba mal (un sleeve que crece acaba siendo el 80 % de la cartera), no alto el
+riesgo.
 
 ### Pendientes
 
