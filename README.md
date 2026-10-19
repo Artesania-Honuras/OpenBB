@@ -81,6 +81,7 @@ OpenBB\
 │   ├── fuentes_externas.py    Capa rápida: funding de perpetuos (Binance, sin clave)
 │   ├── puente_freqtrade.py    Exportar contexto / fusionar velas
 │   ├── validar_estrategia.py  Walk-forward + Monte Carlo
+│   ├── validar_momentum.py    Momentum transversal contra el azar (permutación)
 │   └── verificar_familias.py  Verificación de las 8 familias
 ├── strategies\
 │   ├── StrategyContextoOpenBB.py
@@ -249,6 +250,9 @@ Usa `--forzar` para ignorar la caché.
 
 # Experimento dirigido: entrada fija 20/50, se optimiza solo la SALIDA
 .\venvs\openbb\Scripts\python.exe scripts\validar_estrategia.py --todos --stake 0.1 --salidas
+
+# Momentum transversal (rotación entre pares) contra elegir pares al azar
+.\venvs\openbb\Scripts\python.exe scripts\validar_momentum.py --sims 200
 ```
 
 Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
@@ -280,6 +284,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Validar 1 par | `... validar_estrategia.py --pair BTC_USDT --stake 0.1` |
 | Validar 7 pares | `... validar_estrategia.py --todos --stake 0.1` |
 | Validar salidas (entrada fija) | `... validar_estrategia.py --todos --stake 0.1 --salidas` |
+| Validar momentum transversal | `... validar_momentum.py --sims 200` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
 | Backtest Freqtrade | ver [sección 6.4](#64-medir-una-estrategia) |
@@ -444,6 +449,30 @@ encontrar y el buscador solo añade sobreajuste. Y sobre todo: la referencia de
 misma exposición equivale a **elegir al azar ese mismo porcentaje de días**, y el
 cruce EMA queda por debajo en 6 de 7 pares. Conclusión: no es el filtro, no es la
 salida — **la base (cruce EMA 20/50) no tiene ventaja frente al azar**.
+
+### Momentum transversal (`E-10`) — la primera señal con ventaja
+
+Se cambia la señal, no los alrededores: en cada rebalanceo se mantienen los *K*
+pares con mejor retorno de los últimos *L* días. La referencia es **elegir los K
+pares al azar** con el mismo calendario y los mismos costes (permutación, 200
+semillas).
+
+| Medición | Resultado |
+|---|---|
+| Walk-forward (parámetros elegidos en entrenamiento) | **+1.112 %** · drawdown **−81,7 %** · percentil **99** de la nube al azar |
+| Probabilidad de que el azar la iguale o supere | **1,0 %** |
+| Robustez: 18 combinaciones fijas | **16/18** baten la mediana del azar · mediana global percentil 93 |
+| Contra no hacer nada: mejor config. simple (L=30, K=3, semanal) | **+1.442,7 %** y DD **−77,4 %** |
+| Cesta a peso igual (comprar los 7 y no tocar) | +1.121,8 % y DD −81,9 % |
+
+**Veredicto: ventaja demostrada, integración descartada por ahora.** Dos avisos
+que van pegados al titular: la mediana del azar en esta cesta es **negativa**
+(elegir pares al azar entre 7 altcoins pierde dinero), así que superarla es más
+fácil que superar al mercado — la comparación que manda es contra la cesta, y ahí
+la ventaja es modesta. Y **todas** las combinaciones tienen drawdowns de −75 % a
+−93 %, porque la cartera está siempre 100 % invertida: no hay control de riesgo.
+Eso es exactamente lo siguiente que hay que construir, y es donde la capa lenta
+por fin tiene papel: no elegir entradas, sino cuánto capital está expuesto.
 
 ### Pendientes
 

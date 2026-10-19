@@ -126,3 +126,26 @@ Los descartados también se registran: evitan repetir el mismo camino.
   3. La comparación de fondo: **la referencia de misma exposición equivale a elegir al azar ese mismo porcentaje de días**, y el cruce EMA queda por debajo en 6 de 7 pares. Solo gana ADA (10,0 vs 6,9), un activo que cayó un 17 % en el periodo: la "ventaja" es defensiva, no de tendencia.
 - **Conclusión acumulada (`E-07` + `E-08` + `E-09`):** no es el filtro macro, no es el filtro de derivados, no es la salida. **El cruce EMA 20/50 no bate al azar con la misma exposición.** Cualquier trabajo futuro sobre esta base está condenado por diseño: hay que cambiar la **señal de entrada**, no sus alrededores.
 - **Coste de búsqueda declarado:** 12 combinaciones × 7 activos × 11 ventanas. El resultado en contra es, por tanto, fiable.
+
+---
+
+## E-10 — Momentum transversal (rotación entre pares): primera ventaja demostrada
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** `E-07`/`E-08`/`E-09` dejaron claro que el problema no eran los alrededores de la señal, sino la señal. Un **cruce de medias por par** es una señal de tendencia absoluta; lo que tiene literatura a favor es el **momentum relativo entre activos** (mantener los K mejores de la cesta).
+- **Método:** en cada rebalanceo se mantienen los *K* pares con mejor retorno de los últimos *L* días, a peso igual, siempre invertido. Rejilla: L ∈ {30, 60, 90} días, K ∈ {1, 2, 3}, rebalanceo ∈ {7, 28} días = 18 combinaciones. Mismo protocolo: 18 meses de entrenamiento / 6 de prueba, comisión 0,1 % por lado sobre el giro real. **Sin filtros macro** (se aísla el criterio de selección).
+- **La referencia honesta:** los K pares **elegidos al azar**, con el mismo K, el mismo calendario y los mismos costes. Es una prueba de permutación con 200 semillas, y es el mismo tipo de referencia que descartó el cruce EMA en `E-09`.
+- **N:** 7 pares (ADA, AVAX, BNB, BTC, ETH, SOL, XRP), 13.296 velas 4h alineadas, 11 ventanas de prueba × 2 generaciones de simulación al azar.
+- **Números:**
+  - Walk-forward (parámetros elegidos en entrenamiento): **+1.112 %** con drawdown **−81,7 %**, 7/11 ventanas positivas.
+    Cae en el **percentil 99** de la nube al azar; P(azar ≥ estrategia) = **1,0 %**.
+  - Robustez (cada combinación fija, sin selección en entrenamiento): **16/18 baten la mediana del azar**, mediana global **percentil 93**, 7/18 en percentil ≥ 95. **No es una casualidad de la rejilla.**
+  - Comparación con no hacer nada (mismo periodo, 100 % invertido): cesta a peso igual **+1.121,8 %** con DD **−81,9 %**; mejor configuración simple (L=30, K=3, semanal) **+1.442,7 %** con DD **−77,4 %** → **gana a la cesta en retorno y en riesgo**.
+  - Pero: **todas las 18 combinaciones tienen drawdown entre −75 % y −93 %.**
+- **Veredicto:** ⚠️ **ventaja demostrada, integración descartada por ahora.** Tres lecturas:
+  1. **Por primera vez hay señal medible.** El ranking de momentum bate a la elección aleatoria en 16 de 18 configuraciones y la línea base por búsqueda cae en el percentil 99. Eso no pasaba con nada anterior.
+  2. **La referencia era baja.** La mediana del azar en esta cesta es **negativa** (−68 % a +52 % según la configuración): elegir pares al azar entre 7 altcoins pierde dinero. Batir a un mal rival es más fácil que batir al mercado. Por eso la comparación que manda es la de la cesta: y ahí la ventaja es modesta (+1.443 % vs +1.122 %).
+  3. **El riesgo es inaceptable.** −77 % de drawdown no se puede operar, y el criterio del proyecto pide < 20 %. La causa es estructural: la estrategia está **siempre 100 % invertida** en 2-3 altcoins. No hay control de riesgo porque no se ha puesto ninguno.
+- **Decidido:** no se integra nada todavía. El siguiente experimento es **control de riesgo** (filtro de régimen y/o volatilidad objetivo), y ahí es donde la capa lenta de OpenBB por fin tiene papel: no para elegir entradas, sino para **decidir cuánto capital está expuesto**.
+- **Coste de búsqueda declarado:** 18 combinaciones × 11 ventanas × 7 pares + 200 permutaciones por ventana. Nota metodológica: seleccionar en entrenamiento por **retorno compuesto bruto** empuja hacia el máximo riesgo (K=1, K=2); la próxima iteración debe seleccionar por **retorno ajustado por riesgo**.
+- **Salidas crudas:** `data/reporte_momentum.txt`, `data/reporte_momentum_robustez.txt`.

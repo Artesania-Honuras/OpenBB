@@ -41,6 +41,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | `Log de sesiones.md` | Bitácora: qué se hizo, qué se rompió, qué se decidió, qué quedó abierto |
 | `Plantillas.md` | Formatos vacíos para que el registro sea consistente |
 | `Plan de mejora.md` | Hoja de ruta de datos y validación: fuentes disponibles (F1-F12), déficits (D1-D5), packs A/B/C y puertas |
+| `Ecosistema de herramientas.md` | Los repositorios del usuario: qué es cada uno, qué papel tiene aquí y veredicto (adoptar / más adelante / no) |
 
 > Manual de uso completo (instalación, arranque, comandos, problemas): `README.md` en la raíz.
 
@@ -62,6 +63,8 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-10 | La capa rápida se trae de fuera de OpenBB | Los endpoints `deribit/*` solo dan ventanas cortas (funding 31 días); el historial se toma del endpoint público de Binance, sin claves y sin dependencias | 2026-10-19 |
 | D-11 | La gestión de salida **no** se toca | `E-09`: stop móvil, break-even y salida por media rápida empeoran o empatan; la búsqueda completa rinde peor que la línea base | 2026-10-19 |
 | D-12 | El cruce EMA 20/50 queda **descartado como base** | `E-07`+`E-08`+`E-09`: no bate al azar con la misma exposición en 6 de 7 pares. Trabajo futuro = cambiar la señal de entrada | 2026-10-19 |
+| D-13 | **Momentum transversal: primera ventaja demostrada**, pero **no integrable** todavía | `E-10`: cae en el percentil 99 de la nube al azar (p=1 %) y 16/18 combinaciones baten su mediana. Pero el drawdown es del **−77 % a −93 %** en todas ellas: sin control de riesgo no se puede operar | 2026-10-19 |
+| D-14 | El control de riesgo es el siguiente trabajo, y es donde encaja la capa lenta | La capa macro no sirve para elegir entradas (`E-07`-`E-09`) pero sí para decidir **cuánto capital está expuesto** al momentum (`D-13`) | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -131,7 +134,9 @@ Hoy **ninguna** la cumple.
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
 | P7 | Revisar los 2 archivos sucios del clon upstream | 🟢 menor |
 | P8 | ~~Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`)~~ | ✅ cerrado — `E-07`: 0/7 → 1/7, veredicto sin cambios |
-| P9 | Panel visual (`app.py`): mantenimiento y nuevas vistas | 🟢 menor |
+| P9 | Panel visual (`app.py`): mantenimiento y nuevas vistas | 🟢 menor — reiniciar el proceso tras cada cambio (`C-21`) |
+| P10 | ~~Lista de repositorios del usuario y su papel~~ | ✅ cerrado — 9 repos registrados en `Ecosistema de herramientas.md`; veredicto por repo |
+| P11 | Control de riesgo sobre el momentum (`D-13`): filtro de régimen y vol objetivo | 🔴 abierto — es el siguiente paso y el único con ventaja medida |
 
 ---
 

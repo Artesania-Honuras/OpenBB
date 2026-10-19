@@ -164,7 +164,8 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 0 | **P8:** revalidar los 7 pares con el contexto corregido (`C-13`) | ✅ **cerrado** (`E-07`): 0/7 → 1/7, el veredicto no cambia |
 | 1 | **F1 funding** ✅ `E-08` | ❌ descartado como filtro: evitar el funding alto resta 8 pts de mediana. Se conserva como termómetro |
 | 1b | **Gestión de salida** (stop móvil, break-even, salida por media) ✅ `E-09` | ❌ descartada: empeora o empata. El problema **no** era la salida |
-| 1c | **Cambiar la señal de entrada** ⬅ *siguiente paso* | La puerta no se mueve: ≥ 2/3 baten al azar con la misma exposición |
+| 1c | **Cambiar la señal de entrada** ✅ `E-10` (momentum transversal) | ✅ **con ventaja**: percentil 99 frente al azar, 16/18 combinaciones lo baten. ❌ **no integrable**: drawdown −77 % a −93 % |
+| 1d | **Control de riesgo** sobre el momentum (filtro de régimen, volatilidad objetivo) ⬅ *siguiente paso* | Bajar el drawdown por debajo del 20 % **sin** perder la ventaja frente a la cesta. La capa lenta entra aquí, no antes |
 | 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |

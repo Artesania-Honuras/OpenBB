@@ -221,3 +221,14 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Reinicio obligatorio:** el proceso de Streamlit que servía el panel arrancó **antes** de estos cambios y no recarga el script por sí solo. Se detuvo y se relanzó con `run-openbb-app.ps1`. Tras un reinicio del proceso, el navegador necesita además un refresco forzado (`Ctrl+F5`).
 - **Evidencia:** `streamlit.testing.v1.AppTest` → 0 excepciones, 8 pestañas, 17 métricas (aparece `Funding BTC = +6,7 % anual`), 0 `st.error`.
 - **Reversión:** borrar el bloque "capa rápida" de Resumen y la fila de la Guía.
+
+---
+
+## C-22 — Validador de momentum transversal contra el azar
+
+- **Fecha:** 2026-10-19
+- **Qué:** nuevo `scripts/validar_momentum.py`: matriz de cierres alineada de los 7 pares, cartera que mantiene los *K* mejores por retorno de *L* días con rebalanceo periódico, rejilla de 18 combinaciones con selección en entrenamiento, y una **prueba de permutación** de 200 semillas que elige los pares al azar con el mismo K y el mismo calendario. Incluye `max_dd()` y comparación con la cesta a peso igual.
+- **Por qué:** la puerta del proyecto necesita una referencia honesta, y en una cartera "elegir al azar los mismos K activos" es la referencia exacta: misma exposición y misma diversificación por construcción, así que cualquier diferencia es atribuible al criterio de selección.
+- **Rigor:** el ranking usa el cierre de la vela *i*, pero los pesos entran desde la vela *i+1*; el coste se aplica sobre el giro real (`FEE × Σ|Δw|`). Sin filtros macro, a propósito, para aislar la selección.
+- **Evidencia:** `data/reporte_momentum.txt` (walk-forward + nube al azar), `data/reporte_momentum_robustez.txt` (18 combinaciones fijas × 200 permutaciones). Resultado en `E-10`.
+- **Reversión:** borrar el script y los dos reportes.

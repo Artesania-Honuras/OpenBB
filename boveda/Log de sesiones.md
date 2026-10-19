@@ -303,3 +303,31 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 sigue bloqueado, ahora con un motivo mejor fundado: la base no tiene ventaja, no es cuestión de ajustes.
 - P9 (lista de repositorios del usuario) sigue sin respuesta.
+
+---
+
+## S-13 — 2026-10-19 — Ecosistema del usuario y momentum transversal
+
+**Hecho**
+
+- El usuario entregó la lista de repositorios (9 en total: TradingAgents, Freqtrade, VectorBT, Backtrader, Hummingbot, CCXT, FinRL, NautilusTrader, Polymarket). Registrados en `boveda\Ecosistema de herramientas.md` con veredicto por repo y **para qué sirve aquí**, no en general. `P10` cerrado.
+- Recomendación concreta del ecosistema: **VectorBT** es lo que mueve la aguja (barrer miles de hipótesis con métricas de riesgo); **CCXT** es la vía si el momentum se lleva a 20-30 pares. Se descartan Backtrader, NautilusTrader, Hummingbot y FinRL, cada uno con su motivo escrito.
+- Implementado `scripts/validar_momentum.py` con prueba de permutación (`C-22`): momentum transversal contra elegir K pares al azar.
+
+**Resultado (primera señal positiva del proyecto)**
+
+- Walk-forward: **+1.112 %**, drawdown **−81,7 %**, percentil **99** de la nube al azar, P(azar ≥ estrategia) = 1,0 %.
+- Robustez: **16/18** combinaciones baten la mediana del azar, mediana global percentil 93 → no es una casualidad de la rejilla.
+- Contra no hacer nada: mejor configuración simple (L=30, K=3, semanal) **+1.442,7 % con DD −77,4 %** frente a la cesta a peso igual **+1.121,8 % con DD −81,9 %**. Gana en las dos cosas, pero por poco.
+- **Todas** las combinaciones tienen drawdown entre −75 % y −93 %.
+
+**Decidido**
+
+- **Sí** hay ventaja medible por primera vez (`D-13`), y **no** se integra nada: el riesgo es inaceptable y el criterio del proyecto pide drawdown < 20 %.
+- La causa es estructural: la cartera está siempre 100 % invertida en 2-3 altcoins porque no se ha puesto ningún control de riesgo.
+- `D-14`: el siguiente trabajo es control de riesgo, y es donde la capa lenta de OpenBB pasa a tener papel real (decidir cuánto capital está expuesto, no cuándo entrar).
+
+**Abierto**
+
+- `P11`: filtro de régimen y/o volatilidad objetivo sobre el momentum. Es el único camino que hoy tiene evidencia a favor.
+- Nota metodológica anotada para la próxima iteración: seleccionar en entrenamiento por retorno **ajustado por riesgo**, no por retorno bruto.
