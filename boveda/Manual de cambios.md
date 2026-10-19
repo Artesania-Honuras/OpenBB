@@ -199,3 +199,25 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Evidencia:** corrida por defecto 54 → 108 combinaciones; A/B dirigido en `data/reporte_funding_ab.txt`; resultado en `E-08`.
 - **Impacto declarado:** ampliar la búsqueda aumenta el riesgo de sobreajuste. Queda anotado en `E-08`.
 - **Reversión:** quitar ambas claves y el bloque de filtro en `simular()`.
+
+---
+
+## C-20 — Motor de salidas configurable y modo `--salidas`
+
+- **Fecha:** 2026-10-19
+- **Qué:** `scripts/validar_estrategia.py` gana tres parámetros de salida —stop móvil (`trailing_pct`), break-even (`break_even`) y salida al perder la media rápida (`salida_ema`)—, un `GRID_SALIDAS` con 12 combinaciones, una `BASE_ENTRADA` fija (EMA 20/50, sin filtros) y la bandera `--salidas`. `walk_forward` y `evaluar_par` aceptan ahora `grid` y `base` para poder evaluar un subconjunto sin duplicar código.
+- **Por qué:** el resultado de `E-08` dejaba dos sospechosos (el filtro y el *timing*). Para descartar el segundo hacía falta poder mover la salida **sin** tocar la entrada; si se movían las dos cosas a la vez, el resultado no sería atribuible.
+- **Rigor del motor:** el stop dinámico se calcula **solo** con velas ya cerradas (el máximo de la vela en curso se incorpora al final del bucle). Si se usara la vela en curso para fijar el stop que esa misma vela dispara, habría look-ahead intravela.
+- **Evidencia:** el modo por defecto sigue reproduciendo `E-08` exacto (0/7, mismos siete números) → el refactor no cambió el comportamiento. Resultado del experimento en `E-09`.
+- **Reversión:** quitar las claves `trailing_pct` / `break_even` / `salida_ema`, `GRID_SALIDAS`, `BASE_ENTRADA` y la bandera.
+
+---
+
+## C-21 — El panel muestra la capa rápida en la primera pestaña
+
+- **Fecha:** 2026-10-19
+- **Qué:** `app.py` añade en **Resumen** una sección "Capa rápida: apalancamiento en cripto" con la métrica de funding, su percentil p15/p85 de un año, una lectura en una palabra (euforia / normal / pánico) y la serie de 180 días. La Guía gana la fila de funding y el aviso recoge el resultado de `E-08`.
+- **Por qué:** el dato estaba solo en la pestaña "Contexto Freqtrade", que es la cuarta por la derecha; quien abría el panel no veía nada nuevo. Lo importante para el usuario es que se vea en la primera pantalla, y con la advertencia de que **no** es señal pegada al lado.
+- **Reinicio obligatorio:** el proceso de Streamlit que servía el panel arrancó **antes** de estos cambios y no recarga el script por sí solo. Se detuvo y se relanzó con `run-openbb-app.ps1`. Tras un reinicio del proceso, el navegador necesita además un refresco forzado (`Ctrl+F5`).
+- **Evidencia:** `streamlit.testing.v1.AppTest` → 0 excepciones, 8 pestañas, 17 métricas (aparece `Funding BTC = +6,7 % anual`), 0 `st.error`.
+- **Reversión:** borrar el bloque "capa rápida" de Resumen y la fila de la Guía.

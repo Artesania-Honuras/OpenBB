@@ -162,10 +162,13 @@ exit()
 
 - Abre en **http://127.0.0.1:8501** (y en el navegador automáticamente).
 - Requiere la API arriba (paso 4.1).
-- 7 pestañas: Resumen, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, API.
+- 8 pestañas: Resumen, Guía, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, API.
 - 100 % local: no usa nube ni login.
 - Cambiar puerto: `.\run-openbb-app.ps1 -Port 8502`
 - Detener: `Ctrl+C` en su ventana.
+- **Si cambias `app.py`, reinicia el panel.** Streamlit no recarga el script por sí solo:
+  cierra su ventana, relanza `.\run-openbb-app.ps1` y refresca el navegador con `Ctrl+F5`.
+  Un cambio que no se ve no cuenta como cambio hecho.
 
 ### 4.4 Swagger (navegador)
 
@@ -243,6 +246,9 @@ Usa `--forzar` para ignorar la caché.
 
 # Los 7 pares
 .\venvs\openbb\Scripts\python.exe scripts\validar_estrategia.py --todos --stake 0.1
+
+# Experimento dirigido: entrada fija 20/50, se optimiza solo la SALIDA
+.\venvs\openbb\Scripts\python.exe scripts\validar_estrategia.py --todos --stake 0.1 --salidas
 ```
 
 Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
@@ -273,6 +279,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Estado vivo | `.\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --estado` |
 | Validar 1 par | `... validar_estrategia.py --pair BTC_USDT --stake 0.1` |
 | Validar 7 pares | `... validar_estrategia.py --todos --stake 0.1` |
+| Validar salidas (entrada fija) | `... validar_estrategia.py --todos --stake 0.1 --salidas` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
 | Backtest Freqtrade | ver [sección 6.4](#64-medir-una-estrategia) |
@@ -292,6 +299,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Primera consulta tarda 30-60 s | Proveedor externo lento | Normal; las siguientes usan caché |
 | Contexto desactualizado | No se reexportó | `puente_freqtrade.py --exportar` |
 | Panel 8501 no abre | La API está caída | Arrancar `.\run-openbb-api.ps1` y refrescar |
+| Cambié `app.py` y no veo nada nuevo | Streamlit sirve el script que cargó al arrancar | Reiniciar el panel y `Ctrl+F5` en el navegador |
 | `git push` rechazado | Remoto adelantado | `git pull --rebase` y reintentar |
 | `estado.py` marca ❌ Repo | Cambios sin commit | `git add -A && git commit && git push` |
 
@@ -413,6 +421,29 @@ Primera feature de la capa rápida. Misma herramienta y ventana, tres variantes:
 resta 8 puntos de mediana), pero ninguna variante alcanza ≥ 2/3. El cuello de
 botella real está en la exposición del 30-45%, que no captura el retorno de
 comprar y mantener.
+
+### Gestión de salida con la entrada fija (`E-09`)
+
+Si el problema fuera el *timing de salida*, mover la salida debería notarse. Se
+fija la entrada (EMA 20/50, sin filtros macro ni de funding) y se optimiza solo
+la salida:
+
+| Variante | OOS mediano | Exposición | Baten | Δ vs salida actual |
+|---|---|---|---|---|
+| A) Salida actual (−8 % / +15 % / cruce) | +10,0% | 46,7% | 1/7 | — |
+| B) Stop móvil 10% | +6,5% | 46,2% | 0/7 | −4,6 pts |
+| C) Stop móvil 20% | +10,0% | 46,7% | 1/7 | +0,0 pts |
+| D) Break-even tras +6% | +6,8% | 46,1% | 0/7 | −4,3 pts |
+| E) Salir al perder la media rápida | −3,9% | 39,0% | 0/7 | −13,5 pts |
+| F) Búsqueda completa (12 combinaciones) | +4,6% | 45,2% | 0/7 | −6,7 pts |
+
+**Veredicto: no pasa la puerta, y aquí el hallazgo es más duro.** El stop móvil
+al 20 % nunca llega a activarse (idéntico a la línea base). La búsqueda completa
+rinde *peor* que la línea base, que es lo que pasa cuando no hay señal que
+encontrar y el buscador solo añade sobreajuste. Y sobre todo: la referencia de
+misma exposición equivale a **elegir al azar ese mismo porcentaje de días**, y el
+cruce EMA queda por debajo en 6 de 7 pares. Conclusión: no es el filtro, no es la
+salida — **la base (cruce EMA 20/50) no tiene ventaja frente al azar**.
 
 ### Pendientes
 

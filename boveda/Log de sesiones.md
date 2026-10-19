@@ -276,3 +276,30 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 sigue siendo el bloqueo principal.
 - Siguiente paso natural del pack A: **F4 volatilidad cripto**, y si también carece de historial, replantear el pack hacia features de la propia vela (velocidad, rango, volumen) en vez de fuentes externas.
+
+---
+
+## S-12 — 2026-10-19 — Gestión de salida (y el panel, que no se veía)
+
+**Hecho**
+
+- El usuario avisa de que no ve nada implementado en la web. Diagnóstico: el proceso de Streamlit llevaba 74 minutos arrancado y **no recarga el script** al modificarlo. Se reinició (`run-openbb-app.ps1`), health `ok`, PID nuevo.
+- Para que el dato no quede escondido: sección "Capa rápida" en la **primera** pestaña (métrica, percentiles, lectura y gráfico), fila nueva en la Guía y aviso actualizado.
+- Motor de salidas implementado en el validador (`C-20`): stop móvil, break-even, salida por media rápida, modo `--salidas` con entrada fija.
+- Verificación de regresión: el modo por defecto reproduce `E-08` exacto → el refactor no cambió nada.
+- Experimento medido en 6 variantes × 7 activos × 11 ventanas (`E-09`), salida cruda en `data/reporte_salidas_ab.txt`.
+
+**Resultado**
+
+- **Mover la salida no ayuda.** Stop móvil al 10 %: −4,6 pts. Break-even: −4,3. Salir al perder la media rápida: −13,5. Stop móvil al 20 %: idéntico a la línea base (nunca se activa). Búsqueda completa: −6,7.
+- La comparación de fondo se aclara: la referencia de misma exposición equivale a **elegir al azar** ese porcentaje de días, y el cruce EMA pierde en 6 de 7 pares.
+
+**Decidido**
+
+- La base (cruce EMA 20/50) queda **descartada con evidencia acumulada**: ni el filtro macro, ni el de derivados, ni la salida. El trabajo futuro no puede seguir alrededor de esa señal; hay que cambiar la señal de entrada.
+- El panel se considera parte del entregable: si un cambio no se ve, el cambio no cuenta.
+
+**Abierto**
+
+- P1 sigue bloqueado, ahora con un motivo mejor fundado: la base no tiene ventaja, no es cuestión de ajustes.
+- P9 (lista de repositorios del usuario) sigue sin respuesta.

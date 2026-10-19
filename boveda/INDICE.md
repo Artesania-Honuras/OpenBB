@@ -60,6 +60,8 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-08 | **No integrar** la estrategia al bot | Walk-forward revalidado con el contexto corregido (`E-07`): 7/7 OOS positivos, **1/7** baten la referencia ajustada por exposición (y por 0,3 puntos) | 2026-10-19 |
 | D-09 | El funding de perpetuos **no** se usa como filtro | `E-08`: evitar el funding alto resta 8 puntos de mediana; exigir funding positivo sube 2,1 pero sigue en 1/7. Se conserva como dato de estado | 2026-10-19 |
 | D-10 | La capa rápida se trae de fuera de OpenBB | Los endpoints `deribit/*` solo dan ventanas cortas (funding 31 días); el historial se toma del endpoint público de Binance, sin claves y sin dependencias | 2026-10-19 |
+| D-11 | La gestión de salida **no** se toca | `E-09`: stop móvil, break-even y salida por media rápida empeoran o empatan; la búsqueda completa rinde peor que la línea base | 2026-10-19 |
+| D-12 | El cruce EMA 20/50 queda **descartado como base** | `E-07`+`E-08`+`E-09`: no bate al azar con la misma exposición en 6 de 7 pares. Trabajo futuro = cambiar la señal de entrada | 2026-10-19 |
 
 ### Capacidades verificadas
 

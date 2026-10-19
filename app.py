@@ -322,6 +322,52 @@ with tab_resumen:
                 "Sirve para decidir cuánto riesgo asumir, no cuándo entrar."
             )
 
+        # --- capa rapida: termometro de apalancamiento (fuente externa) --------
+        st.divider()
+        st.subheader("Capa rápida: apalancamiento en cripto")
+        try:
+            ruta_ctx = ROOT / "data" / "context" / "contexto_diario.parquet"
+            ctx_f = pd.read_parquet(ruta_ctx) if ruta_ctx.exists() else pd.DataFrame()
+            if "funding_btc_anual" in ctx_f.columns:
+                s_fnd = pd.to_numeric(ctx_f["funding_btc_anual"], errors="coerce").dropna()
+                s_fnd.index = pd.to_datetime(s_fnd.index)
+                fnd = float(s_fnd.iloc[-1])
+                ventana = s_fnd.tail(365)
+                p85 = float(ventana.quantile(0.85))
+                p15 = float(ventana.quantile(0.15))
+                if fnd > p85:
+                    etiqueta_f, ayuda_f = "euforia", "Los largos pagan caro por apalancarse."
+                elif fnd < p15:
+                    etiqueta_f, ayuda_f = "pánico", "Los largos cobran por estar largos."
+                else:
+                    etiqueta_f, ayuda_f = "normal", "Apalancamiento en su rango habitual."
+
+                cm, cc = st.columns([1, 2])
+                with cm:
+                    st.metric(
+                        "Funding BTC",
+                        f"{fnd:+.1f}% anual",
+                        help="Lo que cuesta estar largo en el perpetuo de BTC, en % anual. "
+                             "Positivo = los largos pagan a los cortos. Es el termómetro "
+                             "del apalancamiento, no una señal.",
+                    )
+                    st.caption(f"{etiqueta_f.capitalize()} · {ayuda_f}")
+                with cc:
+                    st.line_chart(s_fnd.tail(180), y_label="% anual", height=180)
+
+                st.caption(
+                    f"Percentiles de 1 año: p15 {p15:+.1f}% · p85 {p85:+.1f}%. "
+                    "**Ojo:** medido en `E-08`, este dato **no** sirve como filtro de "
+                    "entrada (0/7 y 1/7 baten la referencia). Infórmate, no operes con él."
+                )
+            else:
+                st.info(
+                    "El contexto no tiene la columna de funding. Regenéralo con:\n\n"
+                    "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\puente_freqtrade.py --exportar\n```"
+                )
+        except Exception as e:  # noqa: BLE001
+            st.error(f"No se pudo leer la capa rápida: {e}")
+
         a, b = st.columns(2)
         with a:
             st.subheader("Tipos de la Fed")

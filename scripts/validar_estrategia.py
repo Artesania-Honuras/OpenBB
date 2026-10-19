@@ -61,6 +61,28 @@ GRID = {
     "funding_min": [None],
 }
 
+# --- Experimento dirigido: gestion de salida con la entrada FIJA -----------
+# La puerta pide batir la referencia de misma exposicion. Si el cuello de
+# botella es el timing, hay que mover la SALIDA y dejar la entrada quieta;
+# asi el resultado no se puede atribuir a haber tocado las medias.
+BASE_ENTRADA = {
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "vix_max": None,
+    "usar_slope": False,
+    "funding_max": None,
+    "funding_min": None,
+}
+
+GRID_SALIDAS = {
+    # Distancia del stop movil por debajo del maximo alcanzado (None = sin stop movil)
+    "trailing_pct": [None, 0.10, 0.20],
+    # Subir el stop al precio de entrada en cuanto la operacion gana esto (None = nunca)
+    "break_even": [None, 0.06],
+    # Salir cuando el cierre pierde la media rapida, sin esperar el cruce
+    "salida_ema": [False, True],
+}
+
 
 # --------------------------------------------------------------------------
 # Datos
@@ -101,9 +123,10 @@ def simular(df: pd.DataFrame, params: dict) -> tuple[np.ndarray, float]:
 
     entrada = (d["ema_fast"] > d["ema_slow"]).to_numpy()
     salida = (d["ema_fast"] < d["ema_slow"]).to_numpy()
-    if params["usar_slope"]:
+    if params.get("usar_slope"):
         entrada = entrada & (d["slope_10y_2y"].to_numpy() > 0)
-    entrada = entrada & (d["vix"].to_numpy() < params["vix_max"])
+    if params.get("vix_max") is not None:
+        entrada = entrada & (d["vix"].to_numpy() < params["vix_max"])
 
     # Filtro de la capa rapida (solo si la columna existe y hay dato)
     if "funding_btc_anual" in d.columns:
@@ -117,9 +140,17 @@ def simular(df: pd.DataFrame, params: dict) -> tuple[np.ndarray, float]:
     low = d["low"].to_numpy()
     high = d["high"].to_numpy()
 
+    # --- gestion de salida (experimento dirigido; por defecto todo None/False) --
+    trailing = params.get("trailing_pct")
+    break_even = params.get("break_even")
+    salida_ema = bool(params.get("salida_ema"))
+    salida_rapida = (d["close"] < d["ema_fast"]).to_numpy() if salida_ema else None
+
     retornos = []
     en_posicion = False
     precio_entrada = 0.0
+    pico = 0.0
+    be_activo = False
     barras_dentro = 0
 
     for i in range(len(d)):
@@ -127,21 +158,40 @@ def simular(df: pd.DataFrame, params: dict) -> tuple[np.ndarray, float]:
             if entrada[i]:
                 en_posicion = True
                 precio_entrada = close[i] * (1 + FEE)
+                pico = close[i]
+                be_activo = False
             continue
 
         barras_dentro += 1
+
+        # El stop se calcula SOLO con informacion ya conocida (velas anteriores):
+        # el maximo de la vela en curso se incorpora al final del bucle, para no
+        # usar el mismo dato que dispara la salida.
         stop = precio_entrada * (1 + STOPLOSS)
+        if be_activo:
+            stop = max(stop, precio_entrada)
+        if trailing is not None:
+            stop = max(stop, pico * (1 - trailing))
         objetivo = precio_entrada * (1 + TAKE_PROFIT)
 
         if low[i] <= stop:  # conservador: el stop se asume primero
             retornos.append(stop / precio_entrada - 1 - FEE)
             en_posicion = False
-        elif high[i] >= objetivo:
+            continue
+        if high[i] >= objetivo:
             retornos.append(objetivo / precio_entrada - 1 - FEE)
             en_posicion = False
-        elif salida[i]:
+            continue
+        if salida[i] or (salida_ema and salida_rapida[i]):
             retornos.append(close[i] * (1 - FEE) / precio_entrada - 1)
             en_posicion = False
+            continue
+
+        # Vela cerrada: ahora si se actualizan maximo y break-even
+        if high[i] > pico:
+            pico = high[i]
+        if break_even is not None and not be_activo and high[i] >= precio_entrada * (1 + break_even):
+            be_activo = True
 
     exposicion = barras_dentro / len(d) if len(d) else 0.0
     return np.array(retornos, dtype=float), exposicion
@@ -157,11 +207,14 @@ def retorno_compuesto(retornos: np.ndarray, stake: float = 1.0) -> float:
 # Walk-forward
 # --------------------------------------------------------------------------
 def walk_forward(
-    df: pd.DataFrame, inicio: str, fin: str, stake: float = 1.0
+    df: pd.DataFrame, inicio: str, fin: str, stake: float = 1.0,
+    grid: dict | None = None, base: dict | None = None,
 ) -> tuple[pd.DataFrame, np.ndarray]:
+    grid = grid if grid is not None else GRID
+    base = base or {}
     combos = [
-        dict(zip(GRID.keys(), valores))
-        for valores in itertools.product(*GRID.values())
+        dict(base, **dict(zip(grid.keys(), valores)))
+        for valores in itertools.product(*grid.values())
     ]
 
     fechas = pd.date_range(
@@ -189,18 +242,23 @@ def walk_forward(
         ret_test, exp_test = simular(test, mejor)
         oos_trades.append(ret_test)
 
-        filas.append({
+        fila = {
             "periodo": f"{test_ini.date()} -> {test_fin.date()}",
             "ema": f"{mejor['ema_fast']}/{mejor['ema_slow']}",
             "vix_max": mejor["vix_max"],
             "slope": "si" if mejor["usar_slope"] else "no",
             "fund": "si" if (mejor.get("funding_max") is not None
                             or mejor.get("funding_min") is not None) else "no",
-            "train_%": round(mejor_ret * 100, 1),
-            "test_%": round(retorno_compuesto(ret_test, stake) * 100, 1),
-            "exp_%": round(exp_test * 100, 1),
-            "trades": len(ret_test),
-        })
+        }
+        if "trailing_pct" in mejor:  # modo gestion de salida
+            fila["trail"] = "no" if mejor["trailing_pct"] is None else f"{mejor['trailing_pct']*100:.0f}%"
+            fila["be"] = "no" if mejor["break_even"] is None else f"{mejor['break_even']*100:.0f}%"
+            fila["sal_ema"] = "si" if mejor["salida_ema"] else "no"
+        fila["train_%"] = round(mejor_ret * 100, 1)
+        fila["test_%"] = round(retorno_compuesto(ret_test, stake) * 100, 1)
+        fila["exp_%"] = round(exp_test * 100, 1)
+        fila["trades"] = len(ret_test)
+        filas.append(fila)
 
     if not filas:
         return pd.DataFrame(), np.array([])
@@ -241,7 +299,8 @@ def monte_carlo(retornos: np.ndarray, sims: int = 5000, stake: float = 1.0) -> d
 
 # --------------------------------------------------------------------------
 def evaluar_par(pair: str, inicio: str, fin: str, sims: int, stake: float,
-                verbose: bool = True) -> dict:
+                verbose: bool = True, grid: dict | None = None,
+                base: dict | None = None, etiqueta: str = "") -> dict:
     """Corre la validacion completa de un par y devuelve el resumen."""
     df = cargar_par(pair)
 
@@ -249,10 +308,12 @@ def evaluar_par(pair: str, inicio: str, fin: str, sims: int, stake: float,
         print("=" * 92)
         print(f"VALIDACION  |  {pair} 4h  |  {inicio} -> {fin}")
         print(f"sizing: {stake * 100:.0f}% del capital por operacion")
+        if etiqueta:
+            print(f"modo: {etiqueta}")
         print("=" * 92)
         print(f"velas: {len(df):,}  |  {df['date'].min().date()} -> {df['date'].max().date()}")
 
-    wf, oos = walk_forward(df, inicio, fin, stake)
+    wf, oos = walk_forward(df, inicio, fin, stake, grid=grid, base=base)
     if not len(oos):
         return {"pair": pair, "oos_%": 0.0, "exp_%": 0.0, "ventanas": "0/0",
                 "acierto_%": 0.0, "p50_%": 0.0, "p_perder_%": 100.0,
@@ -320,21 +381,32 @@ def main() -> None:
         "--stake", type=float, default=1.0,
         help="fraccion del capital por operacion (0.1 = sizing del bot)",
     )
+    parser.add_argument(
+        "--salidas", action="store_true",
+        help="experimento dirigido: entrada FIJA (EMA 20/50, sin filtros) y se "
+             "optimiza solo la gestion de salida (stop movil, break-even, salida por medias)",
+    )
     args = parser.parse_args()
 
     pares = [args.pair]
     if args.todos:
         pares = sorted(p.name.replace("-4h.feather", "") for p in VELAS.glob("*-4h.feather"))
 
+    grid = GRID_SALIDAS if args.salidas else GRID
+    base = BASE_ENTRADA if args.salidas else None
+    etiqueta = "entrada fija 20/50 · se optimiza la SALIDA" if args.salidas else ""
+
     filas = [evaluar_par(p, args.inicio, args.fin, args.sims, args.stake,
-                         verbose=not args.todos) for p in pares]
+                         verbose=not args.todos, grid=grid, base=base,
+                         etiqueta=etiqueta) for p in pares]
 
     if not args.todos:
         return
 
     tabla = pd.DataFrame(filas)
     print("=" * 100)
-    print(f"RESUMEN MULTI-ACTIVO  |  {args.inicio} -> {args.fin}  |  sizing {args.stake*100:.0f}%")
+    print(f"RESUMEN MULTI-ACTIVO  |  {args.inicio} -> {args.fin}  |  sizing {args.stake*100:.0f}%"
+          + (f"  |  {etiqueta}" if etiqueta else ""))
     print("=" * 100)
     print(tabla.round(1).to_string(index=False))
 
@@ -348,7 +420,10 @@ def main() -> None:
         print("  Ventaja consistente entre activos. Candidata a dry-run.")
     else:
         print("  SIN ventaja consistente entre activos.")
-        print("  El cruce EMA 20/50 no es una base sobre la que integrar el bot.")
+        if args.salidas:
+            print("  Mover la salida con la entrada fija no basta: el problema no es solo el timing de salida.")
+        else:
+            print("  El cruce EMA 20/50 no es una base sobre la que integrar el bot.")
 
 
 def mc_mediana(tabla: pd.DataFrame) -> float:

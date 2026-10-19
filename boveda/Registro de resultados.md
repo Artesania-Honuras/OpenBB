@@ -104,3 +104,25 @@ Los descartados también se registran: evitan repetir el mismo camino.
   2. **Ni así alcanza.** Sigue 1/7 contra la referencia de misma exposición, y el criterio exige ≥ 2/3. El problema de fondo no es el filtro: es que la exposición del 30-45 % no captura el retorno de comprar y mantener.
 - **Se conserva:** la columna `funding_btc_anual` queda en el contexto (es informativa para el estado en vivo), pero **no** se usa como filtro de entrada.
 - **Coste de búsqueda declarado:** probar tres variantes más el aumento de 54 a 108 combinaciones eleva el riesgo de sobreajuste. El resultado en contra es, por tanto, más fiable que si hubiera salido a favor.
+
+---
+
+## E-09 — Gestión de salida con la entrada fija (cruce EMA 20/50)
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** si el cuello de botella medido en `E-08` era el *timing*, mover la salida con la entrada quieta debería notarse en el retorno fuera de muestra.
+- **Método:** entrada **fija** en el cruce EMA 20/50, sin filtros macro ni de funding (`BASE_ENTRADA`). Se optimiza **solo** la salida con `--salidas`: stop móvil (10 % / 20 %), break-even tras +6 %, salida al perder la media rápida. Misma ventana 2021-01-01 → 2026-10-01, 18 meses entrenamiento / 6 de prueba, sizing 10 %, 5.000 simulaciones.
+- **N:** 7 activos, 11 ventanas, 12 combinaciones de salida. Salida cruda en `data/reporte_salidas_ab.txt`.
+- **Números (OOS mediano · exposición · baten la referencia · Δ frente a la salida actual):**
+  - A) Salida actual (−8 % / +15 % / cruce): **+10,0 %** · 46,7 % · **1/7** · —
+  - B) Stop móvil 10 %: **+6,5 %** · 46,2 % · **0/7** · **−4,6 pts**
+  - C) Stop móvil 20 %: **+10,0 %** · 46,7 % · **1/7** · **+0,0 pts**
+  - D) Break-even tras +6 %: **+6,8 %** · 46,1 % · **0/7** · **−4,3 pts**
+  - E) Salir al perder la media rápida: **−3,9 %** · 39,0 % · **0/7** · **−13,5 pts**
+  - F) Búsqueda completa (12 combinaciones): **+4,6 %** · 45,2 % · **0/7** · **−6,7 pts**
+- **Veredicto:** ❌ **no pasa la puerta.** Tres lecturas:
+  1. El stop móvil al 20 % da **exactamente** los mismos números que la línea base: nunca llega a activarse, porque el take profit del +15 % entra antes. No es que no ayude: es que en la práctica no existe.
+  2. **La búsqueda completa rinde peor que la línea base** (−6,7 pts). Cuando el buscador solo puede empeorar, no hay señal que encontrar y lo único que queda es sobreajuste.
+  3. La comparación de fondo: **la referencia de misma exposición equivale a elegir al azar ese mismo porcentaje de días**, y el cruce EMA queda por debajo en 6 de 7 pares. Solo gana ADA (10,0 vs 6,9), un activo que cayó un 17 % en el periodo: la "ventaja" es defensiva, no de tendencia.
+- **Conclusión acumulada (`E-07` + `E-08` + `E-09`):** no es el filtro macro, no es el filtro de derivados, no es la salida. **El cruce EMA 20/50 no bate al azar con la misma exposición.** Cualquier trabajo futuro sobre esta base está condenado por diseño: hay que cambiar la **señal de entrada**, no sus alrededores.
+- **Coste de búsqueda declarado:** 12 combinaciones × 7 activos × 11 ventanas. El resultado en contra es, por tanto, fiable.

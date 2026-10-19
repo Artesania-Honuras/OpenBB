@@ -162,10 +162,20 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | Paso | Qué | Puerta para pasar al siguiente |
 |---|---|---|
 | 0 | **P8:** revalidar los 7 pares con el contexto corregido (`C-13`) | ✅ **cerrado** (`E-07`): 0/7 → 1/7, el veredicto no cambia |
-| 1 | **F1 funding** ✅ `E-08` · **F4 volatilidad cripto** ⚠️ revisar historial | Cada feature: si no bate la referencia, se descarta y queda registrado |
+| 1 | **F1 funding** ✅ `E-08` | ❌ descartado como filtro: evitar el funding alto resta 8 pts de mediana. Se conserva como termómetro |
+| 1b | **Gestión de salida** (stop móvil, break-even, salida por media) ✅ `E-09` | ❌ descartada: empeora o empata. El problema **no** era la salida |
+| 1c | **Cambiar la señal de entrada** ⬅ *siguiente paso* | La puerta no se mueve: ≥ 2/3 baten al azar con la misma exposición |
 | 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |
+
+> **Corrección importante del plan (2026-10-19).** El paso 1 se diseñó como "añadir features
+> al contexto y medir". Las dos features medidas (`F1` funding, y la salida como control)
+> dieron negativo, y el control negativo es el que enseña: si mover la salida tampoco
+> cambia nada, es que **el problema no está en los alrededores de la señal, sino en la
+> señal**. Añadir `F4` volatilidad cripto solo repetiría el patrón (y además no tiene
+> historial suficiente por OpenBB: 17 días). El pack A queda **cerrado como vía** y el
+> paso 1c pasa a ser el trabajo real.
 
 ---
 
