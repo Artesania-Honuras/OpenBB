@@ -698,7 +698,7 @@ with tab_estrategia:
         },
         {
             "Criterio": "Monte Carlo: drawdown del 5 % peor < 20 %",
-            "Medido": "carteras al 100 %: −77 % a −93 %",
+            "Medido": "mejor de 9 variantes con 24 pares: −35,7 %",
             "Estado": "❌",
         },
         {
@@ -710,8 +710,10 @@ with tab_estrategia:
     st.dataframe(puerta, hide_index=True, width="stretch")
     st.error(
         "**Nada se instala en Freqtrade.** El único camino con ventaja medida es el "
-        "momentum transversal (`E-10`/`E-11`) y no pasa la puerta por riesgo: drawdown "
-        "del −77 % al −93 %. Se investiga, no se opera."
+        "momentum transversal (`E-10`), y su caída es del 80-90 %: no es un defecto del "
+        "mecanismo ni del universo (`E-12`, `E-13`), es la clase de activo. La pregunta "
+        "que queda no es cómo bajar el drawdown, sino **qué tamaño** darle a una "
+        "exposición así."
     )
 
     st.markdown("#### Experimentos")
@@ -746,8 +748,26 @@ with tab_estrategia:
             "Resultado": "Régimen y vol descartados; selección por Calmar adoptada (Calmar 19,2 vs 13,7)",
             "Veredicto": "⚠️ Parcial",
         },
+        {
+            "ID": "E-12",
+            "Qué se probó": "Momentum absoluto: mantener solo los K que conserven su tendencia",
+            "Resultado": "Baja el DD a −59/−76 % y hunde el Calmar (19,2 → 2,0/10,6/4,0)",
+            "Veredicto": "❌ Descartado",
+        },
+        {
+            "ID": "E-13",
+            "Qué se probó": "Universo ampliado de 7 a 24 pares (velas verificadas)",
+            "Resultado": "+3.118 % y Calmar 35,8 vs 19,2… pero el DD EMPEORA: −87,1 % vs −80,0 %",
+            "Veredicto": "❌ Hipótesis refutada",
+        },
     ])
     st.dataframe(experimentos, hide_index=True, width="stretch")
+    st.caption(
+        "Dos avisos que quedan por escrito: la volatilidad objetivo gana en las cuatro "
+        "medidas con 24 pares y las perdía las cuatro con 7 (inestable, no se adopta), y "
+        "con 24 pares la mediana del azar pasa a ser **negativa**, así que el percentil "
+        "frente al azar deja de ser comparable entre universos."
+    )
 
     st.markdown("#### Reportes crudos")
     st.caption(

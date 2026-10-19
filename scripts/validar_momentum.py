@@ -327,9 +327,15 @@ def main() -> None:
                     help="momentum absoluto: media PROPIA del activo en dias (None = sin filtro)")
     ap.add_argument("--objetivo", choices=["retorno", "calmar"], default="calmar",
                     help="criterio de seleccion en entrenamiento (E-11: calmar es mejor)")
+    ap.add_argument("--pares", default=None,
+                    help="subconjunto separado por comas (por defecto, todos los del directorio). "
+                         "Sirve para reproducir una medicion anterior tras ampliar el universo.")
     args = ap.parse_args()
 
-    pares = sorted(p.name.replace("-4h.feather", "") for p in VELAS.glob("*-4h.feather"))
+    if args.pares:
+        pares = sorted(p.strip().upper() for p in args.pares.split(",") if p.strip())
+    else:
+        pares = sorted(p.name.replace("-4h.feather", "") for p in VELAS.glob("*-4h.feather"))
     m = cargar_matriz(pares)
     print("=" * 104)
     print(f"MOMENTUM TRANSVERSAL  |  {len(pares)} pares  |  {args.inicio} -> {args.fin}")
@@ -337,7 +343,7 @@ def main() -> None:
     print(f"pares: {', '.join(pares)}")
     print(f"velas alineadas: {len(m):,}  |  {m.index.min().date()} -> {m.index.max().date()}")
 
-    # Referencia: comprar los 7 y no tocar (siempre 100% invertido)
+    # Referencia: comprar todos los pares a peso igual y no tocar (100% invertido)
     bh_m = m[m.index >= pd.Timestamp(args.inicio, tz="UTC")]
     r_bh = np.zeros(len(bh_m))
     r_bh[1:] = (bh_m.to_numpy()[1:] / bh_m.to_numpy()[:-1] - 1).mean(axis=1)

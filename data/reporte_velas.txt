@@ -1,0 +1,34 @@
+========================================================================================================
+VELAS 4h DESDE BINANCE  |  25 pares  |  desde 2020-01-01  |  descarga
+========================================================================================================
+  BTC_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  ETH_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  BNB_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  ADA_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  XRP_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  SOL_USDT     n=13,565  2020-08-11 -> 2026-10-19  huecos=  0 (max 4h)  dup=0  retraso=0.1d
+  AVAX_USDT    n=13,313  2020-09-22 -> 2026-10-19  huecos=  0 (max 4h)  dup=0  retraso=0.1d
+  LTC_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  LINK_USDT    n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  DOT_USDT     n=13,519  2020-08-18 -> 2026-10-19  huecos=  0 (max 4h)  dup=0  retraso=0.1d
+  BCH_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  ETC_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  XLM_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  TRX_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  EOS_USDT     n=11,832  2020-01-01 -> 2025-05-26  huecos=  1 (max 8h)  dup=0  retraso=511.9d
+  ATOM_USDT    n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  NEO_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  DASH_USDT    n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  ZEC_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  VET_USDT     n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  THETA_USDT   n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  ALGO_USDT    n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  DOGE_USDT    n=14,903  2020-01-01 -> 2026-10-19  huecos=  1 (max 8h)  dup=0  retraso=0.1d
+  UNI_USDT     n=13,344  2020-09-17 -> 2026-10-19  huecos=  0 (max 4h)  dup=0  retraso=0.1d
+  COMP_USDT    n=13,847  2020-06-25 -> 2026-10-19  huecos=  0 (max 4h)  dup=0  retraso=0.1d
+
+ultima vela mas repetida: 2026-10-19 20:00:00+00:00  (24 de 25 pares)
+pares que NO llegan a esa fecha (1): EOS_USDT (2025-05-26)
+  -> con `ffill` tendrian el precio congelado en la cola. Excluirlos del universo.
+inicio comun de la matriz: 2020-09-22  (lo fija AVAX_USDT)
+velas utiles por par (desde el inicio comun): ~13,313

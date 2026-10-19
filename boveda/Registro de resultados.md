@@ -200,3 +200,43 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Conclusión acumulada (`E-10` a `E-12`):** el momentum transversal tiene ventaja real, pero **ningún mecanismo de control de riesgo probado la conserva**. Régimen sobre la cesta (`E-11`), volatilidad objetivo (`E-11`), tendencia propia (`E-12`): los tres bajan el drawdown y los tres se llevan por delante el Calmar y, en dos casos, la significación.
 - **Lo que esto dice:** el límite no es el mecanismo, es el **universo**. Con 7 altcoins no hay dispersión suficiente: o caen las siete a la vez, o el filtro deja tan pocos candidatos que la selección se vuelve ruido. La vía estructural es ampliar a 20-30 pares (`P13`), donde la cartera de los K mejores puede estar siempre en activos que suben mientras el resto cae.
 - **Nota de reproducibilidad:** al añadir la tendencia propia hubo que cambiar el generador de la nube de `rng.choice` a `rng.permutation` (mismo subconjunto uniforme, otro consumo del generador). Los **retornos y drawdowns** de A-F se reproducen exactos; los **percentiles** de `E-11` varían ±2,5 puntos. `data/reporte_momentum_riesgo.txt` se regeneró con las 9 variantes.
+
+---
+
+## E-13 — Universo ampliado de 7 a 24 pares: el drawdown NO viene del universo
+
+- **Fecha:** 2026-10-19
+- **Hipótesis (la mía, en `D-18`):** con 7 altcoins no hay dispersión suficiente y por eso ningún filtro conserva la ventaja. Ampliar a 20-30 pares debería permitir mantener siempre los K mejores en activos que suben mientras el resto cae, y **bajar el drawdown por construcción**, no por filtro.
+- **Defecto de datos encontrado antes de medir (y corregido):** los 7 archivos originales **no terminaban en la misma fecha** (BTC/ETH/XRP el 2026-10-17; ADA/BNB/SOL/AVAX el 2026-09-18) y `cargar_matriz` rellena hacia adelante (`ffill`). Durante las últimas 174 velas (29 días), **4 de 7 activos tenían el precio congelado** en `E-10`/`E-11`/`E-12`. Corregido descargando los 25 pares homogéneos desde el endpoint público de Binance hasta la última vela cerrada (`scripts/descargar_velas.py`). La verificación descartó a **EOS** (retirado el 2025-05-26, 512 días de retraso): habría repetido el defecto. Universo final: **24 pares**.
+- **Control del efecto del defecto:** repetido `E-11` (7 pares) con los datos limpios → **+1.538,1 % / −80,0 % / Calmar 19,22**, idéntico a la cifra original. El defecto no cambiaba ninguna conclusión, pero ya no está.
+- **N (24 pares, 2021-2026, mismo protocolo, objetivo Calmar):**
+
+| | retorno OOS | DD | Calmar | Ventanas |
+|---|---|---|---|---|
+| **Cesta a peso igual (24 pares)** | +314 % | −81,9 % | 3,83 | — |
+| 7 pares, misma lógica (`E-11` B) | +1.538 % | **−80,0 %** | 19,22 | 7/11 |
+| **24 pares, misma lógica (B)** | **+3.118 %** | **−87,1 %** | **35,82** | **6/11** |
+
+- **Veredicto: ❌ hipótesis refutada.** Ampliar de 7 a 24 pares **mejora el retorno (+103 %) y el Calmar (+86 %) y EMPEORA el drawdown (−80,0 % → −87,1 %) y la supervivencia (7/11 → 6/11)**. El drawdown no venía de la falta de dispersión. Con 7 o con 24, en un mercado bajista caen todos a la vez: la correlación entre altcoins en las caídas es el mecanismo, no el tamaño de la cesta.
+- **Tabla de control de riesgo sobre 24 pares (misma máquina, misma puerta, azar con las mismas señales):**
+
+| Variante | OOS | DD | Calmar | Ventanas | Percentil azar | P(azar ≥) |
+|---|---|---|---|---|---|---|
+| A) retorno bruto, sin control | +2.875 % | −88,4 % | 32,52 | 6/11 | 100 | 0,0 % |
+| B) Calmar, sin control | +3.118 % | −87,1 % | 35,82 | 6/11 | 100 | 0,0 % |
+| C) Calmar + régimen 200 d | +501 % | −71,7 % | 6,99 | 4/11 | 99,0 | 1,0 % |
+| D) Calmar + régimen 200 d + vol 60 % | +419 % | −49,8 % | 8,42 | 5/11 | 99,5 | 0,5 % |
+| E) Calmar + vol 60 % | **+3.679 %** | −79,7 % | **46,16** | **8/11** | 100 | 0,0 % |
+| F) Calmar + régimen 100 d + vol 40 % | +588 % | **−35,7 %** | 16,45 | 5/11 | 99,5 | 0,5 % |
+| G) Calmar + tendencia propia 200 d | +433 % | −91,5 % | 4,73 | 7/11 | 100 | 0,0 % |
+| H) Calmar + tendencia propia 100 d | +1.029 % | −84,9 % | 12,12 | 8/11 | 97,0 | 3,0 % |
+| I) Calmar + tendencia 200 d + vol 60 % | +540 % | −70,8 % | 7,63 | 8/11 | 99,0 | 1,0 % |
+
+- **Tres lecturas que importan:**
+  1. **Ninguna variante baja de −35,7 % de drawdown**, y la única que llega ahí (F) pierde 6 de 11 ventanas y recorta el retorno un 81 %. La puerta pide < 20 %: sigue sin cumplirse, ni de lejos.
+  2. **El aviso serio:** la volatilidad objetivo al 60 % (**E**) gana en las cuatro medidas con 24 pares… y **había perdido en las cuatro con 7 pares** (`E-11` E: retorno a la mitad, Calmar 8,49 contra 19,22). Un mecanismo que **cambia de signo según el universo** no es un mecanismo: es suerte de camino. No se adopta, y se deja escrito para que nadie lo adopte por verlo ganar aquí.
+  3. **El azar deja de ser un rival serio.** Con 24 pares la mediana del azar es **negativa** (−17,9 %; con 7 pares era **+100,7 %**). El percentil 100 ya no demuestra lo que demostraba: elegir 1-3 pares entre 24 al azar incluye mucha basura. **El percentil frente al azar no es comparable entre universos distintos**; la referencia honesta sigue siendo la cesta, y la cesta también se hunde (−81,9 %).
+- **Conclusión (y giro de la pregunta):** tres mecanismos de control de riesgo y un universo tres veces mayor después, el drawdown del momentum transversal en cripto sigue en el 80-90 %. La evidencia dice que **el drawdown es de la clase de activo, no del mecanismo ni del universo**. Por tanto la pregunta deja de ser *«¿cómo bajo el DD al 20 %?»* —que no tiene respuesta con instrumentos largos— y pasa a ser *«¿qué tamaño le doy a una exposición cuya caída natural es del 80 %?»*. Eso es asignación de capital, no estrategia: con un sleeve del 10 %, la caída del 87 % es una caída del ~8,7 % del capital (primer orden). El retorno del sleeve es ~+83 % anual compuesto; el tamaño lo decide el dueño del capital, no el backtest.
+- **Lo que NO está medido (declarado para no sobrevender):** todo `E-10`…`E-13` es **solo largos**. La versión mercado-neutral (largo en los K mejores, corto en los K peores) es el mecanismo estándar de la industria para bajar exactamente este drawdown y **no se ha medido**; requiere perpetuos y coste de funding, y los bots de Freqtrade son spot, así que no sería desplegable en ellos.
+- **Herramientas:** `scripts/descargar_velas.py` (25 pares, verificación con reporte en `data/reporte_velas.txt`), `--pares` para reproducir cualquier subconjunto. Reportes: `data/reporte_momentum_24pares.txt`, `data/reporte_momentum_riesgo_24pares.txt`, `data/reporte_momentum_7pares_datos_limpios.txt`.
+- **Coste de búsqueda declarado:** 9 variantes × 18 combinaciones × 200 permutaciones × 2 universos. Se probaron **2 universos y 9 mecanismos**; los que ganan en uno y pierden en otro se reportan como inestables, que es lo que son.

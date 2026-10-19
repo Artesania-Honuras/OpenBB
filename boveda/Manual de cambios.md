@@ -266,3 +266,24 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Decisión de diseño:** los números de los reportes se leen **de los archivos**, no se copian en el código. La única tabla escrita a mano es la de veredictos, que es texto estable. Así no hay dos fuentes de verdad.
 - **Evidencia:** `AppTest` → 0 excepciones, **9 pestañas**; el único `st.error` es el aviso intencionado de «nada se instala en Freqtrade».
 - **Reversión:** quitar `tab_estrategia` de la lista de pestañas y su bloque.
+
+---
+
+## C-26 — Descarga de velas y verificación de la cola
+
+- **Fecha:** 2026-10-19
+- **Qué:** `scripts/descargar_velas.py`: baja velas 4h del endpoint público de Binance (`/api/v3/klines`, paginando de 1000 en 1000) para una lista de pares curada, y **verifica** cada archivo (primera/última fecha, huecos, duplicados, días de retraso). Escribe `data/reporte_velas.txt` y avisa de los pares que no llegan a la fecha final común.
+- **Por qué:** al ir a ampliar el universo descubrí que los 7 archivos originales **no terminaban en la misma fecha** (4 de 7 el 2026-09-18, los otros el 2026-10-17) y que `cargar_matriz` rellena hacia adelante (`ffill`): 29 días con 4 de 7 precios congelados en `E-10`…`E-12`. La verificación descartó a **EOS** por retirado (512 días de retraso): sin la comprobación habría repetido el defecto con otro par.
+- **Decisión:** **no se adopta `CCXT`** para esto. Una sola fuente y una sola temporalidad no lo necesitan (`urllib`, igual que `fuentes_externas.py`); el disparador para CCXT sigue siendo multi-exchange o multi-temporalidad. Registrado en `Ecosistema de herramientas.md`.
+- **Evidencia:** `data/reporte_velas.txt` (24 de 25 pares con última vela 2026-10-19 20:00 UTC; 1 hueco de 8 h en los pares viejos, probablemente mantenimiento de Binance; 0 duplicados).
+- **Reversión:** borrar el script y el reporte; los archivos de velas se pueden regenerar.
+
+---
+
+## C-27 — Universo de 24 pares homogéneos y `--pares` en el validador
+
+- **Fecha:** 2026-10-19
+- **Qué:** los 7 archivos de velas se **reemplazan** por 24 pares descargados de la misma fuente y todos terminando en la misma vela (2020-01-01 → 2026-10-19; la matriz común arranca el 2020-09-22, lo que fija AVAX, igual que antes). Los archivos viejos quedan copiados en `data/cache/velas_antes_2026-10-19/` (ignorado por git). Añadido `--pares` a `validar_momentum.py` para poder reproducir cualquier medición anterior sobre un subconjunto.
+- **Por qué:** sin homogeneidad no se puede comparar nada: el `ffill` convierte un par desfasado en un par con el precio quieto. Y sin `--pares`, ampliar el universo destruía la reproducibilidad de `E-10`/`E-11`.
+- **Evidencia:** `E-13`; `--pares` de 7 reproduce `E-11` B exacto con datos limpios (+1.538,1 % / −80,0 % / Calmar 19,22).
+- **Reversión:** restaurar los archivos desde `data/cache/velas_antes_2026-10-19/` y quitar `--pares`.

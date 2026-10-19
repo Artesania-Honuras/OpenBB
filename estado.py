@@ -160,6 +160,28 @@ def revisar() -> list[dict]:
     else:
         add("Datos", "Cache parquet", False, "no existe")
 
+    # Velas del puente: tienen que ser homogeneas. Si un par termina antes que
+    # los demas, `ffill` le congela el precio en la cola y la medicion miente
+    # (paso de verdad: 4 de 7 pares, 29 dias congelados, `E-13`).
+    velas = sorted((ROOT / "freqtrade_bridge" / "user_data" / "data" / "binance").glob("*-4h.feather"))
+    if not velas:
+        add("Datos", "Velas 4h del puente", False, "no hay archivos")
+    else:
+        try:
+            import pandas as pd
+
+            finales = {}
+            for f in velas:
+                ts = pd.to_datetime(pd.read_feather(f, columns=["date"])["date"], utc=True)
+                finales[f.name.replace("-4h.feather", "")] = ts.max()
+            fin = max(finales.values())
+            rezagados = [p for p, t in finales.items() if (fin - t).days > 0]
+            add("Datos", "Velas 4h del puente", len(rezagados) == 0,
+                f"{len(velas)} pares · ultima {fin.date()}"
+                + (f" · rezagados: {', '.join(sorted(rezagados))}" if rezagados else ""))
+        except Exception as e:  # noqa: BLE001
+            add("Datos", "Velas 4h del puente", False, type(e).__name__)
+
     # --- Configuracion ----------------------------------------------------
     cfg = ROOT / "freqtrade_bridge" / "backtest.json"
     if cfg.exists():

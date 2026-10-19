@@ -288,9 +288,11 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Validar 1 par | `... validar_estrategia.py --pair BTC_USDT --stake 0.1` |
 | Validar 7 pares | `... validar_estrategia.py --todos --stake 0.1` |
 | Validar salidas (entrada fija) | `... validar_estrategia.py --todos --stake 0.1 --salidas` |
+| Descargar/verificar velas (24 pares) | `... scripts\descargar_velas.py` · `--verificar` para solo revisar |
 | Validar momentum transversal | `... validar_momentum.py --sims 200` |
 | Variantes de riesgo del momentum | `... validar_momentum.py --riesgo --sims 200` |
-| Momentum absoluto por activo | `... validar_momentum.py --tendencia 200 --sims 200` |
+| Reproducir una medición previa | `... validar_momentum.py --pares BTC_USDT,ETH_USDT,... --sims 200` |
+| Momentum absoluto por activo (`E-12`) | `... validar_momentum.py --tendencia 200 --sims 200` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
 | Backtest Freqtrade | ver [sección 6.4](#64-medir-una-estrategia) |
@@ -506,9 +508,9 @@ Se adopta Calmar como criterio por defecto; `--objetivo retorno` reproduce `E-10
 
 **Lo que esto dice del fondo del problema:** con 7 altcoins el drawdown es
 **estructural** — en un mercado bajista caen las siete a la vez. El DD < 20 % no
-se alcanza con filtros sobre la cesta: hacen falta filtro **absoluto por activo**
-y **más universo** (20-30 pares), que es donde entran `CCXT` y `VectorBT` del
-ecosistema.
+se alcanza con filtros sobre la cesta. Las dos hipótesis que quedaban —filtro
+**absoluto por activo** y **más universo**— se midieron después: las dos
+fallaron. Ver `E-12` y `E-13`.
 
 ### Momentum absoluto por activo (`E-12`) — también descartado
 
@@ -530,22 +532,65 @@ estrategia el 11-26 % de las veces. El motivo se ve en la nube: el filtro deja
 porque el azar compra casi lo mismo.
 
 **Conclusión de la serie `E-10`…`E-12`:** el momentum tiene ventaja real, pero
-**ningún control de riesgo probado la conserva**. El límite no es el mecanismo,
-es el **universo**: con 7 altcoins no hay dispersión suficiente. La vía es
-ampliar a 20-30 pares.
+**ningún control de riesgo probado la conserva**. El límite no es el mecanismo:
+parecía ser el **universo**, con 7 altcoins sin dispersión suficiente.
+
+### Universo ampliado a 24 pares (`E-13`) — la hipótesis era falsa
+
+Antes de ampliar apareció un **defecto en los datos**: los 7 pares no terminaban
+en la misma fecha (4 de 7 el 2026-09-18, los otros el 2026-10-17) y el relleno
+hacia adelante dejaba **29 días con 4 de 7 precios congelados**. Corregido
+descargando 24 pares homogéneos con `scripts/descargar_velas.py`, que **verifica**
+primera/última fecha, huecos y retraso (y descartó a EOS, retirado en 2025).
+Repetir `E-11` con datos limpios da lo mismo: +1.538,1 % / −80,0 % / Calmar 19,22.
+
+| | retorno OOS | DD | Calmar | Ventanas |
+|---|---|---|---|---|
+| Cesta a peso igual (24 pares) | +314 % | −81,9 % | 3,83 | — |
+| 7 pares (`E-11` B) | +1.538 % | −80,0 % | 19,22 | 7/11 |
+| **24 pares, misma lógica** | **+3.118 %** | **−87,1 %** | **35,82** | **6/11** |
+
+**Triplicar la cesta sube el retorno un 103 % y el Calmar un 86 %, y EMPEORA el
+drawdown y la supervivencia.** El drawdown no venía de la falta de dispersión:
+con 7 o con 24, en las caídas caen todos a la vez. De las 9 variantes de riesgo,
+**ninguna baja de −35,7 %**, y la que llega ahí recorta el retorno un 81 %.
+
+Dos avisos que quedan escritos:
+
+- **La volatilidad objetivo 60 % gana en las cuatro medidas con 24 pares y
+  perdía en las cuatro con 7.** Un mecanismo que cambia de signo según el
+  universo es suerte de camino. No se adopta.
+- **El azar dejó de ser rival serio**: la mediana del azar pasa de +100,7 % (7
+  pares) a **−17,9 %** (24 pares) porque elegir al azar entre 24 incluye mucha
+  basura. El percentil 100 ya no demuestra lo mismo; la referencia que vale es la
+  cesta, y la cesta también cae −81,9 %.
+
+**Conclusión:** el drawdown del momentum transversal en cripto es **de la clase de
+activo, no del mecanismo ni del universo**. La pregunta deja de ser *«¿cómo bajo
+el DD al 20 %?»* y pasa a ser *«¿qué tamaño le doy a una exposición cuya caída
+natural es del 87 %?»*. Con un sleeve del 10 %, esa caída es un ~8,7 % del
+capital. Es una decisión de asignación, no de estrategia.
+
+**Lo que no está medido:** todo `E-10`…`E-13` es **solo largos**. La versión
+mercado-neutral (largo en los mejores, corto en los peores) es el mecanismo
+estándar contra este drawdown y no se ha medido; exige perpetuos y coste de
+funding, y los bots de Freqtrade son spot.
 
 ### Pendientes
 
 | Prioridad | Pendiente |
 |---|---|
-| P1 | Encontrar un gatillo con ventaja fuera de muestra (bloqueo principal) |
+| P1 | Gatillo con ventaja fuera de muestra — **redefinido**: la ventaja existe y está medida; falta el **tamaño** |
 | P2 | Refresco automático del contexto |
-| P3 | Instalar estrategia en los bots (bloqueado por P1) |
+| P3 | Instalar estrategia en los bots (bloqueado por P15) |
 | P4 | Clave FRED gratuita (opcional) |
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |
 | P7 | Revisar 2 archivos sucios del clon upstream |
 | P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) | ✅ hecho (`E-07`): 0/7 → 1/7, sin cambios en el veredicto |
+| P13 | Ampliar el universo a 20-30 pares | ✅ hecho (`E-13`): 24 pares. Sube retorno y Calmar, **no baja el DD** |
+| P14 | Medir la versión mercado-neutral (largo-corto) | Abierto. Es el mecanismo estándar contra este drawdown; **no desplegable en spot** |
+| P15 | **Tamaño del sleeve** según su caída natural del ~87 % | Abierto. Es la decisión que queda (`D-21`) |
 
 ---
 

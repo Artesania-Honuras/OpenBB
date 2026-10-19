@@ -68,8 +68,12 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-15 | **Calmar** como criterio de selección en entrenamiento | `E-11`: elegir por retorno bruto premiaba el máximo riesgo. Con Calmar, retorno, drawdown y Calmar mejoran a la vez (+1.538 %, −80,1 %, 19,22 frente a 13,69 de la cesta) | 2026-10-19 |
 | D-16 | El drawdown del momentum es **estructural**, no de ajuste | `E-11`: filtro de régimen y volatilidad objetivo cuestan más retorno del que ahorran. Con 7 altcoins caen las siete a la vez; el DD < 20 % exige filtro por activo y más universo | 2026-10-19 |
 | D-17 | El momentum absoluto por activo **también se descarta** | `E-12`: baja el DD a −59/−76 % pero hunde el Calmar (19,2 → 2,0/10,6/4,0) y el percentil frente al azar cae a 73-89. Con 1-3 candidatos el ranking deja de importar | 2026-10-19 |
-| D-18 | El límite es el **universo**, no el mecanismo | `E-11`+`E-12`: tres mecanismos distintos de control de riesgo, los tres fallan igual. Con 7 altcoins no hay dispersión suficiente; hacen falta 20-30 pares | 2026-10-19 |
+| D-18 | ~~El límite es el **universo**, no el mecanismo~~ **REFUTADA** | `E-13`: ampliar de 7 a 24 pares sube retorno y Calmar pero **empeora el DD** (−80,0 % → −87,1 %) y la supervivencia (7/11 → 6/11). El drawdown no venía de la falta de dispersión | 2026-10-19 |
 | D-19 | El panel debe mostrar la validación, no solo el contexto | `C-25`: una app que no enseña lo que se ha medido deja al usuario sin ver el trabajo. Los números se leen de los reportes, no se copian | 2026-10-19 |
+| D-20 | **Verificar siempre la fecha final de cada serie antes de medir** | `E-13`: 4 de 7 pares terminaban 29 días antes que los otros y `ffill` los dejaba con el precio congelado. `descargar_velas.py` verifica y descarta al rezagado (EOS) | 2026-10-19 |
+| D-21 | El drawdown del momentum en cripto es **de la clase de activo** | `E-13`: 3 mecanismos + universo ×3 y el DD sigue en 80-90 %. Correlación entre altcoins en las caídas, no tamaño de cesta. La pregunta pasa a ser de **tamaño de la exposición**, no de filtro | 2026-10-19 |
+| D-22 | El percentil frente al azar **no es comparable entre universos** | `E-13`: mediana del azar −17,9 % con 24 pares vs +100,7 % con 7. Con más pares el azar empeora porque incluye más basura. La referencia válida es la cesta | 2026-10-19 |
+| D-23 | Un mecanismo que cambia de signo según el universo **no es un mecanismo** | `E-13`: la volatilidad objetivo 60 % gana en las 4 medidas con 24 pares y pierde en las 4 con 7 (`E-11` E). No se adopta, por buena que sea la tabla | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -131,9 +135,9 @@ Hoy **ninguna** la cumple.
 
 | Prioridad | Pendiente | Estado |
 |---|---|---|
-| P1 | Encontrar un gatillo con ventaja OOS real | 🔴 abierto — es el bloqueo principal |
+| P1 | Encontrar un gatillo con ventaja OOS real | 🔴 abierto, redefinido - la ventaja **existe y está medida** (`E-10`, Calmar 35,8 vs cesta 3,83, percentil 100), pero su caída natural es del ~87 % (`D-21`). Lo que falta no es un gatillo nuevo, es **cuánto capital** |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
-| P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 bloqueado por P1 |
+| P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 bloqueado por `P15` (tamaño del sleeve): la estrategia tiene ventaja, lo que falta es decidir el tamaño que hace tolerable su caída |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
@@ -143,7 +147,9 @@ Hoy **ninguna** la cumple.
 | P10 | ~~Lista de repositorios del usuario y su papel~~ | ✅ cerrado — 9 repos registrados en `Ecosistema de herramientas.md`; veredicto por repo |
 | P11 | ~~Control de riesgo sobre el momentum (`D-13`): filtro de régimen y vol objetivo~~ | ✅ cerrado — `E-11`: ambos **descartados**, cuestan más retorno del que ahorran. Calmar adoptado como criterio (`D-15`) |
 | P12 | ~~Momentum absoluto por activo~~ | ✅ cerrado — `E-12`: **descartado**. Baja el DD pero hunde el Calmar y mata la significación |
-| P13 | Ampliar el universo de 7 a 20-30 pares (`CCXT`) | 🔴 **abierto y prioritario** — es la única vía estructural contra el drawdown (`D-18`) |
+| P13 | ~~Ampliar el universo de 7 a 20-30 pares~~ | ✅ cerrado — `E-13`: **24 pares**. Sube el retorno y el Calmar, **no baja el DD** (`D-21`) |
+| P14 | **Momentum mercado-neutral** (largo en los K mejores, corto en los K peores) | 🟡 abierto, **no desplegable**: es el mecanismo estándar para bajar este DD, pero exige perpetuos y coste de funding; los bots son spot. Medirlo sería para saber, no para operar |
+| P15 | **Tamaño del sleeve** según su caída natural del ~87 % | 🔴 abierto — es la decisión que sí queda: presupuesto de riesgo, no estrategia (`D-21`) |
 
 ---
 

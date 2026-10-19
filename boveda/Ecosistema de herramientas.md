@@ -13,7 +13,7 @@ Un repo que no entra no es un repo malo: es que no tiene papel.
 | 04 | **VectorBT** | Backtesting ultrarrápido | Reemplazaría mi motor vectorizado en Python puro. Permitiría barrer **miles** de combinaciones con métricas de riesgo (drawdown, Sharpe, Calmar) en segundos | ⭐ **Adoptar cuando toque.** Es la respuesta al último cuello de botella: hoy cada experimento cuesta minutos y una rejilla de 18 combinaciones ya es lenta |
 | 05 | **Backtrader** | Backtesting | Alternativa más pesada y más lenta. Se solapa con VectorBT y con el motor de Freqtrade | ❌ **No.** Tres motores para lo mismo es deuda, no capacidad |
 | 06 | **Hummingbot** | Market making / arbitraje | Otro negocio: ganar del *spread* y de la liquidez, no de la dirección. Requiere capital parado, latencia y comisiones de maker | ❌ **No.** Fuera del alcance |
-| 07 | **CCXT** | Conexión a exchanges | Ya se usa **de facto**: el funding se trae del endpoint público de Binance (`C-18`). Serviría si hicieran falta más exchanges o más datos de derivados | 🟡 **Parcialmente cubierto.** Si el momentum se lleva a más pares, es la vía natural |
+| 07 | **CCXT** | Conexión a exchanges | Ya se usa **de facto**: el funding se trae del endpoint público de Binance (`C-18`) | ⚪ **No se adopta aún, y ya no hace falta.** Se amplió el universo a 24 pares (`E-13`) con `urllib` desde el mismo endpoint (`C-26`): una sola fuente y una sola temporalidad no justifican una dependencia. Sigue siendo la vía si algún día hace falta más de un exchange o más temporalidades |
 | 08 | **FinRL** | Aprendizaje por refuerzo | Entrenar un agente para operar. Con 7 pares y 5 años de datos hay más parámetros que observaciones: es la receta del sobreajuste | ❌ **No.** Con este tamaño de datos no es serio |
 | 09 | **NautilusTrader** | Plataforma algorítmica | Compite con Freqtrade. Migrar el bot no está en el alcance de este proyecto | ❌ **No.** |
 | 10 | **Polymarket API** | Mercados de predicción | Otro mercado (eventos binarios). Aporta **probabilidades** ya agregadas sobre macro: recortes de tipos, recesión, elecciones. Sería una fuente de la capa lenta, con la ventaja de que es una probabilidad, no un indicador | 💡 **Interesante a medio plazo.** No para este paso |
@@ -24,11 +24,11 @@ Solo dos cosas de esta lista cambian el trabajo de las próximas semanas, y en e
 
 1. **VectorBT** — porque el proyecto ya demostró que su cuello de botella es *cuántas
    hipótesis se pueden probar con rigor*. Mi motor hace 18 combinaciones con esfuerzo;
-   VectorBT hace miles y además ya trae drawdown, Sharpe y Calmar, que es justo lo que
-   `E-10` deja pendiente.
-2. **CCXT** — si el momentum transversal se lleva a 20-30 pares en vez de 7, la selección
-   entre activos mejora por construcción y se puede hacer la prueba de permutación con
-   más potencia.
+   VectorBT hace miles y además ya trae drawdown, Sharpe y Calmar.
+2. **CCXT** — **el disparador no se cumplió.** Decía que entraría si el momentum se
+   llevaba a 20-30 pares; se llevó a 24 (`E-13`) y bastó con `urllib` sobre el
+   endpoint público de Binance (`C-26`). Sigue en la lista, pero su disparador ahora
+   es otro: **más de un exchange o más temporalidades**.
 
 ## 3. Lo que NO se adopta y por qué (para no repetir la pregunta)
 

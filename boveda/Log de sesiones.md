@@ -383,3 +383,35 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 **Abierto**
 
 - `P13`: descargar 20-30 pares y repetir `E-10`/`E-11` con esa cesta. El validador ya acepta cualquier número de pares; lo que falta son las velas.
+
+---
+
+## S-16 — 2026-10-19 — Universo ampliado: mi hipótesis era falsa
+
+**Hecho**
+
+- Antes de bajar una sola vela, revisé los datos que ya tenía y encontré un defecto: **4 de 7 pares terminaban 29 días antes que los otros** y el `ffill` los dejaba con el precio congelado en `E-10`…`E-12`. Declarado y corregido (`C-27`), no borrado.
+- Escrito `scripts/descargar_velas.py` (`C-26`): descarga desde el endpoint público de Binance **con verificación** — primera/última fecha, huecos, duplicados, retraso. Descartó a **EOS** por retirado (512 días de retraso). Universo final: **24 pares**, todos con la misma última vela.
+- `--pares` en el validador, para no perder la reproducibilidad al ampliar el universo.
+- Repetido `E-11` con datos limpios: **idéntico** (+1.538,1 % / −80,0 % / Calmar 19,22).
+- Medido `E-13`: 24 pares, lógica base y las 9 variantes de riesgo.
+
+**Resultado**
+
+- **Mi hipótesis era falsa.** Dije que el límite era el universo. Con 24 pares: retorno **+3.118 %** (contra +1.538 %), Calmar **35,8** (contra 19,2)… y drawdown **−87,1 %** (contra −80,0 %), supervivencia **6/11** (contra 7/11). **Ampliar la cesta triplica el retorno y empeora justo lo que quería arreglar.**
+- Ninguna de las 9 variantes baja de **−35,7 %** de drawdown, y la que llega ahí recorta el retorno un 81 % y pierde 6 de 11 ventanas.
+- La volatilidad objetivo 60 % gana en las cuatro medidas con 24 pares y **había perdido en las cuatro con 7**. Un mecanismo que cambia de signo con el universo es suerte de camino: no se adopta, y queda escrito para que nadie lo adopte por verlo ganar.
+- El azar dejó de ser rival serio: mediana **−17,9 %** con 24 pares contra **+100,7 %** con 7. El percentil 100 ya no demuestra lo mismo. La referencia que vale es la cesta, y la cesta también cae −81,9 %.
+
+**Decidido**
+
+- `D-20`: verificar siempre la fecha final de cada serie antes de medir.
+- `D-21`: el drawdown es **de la clase de activo**. Se acabaron los filtros: la pregunta pasa a ser de **tamaño de la exposición**.
+- `D-22`: el percentil frente al azar no es comparable entre universos.
+- `D-23`: un mecanismo que cambia de signo según el universo no es un mecanismo.
+
+**Abierto**
+
+- `P15`: **cuánto capital** darle a un sleeve cuya caída natural es del ~87 %. Es una decisión del dueño del capital; el backtest solo informa.
+- `P14`: medir la versión mercado-neutral (largo-corto), que es el mecanismo estándar contra este drawdown. **No sirve para sus bots** (son spot), así que es para saber, no para operar.
+- `P3`: instalar en Freqtrade deja de estar bloqueado por un gatillo y pasa a estarlo por el tamaño (`P15`).
