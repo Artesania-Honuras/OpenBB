@@ -239,7 +239,7 @@ if not viva:
 # --------------------------------------------------------------------------
 # Pestañas
 # --------------------------------------------------------------------------
-tab_resumen, tab_guia, tab_tipos, tab_riesgo, tab_macro, tab_cot, tab_contexto, tab_api = st.tabs(
+tab_resumen, tab_guia, tab_tipos, tab_riesgo, tab_macro, tab_cot, tab_contexto, tab_estrategia, tab_api = st.tabs(
     [
         "Resumen",
         "Guía",
@@ -248,6 +248,7 @@ tab_resumen, tab_guia, tab_tipos, tab_riesgo, tab_macro, tab_cot, tab_contexto, 
         "Macro",
         "Posicionamiento",
         "Contexto Freqtrade",
+        "Estrategia",
         "API",
     ]
 )
@@ -669,6 +670,101 @@ with tab_contexto:
                 )
         except Exception as e:  # noqa: BLE001
             st.error(f"No se pudo leer el contexto: {e}")
+
+# --- Estrategia ------------------------------------------------------------
+with tab_estrategia:
+    st.subheader("Qué se ha probado y qué dijeron los números")
+    st.caption(
+        "Los números de abajo salen de los archivos crudos que escriben los validadores. "
+        "Esta pestaña no recalcula nada por su cuenta: si un número no está en un archivo, "
+        "no está aquí."
+    )
+
+    st.markdown("#### La puerta de graduación")
+    st.caption(
+        "Una estrategia solo se instala en los bots de Freqtrade si cumple las cuatro "
+        "condiciones a la vez. Hoy no cumple ninguna."
+    )
+    puerta = pd.DataFrame([
+        {
+            "Criterio": "≥ 2/3 de los activos baten su referencia de misma exposición",
+            "Medido": "1/7 en E-07 · 0/7 en E-08 y E-09",
+            "Estado": "❌",
+        },
+        {
+            "Criterio": "Monte Carlo: probabilidad de pérdida < 25 %",
+            "Medido": "8,6 % a 41,5 % según el activo",
+            "Estado": "❌",
+        },
+        {
+            "Criterio": "Monte Carlo: drawdown del 5 % peor < 20 %",
+            "Medido": "carteras al 100 %: −77 % a −93 %",
+            "Estado": "❌",
+        },
+        {
+            "Criterio": "Supervivencia en ≥ 60 % de las ventanas walk-forward",
+            "Medido": "3 a 8 ventanas de 11",
+            "Estado": "❌",
+        },
+    ])
+    st.dataframe(puerta, hide_index=True, width="stretch")
+    st.error(
+        "**Nada se instala en Freqtrade.** El único camino con ventaja medida es el "
+        "momentum transversal (`E-10`/`E-11`) y no pasa la puerta por riesgo: drawdown "
+        "del −77 % al −93 %. Se investiga, no se opera."
+    )
+
+    st.markdown("#### Experimentos")
+    experimentos = pd.DataFrame([
+        {
+            "ID": "E-07",
+            "Qué se probó": "Cruce EMA 20/50 + contexto macro",
+            "Resultado": "+8,2 % OOS mediano · 1/7 baten la referencia",
+            "Veredicto": "❌ Sin ventaja",
+        },
+        {
+            "ID": "E-08",
+            "Qué se probó": "Funding de perpetuos como filtro de entrada",
+            "Resultado": "Evitar el funding alto: −8 pts de mediana (0/7)",
+            "Veredicto": "❌ Descartado",
+        },
+        {
+            "ID": "E-09",
+            "Qué se probó": "Gestión de salida con la entrada fija",
+            "Resultado": "Stop móvil −4,6 · break-even −4,3 · media rápida −13,5 pts",
+            "Veredicto": "❌ Descartado",
+        },
+        {
+            "ID": "E-10",
+            "Qué se probó": "Momentum transversal (rotación entre pares)",
+            "Resultado": "+1.112 % · percentil 99 frente a elegir pares al azar · DD −81,7 %",
+            "Veredicto": "⚠️ Ventaja sí, riesgo no",
+        },
+        {
+            "ID": "E-11",
+            "Qué se probó": "Control de riesgo: régimen, volatilidad objetivo, criterio",
+            "Resultado": "Régimen y vol descartados; selección por Calmar adoptada (Calmar 19,2 vs 13,7)",
+            "Veredicto": "⚠️ Parcial",
+        },
+    ])
+    st.dataframe(experimentos, hide_index=True, width="stretch")
+
+    st.markdown("#### Reportes crudos")
+    st.caption(
+        "Salida literal de los validadores. Para regenerarlos, los comandos están en el "
+        "`README.md`, sección 6.4."
+    )
+    informes = sorted((ROOT / "data").glob("reporte_*.txt"))
+    if not informes:
+        st.info("Todavía no hay reportes en `data/`.")
+    for ruta in informes:
+        lineas = ruta.read_text(encoding="utf-8", errors="replace").splitlines()
+        titulo = f"{ruta.name} · {len(lineas)} líneas · {ruta.stat().st_size / 1024:.1f} KB"
+        with st.expander(titulo):
+            if len(lineas) > 120:
+                st.caption(f"Se muestran las últimas 120 de {len(lineas)} líneas.")
+                lineas = lineas[-120:]
+            st.code("\n".join(lineas), language="text")
 
 # --- API -------------------------------------------------------------------
 with tab_api:

@@ -63,6 +63,8 @@ GRID_MOMENTUM = {
 }
 
 # Variantes del experimento de riesgo. Interruptores fijos, no parametros.
+# Las G/H/I son el momentum ABSOLUTO por activo (`P12`): no basta ser el mejor de
+# la cesta, hay que conservar ademas la tendencia propia.
 VARIANTES_RIESGO = {
     "A) retorno bruto, sin control": dict(objetivo="retorno", ma=None, vol=None),
     "B) Calmar, sin control": dict(objetivo="calmar", ma=None, vol=None),
@@ -70,6 +72,9 @@ VARIANTES_RIESGO = {
     "D) Calmar + regimen 200d + vol 60%": dict(objetivo="calmar", ma=200, vol=0.60),
     "E) Calmar + vol 60%": dict(objetivo="calmar", ma=None, vol=0.60),
     "F) Calmar + regimen 100d + vol 40%": dict(objetivo="calmar", ma=100, vol=0.40),
+    "G) Calmar + tendencia propia 200d": dict(objetivo="calmar", ma=None, vol=None, tendencia=200),
+    "H) Calmar + tendencia propia 100d": dict(objetivo="calmar", ma=None, vol=None, tendencia=100),
+    "I) Calmar + tendencia 200d + vol 60%": dict(objetivo="calmar", ma=None, vol=0.60, tendencia=200),
 }
 
 
@@ -99,12 +104,20 @@ def index_cesta(m: pd.DataFrame) -> pd.Series:
 def preparar_senales(
     m: pd.DataFrame, ma_dias: int | None = None,
     vol_dias: int = 30, vol_objetivo: float | None = None,
-) -> pd.DataFrame:
+    tendencia_dias: int | None = None,
+) -> dict:
     """Senales de riesgo alineadas con `m`.
 
     Se calculan sobre la serie COMPLETA y luego se recortan por ventana. Es
     correcto: en cada fecha la senal usa solo datos pasados, pero necesita
     historial caliente (una media de 200 dias no cabe en una ventana de 6 meses).
+
+    Devuelve:
+      - `en_mercado`: por fecha, si la cesta conserva su tendencia (regimen).
+      - `escala`: factor de peso por volatilidad objetivo (1 = sin recorte).
+      - `tendencia`: matriz (fecha x activo) con la tendencia PROPIA de cada activo,
+        o None. Es el filtro absoluto del momentum: un activo que cae no se
+        mantiene aunque sea el menos malo.
     """
     s = pd.DataFrame(index=m.index)
     cesta = index_cesta(m)
@@ -117,11 +130,17 @@ def preparar_senales(
     if vol_objetivo:
         rets = m.pct_change().mean(axis=1)
         vol = rets.rolling(int(vol_dias * BARRAS_POR_DIA)).std() * np.sqrt(BARRAS_POR_DIA * DIAS_POR_ANIO)
-        s["escala"] = (vol_objetivo / vol).clip(upper=1.0).fillna(0.0)
+        escala = (vol_objetivo / vol).clip(upper=1.0).fillna(0.0)
     else:
-        s["escala"] = 1.0
+        escala = pd.Series(1.0, index=m.index)
 
-    return s
+    if tendencia_dias:
+        media = m.rolling(int(tendencia_dias * BARRAS_POR_DIA)).mean()
+        tendencia = (m > media).fillna(False)
+    else:
+        tendencia = None
+
+    return {"en_mercado": s["en_mercado"], "escala": escala, "tendencia": tendencia}
 
 
 # --------------------------------------------------------------------------
@@ -129,13 +148,14 @@ def preparar_senales(
 # --------------------------------------------------------------------------
 def simular(
     m: pd.DataFrame, params: dict, semilla: int | None = None,
-    senales: pd.DataFrame | None = None,
+    senales: dict | None = None,
 ) -> np.ndarray:
     """Retorno de la cartera en cada vela.
 
     `semilla=None` -> seleccion por momentum. `semilla=int` -> seleccion AL AZAR
     (mismo K, mismo calendario, mismo coste, mismas senales de riesgo). Esa es
-    la referencia: el control de riesgo se aplica igual a los dos.
+    la referencia: el control de riesgo y el filtro absoluto se aplican IGUAL a
+    los dos, asi que lo unico que cambia es el criterio de seleccion.
     """
     closes = m.to_numpy(dtype=float)
     rets = np.zeros_like(closes)
@@ -149,10 +169,12 @@ def simular(
     if senales is None:
         en_mercado = np.ones(n, dtype=bool)
         escala = np.ones(n)
+        tendencia = None
     else:
-        s = senales.reindex(m.index)
-        en_mercado = s["en_mercado"].to_numpy(dtype=bool)
-        escala = s["escala"].to_numpy(dtype=float)
+        en_mercado = senales["en_mercado"].reindex(m.index).to_numpy(dtype=bool)
+        escala = senales["escala"].reindex(m.index).to_numpy(dtype=float)
+        t = senales.get("tendencia")
+        tendencia = t.reindex(m.index).to_numpy(dtype=bool) if t is not None else None
 
     rng = np.random.default_rng(semilla)
     pesos = np.zeros(n_act)
@@ -171,11 +193,18 @@ def simular(
         if i >= L and (i - L) % rebal == 0 and en_mercado[i]:
             if semilla is None:
                 momento = closes[i] / closes[i - L] - 1.0
-                elegidos = np.argsort(momento)[::-1][:K]
+                orden = np.argsort(momento)[::-1]
             else:
-                elegidos = rng.choice(n_act, size=K, replace=False)
+                orden = rng.permutation(n_act)
+
+            # Filtro absoluto: solo activos que conservan su propia tendencia
+            if tendencia is not None:
+                orden = orden[tendencia[i][orden]]
+
+            elegidos = orden[:K]
             nuevos = np.zeros(n_act)
-            nuevos[elegidos] = escala[i] / K  # el resto, en caja
+            if len(elegidos):
+                nuevos[elegidos] = escala[i] / len(elegidos)  # el resto, en caja
             cartera[i] -= FEE * float(np.abs(nuevos - pesos).sum())
             pesos = nuevos
 
@@ -246,7 +275,7 @@ def walk_forward(
     return pd.DataFrame(filas), (np.concatenate(oos) if oos else np.array([])), ventanas
 
 
-def nube_al_azar(ventanas: list[dict], sims: int, senales: pd.DataFrame | None = None) -> np.ndarray:
+def nube_al_azar(ventanas: list[dict], sims: int, senales: dict | None = None) -> np.ndarray:
     """Distribucion del resultado si se eligieran los K pares al azar.
 
     Usa los mismos parametros (L, K, rebalanceo) que eligio el entrenamiento en
@@ -263,8 +292,9 @@ def nube_al_azar(ventanas: list[dict], sims: int, senales: pd.DataFrame | None =
 def evaluar_config(
     m: pd.DataFrame, inicio: str, fin: str, sims: int,
     objetivo: str = "retorno", ma: int | None = None, vol: float | None = None,
+    tendencia: int | None = None,
 ) -> dict:
-    senales = preparar_senales(m, ma_dias=ma, vol_objetivo=vol)
+    senales = preparar_senales(m, ma_dias=ma, vol_objetivo=vol, tendencia_dias=tendencia)
     wf, oos, ventanas = walk_forward(m, inicio, fin, senales=senales, objetivo=objetivo)
     if not len(oos):
         return {}
@@ -293,6 +323,8 @@ def main() -> None:
     ap.add_argument("--riesgo", action="store_true", help="tabla de variantes de control de riesgo (E-11)")
     ap.add_argument("--ma", type=int, default=None, help="media de regimen en dias (None = sin filtro)")
     ap.add_argument("--vol", type=float, default=None, help="volatilidad objetivo anualizada (None = sin control)")
+    ap.add_argument("--tendencia", type=int, default=None,
+                    help="momentum absoluto: media PROPIA del activo en dias (None = sin filtro)")
     ap.add_argument("--objetivo", choices=["retorno", "calmar"], default="calmar",
                     help="criterio de seleccion en entrenamiento (E-11: calmar es mejor)")
     args = ap.parse_args()
@@ -337,7 +369,8 @@ def main() -> None:
         return
 
     r = evaluar_config(m, args.inicio, args.fin, args.sims,
-                       objetivo=args.objetivo, ma=args.ma, vol=args.vol)
+                       objetivo=args.objetivo, ma=args.ma, vol=args.vol,
+                       tendencia=args.tendencia)
     if not r:
         print("sin ventanas suficientes")
         return

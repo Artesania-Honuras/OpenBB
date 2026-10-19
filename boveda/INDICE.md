@@ -67,6 +67,9 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-14 | El control de riesgo es el siguiente trabajo, y es donde encaja la capa lenta | La capa macro no sirve para elegir entradas (`E-07`-`E-09`) pero sí para decidir **cuánto capital está expuesto** al momentum (`D-13`) | 2026-10-19 |
 | D-15 | **Calmar** como criterio de selección en entrenamiento | `E-11`: elegir por retorno bruto premiaba el máximo riesgo. Con Calmar, retorno, drawdown y Calmar mejoran a la vez (+1.538 %, −80,1 %, 19,22 frente a 13,69 de la cesta) | 2026-10-19 |
 | D-16 | El drawdown del momentum es **estructural**, no de ajuste | `E-11`: filtro de régimen y volatilidad objetivo cuestan más retorno del que ahorran. Con 7 altcoins caen las siete a la vez; el DD < 20 % exige filtro por activo y más universo | 2026-10-19 |
+| D-17 | El momentum absoluto por activo **también se descarta** | `E-12`: baja el DD a −59/−76 % pero hunde el Calmar (19,2 → 2,0/10,6/4,0) y el percentil frente al azar cae a 73-89. Con 1-3 candidatos el ranking deja de importar | 2026-10-19 |
+| D-18 | El límite es el **universo**, no el mecanismo | `E-11`+`E-12`: tres mecanismos distintos de control de riesgo, los tres fallan igual. Con 7 altcoins no hay dispersión suficiente; hacen falta 20-30 pares | 2026-10-19 |
+| D-19 | El panel debe mostrar la validación, no solo el contexto | `C-25`: una app que no enseña lo que se ha medido deja al usuario sin ver el trabajo. Los números se leen de los reportes, no se copian | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -139,8 +142,8 @@ Hoy **ninguna** la cumple.
 | P9 | Panel visual (`app.py`): mantenimiento y nuevas vistas | 🟢 menor — reiniciar el proceso tras cada cambio (`C-21`) |
 | P10 | ~~Lista de repositorios del usuario y su papel~~ | ✅ cerrado — 9 repos registrados en `Ecosistema de herramientas.md`; veredicto por repo |
 | P11 | ~~Control de riesgo sobre el momentum (`D-13`): filtro de régimen y vol objetivo~~ | ✅ cerrado — `E-11`: ambos **descartados**, cuestan más retorno del que ahorran. Calmar adoptado como criterio (`D-15`) |
-| P12 | Momentum **absoluto por activo**: mantener solo los K mejores que además estén por encima de su propia tendencia | 🔴 abierto — siguiente paso, ataca el drawdown sin filtros agregados |
-| P13 | Ampliar el universo de 7 a 20-30 pares (`CCXT`) | 🔴 abierto — es la vía estructural contra el drawdown (`D-16`) |
+| P12 | ~~Momentum absoluto por activo~~ | ✅ cerrado — `E-12`: **descartado**. Baja el DD pero hunde el Calmar y mata la significación |
+| P13 | Ampliar el universo de 7 a 20-30 pares (`CCXT`) | 🔴 **abierto y prioritario** — es la única vía estructural contra el drawdown (`D-18`) |
 
 ---
 

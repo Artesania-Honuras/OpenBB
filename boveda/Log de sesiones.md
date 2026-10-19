@@ -358,3 +358,28 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - `P12`: momentum absoluto por activo (mantener solo los K mejores que además estén por encima de su propia tendencia).
 - `P13`: ampliar el universo de 7 a 20-30 pares — es la única vía que ataca el drawdown por construcción, no por filtro.
+
+---
+
+## S-15 — 2026-10-19 — La app se quedaba muda, y el momentum absoluto
+
+**Hecho**
+
+- El usuario avisa por segunda vez de que «la app sigue igual». Comprobado: el proceso servía el código nuevo (`health: ok`, PID posterior al cambio). El problema real era otro y era de fondo: **el panel solo mostraba el contexto macro**; los cinco experimentos de validación no aparecían en ninguna parte.
+- Añadida la pestaña **«Estrategia»** (`C-25`): puerta de graduación con sus 4 criterios, aviso de que no se instala nada, tabla de `E-07`…`E-11` con veredictos y los reportes crudos leídos de `data/reporte_*.txt`. Panel reiniciado (PID nuevo, health `ok`).
+- Implementado el momentum **absoluto por activo** (`C-24`) con variantes G/H/I y la nube al azar llevando el mismo filtro.
+
+**Resultado**
+
+- **Descartado.** El filtro de tendencia propia baja el drawdown (−80 % → −59/−76 %) y hunde el Calmar (19,2 → 2,0/10,6/4,0). Y lo más serio: el percentil frente al azar cae a 73-89, o sea que **elegir pares al azar con el mismo filtro iguala o supera a la estrategia** el 11-26 % de las veces. Sin habilidad demostrable.
+- El motivo se ve en la nube: el filtro deja 1-3 candidatos, la mediana del azar sube a +411 % y el ranking deja de importar porque el azar compra casi lo mismo.
+- Regresión verificada: A y B reproducen `E-11` exacto en retorno y drawdown.
+
+**Decidido**
+
+- `D-17`: no hay mecanismo de control de riesgo que conserve la ventaja con 7 pares. El límite es el **universo**, no el mecanismo.
+- El siguiente trabajo deja de ser "otro filtro" y pasa a ser **datos**: ampliar a 20-30 pares (`P13`).
+
+**Abierto**
+
+- `P13`: descargar 20-30 pares y repetir `E-10`/`E-11` con esa cesta. El validador ya acepta cualquier número de pares; lo que falta son las velas.

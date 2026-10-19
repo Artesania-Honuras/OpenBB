@@ -244,3 +244,25 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Rigor:** las señales se calculan sobre la serie completa y se recortan por ventana. Es correcto (cada fecha usa solo datos pasados) y necesario: una media de 200 días no cabe en una ventana de prueba de 6 meses. La venta por pérdida de régimen se cobra con comisión; la vuelta espera al rebalanceo.
 - **Evidencia:** `data/reporte_momentum_riesgo.txt`; verificación de regresión antes del cambio (la línea base reprodujo `E-10` número a número). Resultado en `E-11`.
 - **Reversión:** `--objetivo retorno` y no usar `--ma`/`--vol`. Para revertir el código, quitar `preparar_senales`, las señales de `simular` y el bloque `--riesgo`.
+
+---
+
+## C-24 — Momentum absoluto por activo en el validador
+
+- **Fecha:** 2026-10-19
+- **Qué:** `preparar_senales()` devuelve ahora un diccionario con `en_mercado`, `escala` y `tendencia` (matriz fecha × activo con la tendencia propia de cada uno). `simular()` filtra el ranking por esa tendencia y reparte el peso entre los elegibles (si no hay ninguno, caja). La nube al azar usa **el mismo filtro**. Añadidas las variantes G/H/I y la bandera `--tendencia`.
+- **Por qué:** `E-11` demostró que los filtros sobre la cesta llegan tarde; el filtro por activo es el mecanismo estándar (dual momentum) y había que medirlo, no suponerlo.
+- **Nota técnica:** el generador de la nube al azar pasa de `rng.choice` a `rng.permutation` porque con el filtro hace falta un **orden** aleatorio que luego se filtra. Es el mismo subconjunto uniforme, pero consume el generador de otra forma: los retornos se reproducen exactos, los percentiles no (variación ≤ 2,5 puntos). Declarado en `E-12`.
+- **Evidencia:** `data/reporte_momentum_riesgo.txt` (9 variantes). Resultado en `E-12`.
+- **Reversión:** quitar `tendencia` de `preparar_senales`, el bloque de filtrado en `simular` y las variantes G/H/I.
+
+---
+
+## C-25 — Pestaña «Estrategia» en el panel
+
+- **Fecha:** 2026-10-19
+- **Qué:** `app.py` gana una novena pestaña con: la **puerta de graduación** (4 criterios y su estado, todos ❌), el aviso de que no se instala nada en Freqtrade, la tabla de los experimentos `E-07`…`E-11` con su veredicto, y los **reportes crudos** de `data/reporte_*.txt` en desplegables (descubiertos automáticamente, truncados a las últimas 120 líneas).
+- **Por qué:** el usuario dijo dos veces que «la app sigue igual», y tenía razón en el fondo: el panel solo mostraba el contexto macro. Todo el trabajo de validación —que es el objetivo del proyecto— no aparecía en ninguna parte. Un resultado que no se ve no existe para quien lo usa.
+- **Decisión de diseño:** los números de los reportes se leen **de los archivos**, no se copian en el código. La única tabla escrita a mano es la de veredictos, que es texto estable. Así no hay dos fuentes de verdad.
+- **Evidencia:** `AppTest` → 0 excepciones, **9 pestañas**; el único `st.error` es el aviso intencionado de «nada se instala en Freqtrade».
+- **Reversión:** quitar `tab_estrategia` de la lista de pestañas y su bloque.

@@ -166,7 +166,8 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 1b | **Gestión de salida** (stop móvil, break-even, salida por media) ✅ `E-09` | ❌ descartada: empeora o empata. El problema **no** era la salida |
 | 1c | **Cambiar la señal de entrada** ✅ `E-10` (momentum transversal) | ✅ **con ventaja**: percentil 99 frente al azar, 16/18 combinaciones lo baten. ❌ **no integrable**: drawdown −77 % a −93 % |
 | 1d | **Control de riesgo** sobre el momentum ✅ `E-11` | ❌ régimen y volatilidad objetivo descartados: cuestan más retorno del que ahorran. ✅ **Calmar** adoptado como criterio de selección (`D-15`) |
-| 1e | **Momentum absoluto por activo** + **universo de 20-30 pares** ⬅ *siguiente paso* | Bajar el drawdown del 80 % al 20 % **por construcción**, no por filtro (`D-16`). Aquí entran CCXT y VectorBT |
+| 1e | **Momentum absoluto por activo** ✅ `E-12` | ❌ descartado: baja el DD pero hunde el Calmar y mata la significación. El límite es el **universo** (`D-18`) |
+| 1f | **Ampliar el universo a 20-30 pares** ⬅ *siguiente paso* | Repetir `E-10`/`E-11` con la cesta ampliada. El validador ya acepta N pares; faltan las velas (`P13`) |
 | 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |

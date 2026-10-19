@@ -176,3 +176,27 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Decidido:** se adopta **Calmar como criterio de selección por defecto** (reversible con `--objetivo retorno`, que reproduce `E-10`). Se **descartan** el filtro de régimen sobre la cesta y la volatilidad objetivo: cuestan más de lo que protegen.
 - **Lo que esto dice del problema de fondo:** con 7 altcoins, el drawdown es **estructural**. En un mercado bajista caen las siete a la vez, así que cualquier cartera siempre invertida hereda la caída, y cualquier filtro sobre la cesta entra y sale tarde. El DD < 20 % no se alcanza con filtros agregados; hacen falta dos cosas distintas: (a) **filtro absoluto por activo** (mantener solo los K mejores que además estén por encima de su propia tendencia) y (b) **más universo** (20-30 pares), para que siempre haya algo tendiendo arriba. La segunda necesita CCXT/VectorBT.
 - **Coste de búsqueda declarado:** 6 variantes fijas (interruptores) × 18 combinaciones × 200 permutaciones por variante. Dos objetivos probados en entrenamiento; se declara porque elegir la función objetivo *después* de ver los resultados es un grado de libertad del investigador.
+
+---
+
+## E-12 — Momentum absoluto por activo (dual momentum): descartado
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** `E-11` dejó claro que los filtros **sobre la cesta** llegan tarde. El filtro natural es por activo: mantener solo los K mejores que **además conserven su propia tendencia** (precio por encima de su media propia). Un activo que cae no debería mantenerse aunque sea el menos malo de la cesta.
+- **Método:** la señal de tendencia propia se calcula sobre la serie completa (una media de 200 días no cabe en una ventana de 6 meses) y se aplica **igual a la nube al azar**, así que lo único que cambia sigue siendo el criterio de selección. Variantes G (tendencia 200 d), H (100 d), I (200 d + volatilidad objetivo 60 %). Mismo protocolo y misma referencia que `E-11`.
+- **N (referencia: cesta +1.121,8 %, DD −81,9 %, Calmar 13,69; mejor variante hasta ahora: B, Calmar 19,22):**
+
+| Variante | OOS | DD | Calmar | Ventanas | Percentil azar | P(azar ≥) |
+|---|---|---|---|---|---|---|
+| B) Calmar, sin control (mejor de `E-11`) | +1.538 % | −80,1 % | **19,22** | 7/11 | 100 | 0,0 % |
+| G) Calmar + tendencia propia 200 d | +145 % | −72,0 % | **2,01** | 5/11 | 84 | 16,0 % |
+| H) Calmar + tendencia propia 100 d | +811 % | −76,2 % | **10,64** | 5/11 | 73,5 | 26,5 % |
+| I) Calmar + tendencia 200 d + vol 60 % | +240 % | −59,4 % | **4,03** | 5/11 | 89 | 11,0 % |
+
+- **Veredicto:** ❌ **descartado, y con más motivo que el filtro de régimen.** Tres lecturas:
+  1. **Baja el drawdown, destroza el Calmar.** El mejor caso (I) recorta el DD de −80 % a −59 % y el Calmar cae de 19,2 a 4,0: se paga otra vez más retorno del que se ahorra.
+  2. **Y además mata la ventaja estadística.** En G y H el percentil frente al azar cae a 84 y 73,5: elegir pares al azar **con el mismo filtro** iguala o supera a la estrategia el 16 % y el 26,5 % de las veces. Ya no hay habilidad demostrable.
+  3. **El motivo es mecánico y se ve en la nube:** con el filtro, la mediana del azar sube a **+411 %** (variante H) porque el universo elegible se reduce a 1-3 activos y, con K hasta 3, la selección aleatoria acaba comprando casi la misma cartera que la estrategia. Cuando el filtro deja tan poco donde elegir, el ranking deja de importar.
+- **Conclusión acumulada (`E-10` a `E-12`):** el momentum transversal tiene ventaja real, pero **ningún mecanismo de control de riesgo probado la conserva**. Régimen sobre la cesta (`E-11`), volatilidad objetivo (`E-11`), tendencia propia (`E-12`): los tres bajan el drawdown y los tres se llevan por delante el Calmar y, en dos casos, la significación.
+- **Lo que esto dice:** el límite no es el mecanismo, es el **universo**. Con 7 altcoins no hay dispersión suficiente: o caen las siete a la vez, o el filtro deja tan pocos candidatos que la selección se vuelve ruido. La vía estructural es ampliar a 20-30 pares (`P13`), donde la cartera de los K mejores puede estar siempre en activos que suben mientras el resto cae.
+- **Nota de reproducibilidad:** al añadir la tendencia propia hubo que cambiar el generador de la nube de `rng.choice` a `rng.permutation` (mismo subconjunto uniforme, otro consumo del generador). Los **retornos y drawdowns** de A-F se reproducen exactos; los **percentiles** de `E-11` varían ±2,5 puntos. `data/reporte_momentum_riesgo.txt` se regeneró con las 9 variantes.

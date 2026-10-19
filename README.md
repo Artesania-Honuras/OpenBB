@@ -163,7 +163,8 @@ exit()
 
 - Abre en **http://127.0.0.1:8501** (y en el navegador automáticamente).
 - Requiere la API arriba (paso 4.1).
-- 8 pestañas: Resumen, Guía, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, API.
+- 9 pestañas: Resumen, Guía, Tipos, Riesgo, Macro, Posicionamiento, Contexto Freqtrade, Estrategia, API.
+- La pestaña **Estrategia** muestra la puerta de graduación, los experimentos `E-07`…`E-11` y los reportes crudos de `data/reporte_*.txt`.
 - 100 % local: no usa nube ni login.
 - Cambiar puerto: `.\run-openbb-app.ps1 -Port 8502`
 - Detener: `Ctrl+C` en su ventana.
@@ -289,6 +290,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Validar salidas (entrada fija) | `... validar_estrategia.py --todos --stake 0.1 --salidas` |
 | Validar momentum transversal | `... validar_momentum.py --sims 200` |
 | Variantes de riesgo del momentum | `... validar_momentum.py --riesgo --sims 200` |
+| Momentum absoluto por activo | `... validar_momentum.py --tendencia 200 --sims 200` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
 | Backtest Freqtrade | ver [sección 6.4](#64-medir-una-estrategia) |
@@ -507,6 +509,30 @@ Se adopta Calmar como criterio por defecto; `--objetivo retorno` reproduce `E-10
 se alcanza con filtros sobre la cesta: hacen falta filtro **absoluto por activo**
 y **más universo** (20-30 pares), que es donde entran `CCXT` y `VectorBT` del
 ecosistema.
+
+### Momentum absoluto por activo (`E-12`) — también descartado
+
+El filtro por activo (mantener solo los K mejores que además conserven su propia
+tendencia) se aplica **igual a la nube al azar**:
+
+| Variante | OOS | DD | Calmar | Percentil azar | P(azar ≥) |
+|---|---|---|---|---|---|
+| B) Calmar, sin control (mejor de `E-11`) | +1.538 % | −80,1 % | **19,22** | 100 | 0,0 % |
+| G) + tendencia propia 200 d | +145 % | −72,0 % | 2,01 | 84 | 16,0 % |
+| H) + tendencia propia 100 d | +811 % | −76,2 % | 10,64 | 73,5 | 26,5 % |
+| I) + tendencia 200 d + vol 60 % | +240 % | −59,4 % | 4,03 | 89 | 11,0 % |
+
+**Descartado, y con más motivo que el filtro de régimen:** baja el drawdown
+(−80 % → −59/−76 %) y hunde el Calmar (19,2 → 2,0/10,6/4,0); además **mata la
+significación** — con el mismo filtro, elegir pares al azar iguala o supera a la
+estrategia el 11-26 % de las veces. El motivo se ve en la nube: el filtro deja
+1-3 candidatos, la mediana del azar sube a +411 % y el ranking deja de importar
+porque el azar compra casi lo mismo.
+
+**Conclusión de la serie `E-10`…`E-12`:** el momentum tiene ventaja real, pero
+**ningún control de riesgo probado la conserva**. El límite no es el mecanismo,
+es el **universo**: con 7 altcoins no hay dispersión suficiente. La vía es
+ampliar a 20-30 pares.
 
 ### Pendientes
 
