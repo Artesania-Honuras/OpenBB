@@ -371,19 +371,21 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
 | D-07 | Puente por archivo | 14.886 velas fusionadas |
 | D-08 | No integrar la estrategia | 0/7 baten la referencia |
 
-### Resultado de la validación (2021-01 → 2026-10)
+### Resultado de la validación (2021-01 → 2026-10) — revalidado con el contexto corregido
 
-| Par | OOS | Referencia misma exposición |
-|---|---|---|
-| ADA | +3,2% | +5,7% |
-| AVAX | +18,9% | +31,9% |
-| BNB | +5,2% | +236,3% |
-| BTC | +7,6% | +56,7% |
-| ETH | +14,1% | +71,3% |
-| SOL | +9,0% | +242,0% |
-| XRP | +4,2% | +58,9% |
+| Par | OOS | Referencia misma exposición | ¿Bate? |
+|---|---|---|---|
+| ADA | +5,8% | +5,5% | ✅ por 0,3 pp |
+| AVAX | +16,1% | +32,6% | ❌ |
+| BNB | +5,6% | +197,6% | ❌ |
+| BTC | +8,2% | +57,1% | ❌ |
+| ETH | +18,6% | +71,7% | ❌ |
+| SOL | +14,2% | +285,6% | ❌ |
+| XRP | +4,6% | +60,8% | ❌ |
 
-**7/7 positivos, 0/7 baten la referencia.** El cruce EMA 20/50 no tiene alfa.
+**7/7 positivos, 1/7 baten la referencia** (y el único lo hace por 0,3 puntos, un
+empate estadístico). Antes del arreglo del contexto era 0/7. El criterio exige
+≥ 2/3 de los activos. El cruce EMA 20/50 no tiene alfa: `E-07`.
 
 ### Pendientes
 
@@ -396,7 +398,7 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |
 | P7 | Revisar 2 archivos sucios del clon upstream |
-| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) |
+| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) | ✅ hecho (`E-07`): 0/7 → 1/7, sin cambios en el veredicto |
 
 ---
 

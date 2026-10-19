@@ -166,3 +166,15 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Evidencia:** documento con 12 secciones; inventario de rutas obtenido de `openapi.json` (869 rutas, 18 providers).
 - **Impacto:** **ninguno** sobre el código o los datos. Es planificación, no cambio. Nada de lo descrito se aplica hasta que el usuario elija pack y pase la puerta de validación.
 - **Reversión:** borrar el documento y la fila del índice.
+
+---
+
+## C-17 — Revalidación con el contexto corregido y documentación actualizada
+
+- **Fecha:** 2026-10-19
+- **Qué:** ejecutado el paso 0 del plan. `validar_estrategia.py --todos --stake 0.1` con el contexto corregido; resultados anotados como `E-07`. Actualizados `README.md` §11 (tabla de validación y fila P8), `INDICE.md` (evidencia de D-08 y P8 cerrado) y `Plan de mejora.md` (paso 0 cerrado).
+- **Por qué:** medir sobre números que ya no eran válidos invalidaba el plan de mejora.
+- **Evidencia:** 7/7 OOS positivos, **1/7 baten la referencia** (ADA +5,8 % vs +5,5 %); antes 0/7. Salida completa en `data/reporte_validacion.txt`.
+- **Conclusión:** el defecto `C-13` no era la causa de la falta de edge. `D-08` (no integrar) sigue vigente; `P1` sigue siendo el bloqueo.
+- **Impacto:** solo documentación y una medición. **Nada** se cambió en el código, en los datos de contexto ni en los bots.
+- **Reversión:** revertir el commit.

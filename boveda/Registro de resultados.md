@@ -69,3 +69,17 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **N:** 129 operaciones, 5.000 simulaciones.
 - **Números:** retorno final p5 −7,9 % / p50 +7,5 % / p95 +26,4 %; DD medio −8,1 %; DD (5 % peor) −14,1 %; P(pérdida) 21,3 %; P(DD > 20 %) 0,2 %; P(ruina −50 %) 0,0 %.
 - **Veredicto:** ⚠️ **riesgo bajo, retorno insuficiente**. Pasa el criterio de riesgo pero falla el de retorno frente a la referencia. No justifica integración.
+
+---
+
+## E-07 — Revalidación del walk-forward con el contexto corregido
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** el defecto de alineación del puente (`C-13`) dejaba fuera el dato de los viernes en VIX, S&P y EUR/USD; con el arreglo, el filtro de VIX trabajaría sobre valores reales y el resultado podría cambiar.
+- **Método:** exactamente el mismo que E-05 — `validar_estrategia.py --todos --stake 0.1`, ventana 2021-01-01 → 2026-10-01, 18 meses de entrenamiento → 6 de prueba, 54 combinaciones, referencia escalada al mismo tiempo en mercado. **Única diferencia:** el contexto ya corregido.
+- **N:** 7 activos, 11 ventanas cada uno, 7/7 con operaciones fuera de muestra.
+- **Números (OOS vs referencia misma exposición):** ADA +5,8 % vs +5,5 % · AVAX +16,1 % vs +32,6 % · BNB +5,6 % vs +197,6 % · BTC +8,2 % vs +57,1 % · ETH +18,6 % vs +71,7 % · SOL +14,2 % vs +285,6 % · XRP +4,6 % vs +60,8 %.
+- **Agregado:** 7/7 OOS positivos; **1/7 baten la referencia** (ADA, por 0,3 puntos).
+- **Comparación con E-05** (mismo método, contexto defectuoso): 0/7 → 1/7. Todos los OOS suben algo (SOL +9,0 → +14,2; ETH +14,1 → +18,6); las referencias apenas se mueven.
+- **Veredicto:** ❌ **sin ventaja consistente**, igual que E-05. La única "victoria" es un empate estadístico: 0,3 puntos sobre una referencia de 5,5 %. El criterio exige ≥ 2/3 de los activos y solo lo cumple 1/7. Confirma que el defecto `C-13` **no** era la causa de la falta de edge.
+- **Cierra:** pendiente **P8**.

@@ -57,7 +57,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-05 | `OPENBB_AUTO_BUILD=false` | Arranque ~60 s sin cuelgues | 2026-10-19 |
 | D-06 | Contexto diario con retrasos de publicación | 36.636 filas × 13 columnas, 1926→2026, 0 NaN en 2026 | 2026-10-19 |
 | D-07 | Puente por archivo (parquet), no por HTTP | Merge con 14.886 velas 4h sin look-ahead | 2026-10-19 |
-| D-08 | **No integrar** la estrategia al bot | Walk-forward: 7/7 OOS positivos, **0/7** baten la referencia ajustada por exposición | 2026-10-19 |
+| D-08 | **No integrar** la estrategia al bot | Walk-forward revalidado con el contexto corregido (`E-07`): 7/7 OOS positivos, **1/7** baten la referencia ajustada por exposición (y por 0,3 puntos) | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -125,7 +125,7 @@ Hoy **ninguna** la cumple.
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
 | P7 | Revisar los 2 archivos sucios del clon upstream | 🟢 menor |
-| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) para confirmar el veredicto | 🟡 abierto |
+| P8 | ~~Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`)~~ | ✅ cerrado — `E-07`: 0/7 → 1/7, veredicto sin cambios |
 | P9 | Panel visual (`app.py`): mantenimiento y nuevas vistas | 🟢 menor |
 
 ---

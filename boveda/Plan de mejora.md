@@ -161,7 +161,7 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 
 | Paso | Qué | Puerta para pasar al siguiente |
 |---|---|---|
-| 0 | **P8:** revalidar los 7 pares con el contexto corregido (`C-13`) | Veredicto 0/7 confirmado o corregido |
+| 0 | **P8:** revalidar los 7 pares con el contexto corregido (`C-13`) | ✅ **cerrado** (`E-07`): 0/7 → 1/7, el veredicto no cambia |
 | 1 | Pack A (4 features) | Debe reducir drawdown sin romper el P&L |
 | 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |

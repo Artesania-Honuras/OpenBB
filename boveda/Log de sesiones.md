@@ -224,3 +224,28 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - El usuario debe decidir: empezar por el paso 0, elegir pack (A recomendado) y pasar la lista de repositorios que mencionó (no están en el contexto de la sesión).
 - P1 y P8 siguen abiertos.
+
+---
+
+## S-10 — 2026-10-19 — Pasó el paso 0: revalidación con el contexto corregido
+
+**Hecho**
+
+- Verificado que el validador **sí** usa el contexto (fusiona el parquet y filtra por VIX y pendiente), así que la revalidación tenía sentido.
+- Ejecutado `validar_estrategia.py --todos --stake 0.1` (misma herramienta, misma ventana, mismo grid de 54 combinaciones). Salida en `data/reporte_validacion.txt`.
+- Registrado como `E-07` y documentado en `README.md`, `INDICE.md` y `Plan de mejora.md` (`C-17`).
+
+**Se rompió / se resolvió**
+
+- Nada se rompió. Antes de lanzar apareció una duda razonable: si el validador no usara el contexto, la revalidación no mediría el arreglo `C-13`. Se comprobó en el código que sí lo usa (`cargar_par` + `simular`).
+
+**Decidido**
+
+- El defecto `C-13` **no** era la causa de la falta de edge: 0/7 → 1/7 y la única victoria es de 0,3 puntos frente a una referencia de 5,5 %.
+- `D-08` sigue vigente: no se integra la estrategia al bot. `P1` sigue siendo el bloqueo principal.
+- El paso 0 del plan está cerrado; el siguiente paso natural es el **pack A** (funding, volatilidad cripto, calendario, Fear&Greed).
+
+**Abierto**
+
+- P1 (bloqueo principal), P2 (refresco automático) y P9 (panel) siguen abiertos.
+- El usuario debe elegir pack (A recomendado) y pasar la lista de repositorios que mencionó.
