@@ -157,3 +157,23 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 sigue siendo el bloqueo principal.
 - Pendiente nuevo: re-ejecutar la validación de 7 pares con el contexto corregido para confirmar que el veredicto no cambia.
+
+---
+
+## S-07 — 2026-10-19 — Cierre de sesión (registro y actualización del equipo)
+
+**Hecho**
+
+- Registro del cierre en la bóveda `seconBrain`: página `wiki/openbb-local.md`, línea en `wiki/index.md` y entrada `cierre` en `wiki/log.md`.
+- `README.md` §12 con la nota de reanudación tras reiniciar o actualizar (`C-14`) y `P8` en la tabla de pendientes.
+- Todo subido a Git en la misma sesión.
+
+**Decidido**
+
+- La página de la bóveda es un puntero: el registro operativo sigue viviendo en `boveda/` del repo de OpenBB, igual que se hizo con el proyecto de trading.
+- Tras la actualización no hay nada que arranque solo: las dos ventanas (API 6900 y panel 8501) se relanzan a mano.
+
+**Abierto**
+
+- P1 (bloqueo principal) y P8 (revalidar el walk-forward con el contexto corregido) siguen abiertos.
+- Criterio de "todo sano" tras el reinicio: `estado.py` → 23/23 ✅.

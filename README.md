@@ -396,6 +396,7 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |
 | P7 | Revisar 2 archivos sucios del clon upstream |
+| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) |
 
 ---
 
@@ -411,6 +412,20 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
    por el pendiente P1.
 
 Si el paso 1 muestra un ❌ crítico, se atiende antes de cualquier otra cosa.
+
+### Después de reiniciar o actualizar el equipo
+
+Nada arranca solo. Las dos ventanas hay que relanzarlas:
+
+```powershell
+cd C:\Users\DELL\.ipython\OpenBB
+.\run-openbb-api.ps1     # ventana 1: esperar "Uvicorn running on 127.0.0.1:6900"
+.\run-openbb-app.ps1     # ventana 2: restaurar ventana 1 si se cerró
+```
+
+Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **23/23 ✅**.
+Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
+`... scripts\puente_freqtrade.py --exportar --forzar`.
 
 ---
 

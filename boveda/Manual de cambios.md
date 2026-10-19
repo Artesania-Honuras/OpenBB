@@ -134,3 +134,13 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Evidencia:** antes → `vix 16.46` en 2026-10-17/18/19; después → `vix 19.99` (valor real del 16-10). SPX corregido a 7659,44. 36.636 filas · 13 columnas · 0 NaN en 2026.
 - **Impacto declarado:** los backtests previos (walk-forward de 7 pares y Monte Carlo) se ejecutaron con el contexto de este defecto, es decir, con el dato de riesgo hasta 3 días viejo los lunes. **No se han revalidado** tras el arreglo.
 - **Reversión:** `git revert` del commit; el efecto es volver a perder el último dato de cada serie en los findes.
+
+---
+
+## C-14 — Nota de reanudación tras reiniciar o actualizar el equipo
+
+- **Fecha:** 2026-10-19
+- **Qué:** nueva subsección en la sección 12 de `README.md`: qué relanzar después de un reinicio (las dos ventanas: API y panel), la verificación esperada (23/23) y el refresco del contexto. Se añade `P8` a la tabla de pendientes del manual.
+- **Por qué:** el usuario anunció una actualización del equipo; nada arranca solo y las dos ventanas mueren al reiniciar.
+- **Evidencia:** `README.md` §12 con los dos comandos y el criterio numérico de éxito.
+- **Reversión:** borrar la subsección y la fila `P8`.
