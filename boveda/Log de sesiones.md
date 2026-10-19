@@ -132,3 +132,28 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 sigue siendo el bloqueo principal.
 - El panel es de solo lectura; no ejecuta órdenes ni escribe datos.
+
+---
+
+## S-06 — 2026-10-19 — Panel explicado y bug del puente corregido
+
+**Hecho**
+
+- Panel reescrito (`C-12`): todo en español, pestaña **Guía** con qué mide cada indicador y su uso, semáforo de entorno (favorable / neutral / defensivo), tablas traducidas y limpias, ayuda en cada métrica.
+- Bug de la pendiente 10a-2a corregido: mostraba **+0 pb** donde son **+33 pb**.
+- Bug del puente corregido (`C-13`): la asignación de series desplazadas realineaba por fecha y perdía el último dato (VIX del lunes = jueves). Ahora se reindexa a calendario diario.
+- Contexto reexportado con `--forzar`: `vix 19.99`, `spx 7659,44`, 0 NaN en 2026.
+
+**Se rompió / se resolvió**
+
+- Descubierto que el contexto estaba hasta 3 días viejo en las series de riesgo, no por el retraso intencional sino por el bug de alineación.
+
+**Decidido**
+
+- El panel es una herramienta de **contexto**, no de señales. Se dice explícitamente en la Guía y en el propio panel.
+- La conclusión 0/7 no se da por revalidada con el contexto corregido: queda como pendiente medirla otra vez antes de tocar nada en vivo.
+
+**Abierto**
+
+- P1 sigue siendo el bloqueo principal.
+- Pendiente nuevo: re-ejecutar la validación de 7 pares con el contexto corregido para confirmar que el veredicto no cambia.

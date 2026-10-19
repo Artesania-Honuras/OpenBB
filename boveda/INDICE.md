@@ -123,6 +123,8 @@ Hoy **ninguna** la cumple.
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
 | P7 | Revisar los 2 archivos sucios del clon upstream | 🟢 menor |
+| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) para confirmar el veredicto | 🟡 abierto |
+| P9 | Panel visual (`app.py`): mantenimiento y nuevas vistas | 🟢 menor |
 
 ---
 

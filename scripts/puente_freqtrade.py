@@ -117,11 +117,20 @@ def construir_contexto(forzar: bool = False) -> pd.DataFrame:
 
     contexto = pd.DataFrame(piezas).sort_index()
 
-    # Retraso por fecha de publicacion + relleno diario hacia adelante
+    # Retraso por fecha de publicacion + relleno diario hacia adelante.
+    # Importante: hay que reindexar cada serie a un calendario diario comun.
+    # Si se asigna una serie ya desplazada al DataFrame, pandas la alinea por
+    # fecha y descarta los valores que caen en dias no presentes (findes y
+    # festivos), con lo que el dato mas reciente se pierde.
+    fin = max(contexto.index.max(), pd.Timestamp.today().normalize())
+    calendario = pd.date_range(contexto.index.min(), fin, freq="D")
+    retrasado: dict[str, pd.Series] = {}
     for col in contexto.columns:
-        contexto[col] = contexto[col].shift(freq=pd.Timedelta(days=_retraso(col)))
+        s = contexto[col].dropna()
+        s.index = s.index + pd.Timedelta(days=_retraso(col))
+        retrasado[col] = s.reindex(calendario).ffill()
 
-    contexto = contexto.resample("D").last().ffill()
+    contexto = pd.DataFrame(retrasado, index=calendario)
     contexto.index.name = "date"
     return contexto
 

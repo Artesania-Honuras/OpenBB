@@ -112,3 +112,25 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** OpenBB Workspace fue reemplazado por BQ Workspace, que aún no está disponible ("coming soon"), así que la única forma de tener interfaz visual es local.
 - **Evidencia:** `AppTest` → 0 excepciones, 7 pestañas, 16 métricas; panel respondiendo en 4 s; `estado.py` → 23/23 ✅.
 - **Reversión:** borrar `app.py` y `run-openbb-app.ps1`; desinstalar `streamlit` si se desea.
+
+---
+
+## C-12 — Panel traducido, guía y lectura de régimen
+
+- **Fecha:** 2026-10-19
+- **Qué:** `app.py` reescrito: 8 pestañas (se añade **Guía**), todo en español, tablas con columnas traducidas (se eliminan percentiles y campos internos), cajas de interpretación, semáforo de entorno (favorable / neutral / defensivo) y ayuda en cada métrica.
+- **Corrección incluida:** la pendiente 10a-2a se mostraba en puntos porcentuales como si fueran puntos básicos (**+0 pb** en vez de **+33 pb**). Ahora se multiplica por 10.000.
+- **Por qué:** el usuario no entendía qué mostraba el panel ni para qué sirve en trading.
+- **Evidencia:** `AppTest` → 0 excepciones, 8 pestañas, 16 métricas; pendiente verificada contra datos crudos (4,77 % a 2 años y 5,10 % a 10 años → +33 pb).
+- **Reversión:** volver a la versión anterior de `app.py` en Git.
+
+---
+
+## C-13 — Bug de alineación temporal en el puente (pérdida del dato más reciente)
+
+- **Fecha:** 2026-10-19
+- **Qué:** `construir_contexto()` retrasaba cada serie con `shift(freq=1D)` y luego la **asignaba** a la columna del DataFrame. Pandas realinea esa asignación por fecha y descarta los valores cuya fecha desplazada no existe en el índice (sábados, domingos y festivos). Consecuencia: el VIX del viernes se perdía y el lunes seguía mostrando el del jueves (16,46 en vez de 19,99).
+- **Arreglo:** se reindexa cada serie desplazada a un calendario diario común (`date_range` + `reindex` + `ffill`), extendido hasta hoy.
+- **Evidencia:** antes → `vix 16.46` en 2026-10-17/18/19; después → `vix 19.99` (valor real del 16-10). SPX corregido a 7659,44. 36.636 filas · 13 columnas · 0 NaN en 2026.
+- **Impacto declarado:** los backtests previos (walk-forward de 7 pares y Monte Carlo) se ejecutaron con el contexto de este defecto, es decir, con el dato de riesgo hasta 3 días viejo los lunes. **No se han revalidado** tras el arreglo.
+- **Reversión:** `git revert` del commit; el efecto es volver a perder el último dato de cada serie en los findes.
