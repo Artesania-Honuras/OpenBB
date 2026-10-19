@@ -1,9 +1,9 @@
 # Plan de mejora — de "datos que no dicen nada" a "datos que deciden"
 
-- **Fecha:** 2026-10-19
-- **Estado:** propuesta, **nada aplicado**
-- **Contexto:** el panel ya funciona (23/23 ✅) pero el usuario pregunta para qué sirve.
-  La respuesta corta: hoy solo hay **capa lenta** (macro) y se está usando como si fuera un gatillo.
+- **Fecha:** 2026-10-19 (actualizado en S-18)
+- **Estado:** **en ejecución.** Pasos 0 a 1g hechos; **1h (escribir la rotación en Freqtrade) es el siguiente**.
+- **Contexto:** el panel funciona (24/24 ✅, 9 pestañas) y el plan ya no es una propuesta: midió,
+  descartó y se quedó con lo único que sobrevivió a las pruebas.
 - **Regla que manda:** ningún dato entra en vivo si no bate el **benchmark de misma exposición**
   fuera de muestra. Ver `Registro de resultados.md`.
 
@@ -14,11 +14,14 @@
 | Ya existe | Detalle |
 |---|---|
 | API local | `127.0.0.1:6900` · 869 rutas · 18 providers |
-| Panel visual | `127.0.0.1:8501` · 8 pestañas |
-| Contexto diario | 13 columnas × 36.636 filas, con retrasos anti look-ahead |
+| Panel visual | `127.0.0.1:8501` · **9 pestañas** · huella de versión para detectar pestañas viejas |
+| Contexto diario | **14 columnas** × 36.636 filas, con retrasos anti look-ahead |
 | Puente a Freqtrade | parquet + `merge_asof` (0 NaN verificado) |
-| Validación | walk-forward 7 pares + Monte Carlo + costes |
-| **Endpoints usados** | **8 de 869** ← aquí está todo el margen |
+| Velas | **24 pares** 4h, todos terminando en la misma vela (verificado; EOS descartado por retirado) |
+| Validación por activo | walk-forward + Monte Carlo + costes (`validar_estrategia.py`) |
+| Validación de cartera | momentum transversal con prueba de permutación (`validar_momentum.py`) |
+| Dimensionado | bootstrap por bloques sleeve → cartera (`dimensionar.py`) |
+| **Endpoints usados** | **8 de 869** ← aquí sigue habiendo margen, pero ya no es el cuello de botella |
 
 No se están usando: 43 rutas de `deribit`, 6 de `derivatives`, 8 de `etf`,
 19 de `cftc`, 17 de `cboe`, 38 de `economy`, 28 de `tmx`, 27 de `sec`,
@@ -36,6 +39,12 @@ Freqtrade opera **velas de 4h en cripto**. Eso parte el plan en dos velocidades:
   1 a 45 días. **Nunca dará un gatillo.** Solo decide cuánto riesgo asumir.
 - **Capa rápida (gatillo):** derivados, funding, basis, opciones, on-chain.
   Ahí sí puede haber señal en 4h. **Es lo que falta.**
+
+> **Corrección tras medir (`S-18`):** la capa rápida **no era el gatillo que faltaba**.
+> Los dos datos de esa capa que se midieron (funding, `E-08`) no aportaron. El gatillo
+> que sí tiene ventaja es **transversal y no necesita datos nuevos**: comparar los 24
+> pares entre sí (`E-10`). La capa macro se queda como termómetro, que es lo que
+> siempre fue.
 
 Diagnóstico honesto: el problema no es la app, es que solo hay capa lenta
 aplicada a una estrategia que necesita capa rápida.
@@ -155,6 +164,12 @@ backtests, señales, datos) antes de integrar ninguno.
 **Recomendación: A primero.** Barato, sin claves, y cierra el hueco grande:
 hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 
+> **Actualizado en S-18:** A se ejecutó y **cerró sin resultado** (`E-08` funding, `E-09`
+> salidas: los dos negativos). El hueco no era "falta capa rápida", era "falta una señal
+> con ventaja": apareció en el **momento transversal** entre pares (`E-10`), que no
+> necesita ningún dato nuevo. B y C quedan **congelados** hasta que `P3` demuestre que
+> la rotación funciona en modo aviso. Comprar datos antes de eso sería repetir el error.
+
 ---
 
 ## 10. Orden propuesto, con puertas
@@ -166,9 +181,11 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 1b | **Gestión de salida** (stop móvil, break-even, salida por media) ✅ `E-09` | ❌ descartada: empeora o empata. El problema **no** era la salida |
 | 1c | **Cambiar la señal de entrada** ✅ `E-10` (momentum transversal) | ✅ **con ventaja**: percentil 99 frente al azar, 16/18 combinaciones lo baten. ❌ **no integrable**: drawdown −77 % a −93 % |
 | 1d | **Control de riesgo** sobre el momentum ✅ `E-11` | ❌ régimen y volatilidad objetivo descartados: cuestan más retorno del que ahorran. ✅ **Calmar** adoptado como criterio de selección (`D-15`) |
-| 1e | **Momentum absoluto por activo** ✅ `E-12` | ❌ descartado: baja el DD pero hunde el Calmar y mata la significación. El límite es el **universo** (`D-18`) |
-| 1f | **Ampliar el universo a 20-30 pares** ⬅ *siguiente paso* | Repetir `E-10`/`E-11` con la cesta ampliada. El validador ya acepta N pares; faltan las velas (`P13`) |
-| 2 | Refresco automático + panel con calendario y régimen | `estado.py` 23/23 sin intervención manual |
+| 1e | **Momentum absoluto por activo** ✅ `E-12` | ❌ descartado: baja el DD pero hunde el Calmar y mata la significación. **La hipótesis del universo quedaba abierta** |
+| 1f | **Ampliar el universo a 24 pares** ✅ `E-13` | ❌ **mi hipótesis era falsa**: retorno y Calmar suben, el DD **empeora** (−80,0 % → −87,1 %). El drawdown es de la clase de activo (`D-21`) |
+| 1g | **Configuración fija + dimensionado** ✅ `E-14`/`E-15` | ✅ **hay regla y hay tamaño**: L=30/K=3/semanal (+820 %, CAGR 47 %, Calmar 9,95) con sleeve del **10 %** (caída típica −13 %, 5 % peor −22 %) ⬅ *lo que se instala* |
+| 1h | **Escribir la rotación en Freqtrade** (`P3`) ⬅ *siguiente paso* | Regla fija sobre 24 pares, `K=3`, semanal, `stake` = 10 %. Primero en el repo de OpenBB y validada contra el validador; el copiado a Freqtrade y el backtest, con los bots parados |
+| 2 | Refresco automático + panel con calendario y régimen | `estado.py` 24/24 sin intervención manual |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |
 
@@ -189,12 +206,19 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 - **Acumular indicadores técnicos:** hay 59 rutas de `technical` y meter 20 sería
   garantizar sobreajuste.
 - **Pagar datos antes de saber si el gratis aporta:** primero A, después se paga con criterio.
-- **Tocar los bots en vivo antes de P1:** sigue bloqueado, y con razón.
+- **Tocar los bots en vivo antes del paso 1h y sin modo aviso:** sigue bloqueado, y con
+  razón. Ahora ya hay número y tamaño, así que el paso 1h es lo que desbloquea, no un
+  filtro más.
 
 ---
 
-## 12. Decisiones que faltan del usuario
+## 12. Seguimiento del plan (estado al cierre de S-18)
 
-1. ¿Se empieza por el paso 0 (revalidar con el contexto corregido)?
-2. ¿Pack A, B o C?
-3. ¿Lista de repositorios y su papel?
+| Pregunta abierta del plan | Respuesta |
+|---|---|
+| ¿Se empieza por el paso 0 (revalidar con el contexto corregido)? | ✅ hecho: `E-07` — 0/7 → 1/7, el veredicto no cambió |
+| ¿Pack A, B o C? | ✅ **A cerrado como vía**: funding (`E-08`) y salidas (`E-09`) dieron negativo. El trabajo real no era añadir features, era **cambiar la señal de entrada** |
+| ¿Lista de repositorios y su papel? | ✅ 9 repos con veredicto en `Ecosistema de herramientas.md`. Ninguno adoptado todavía; `VectorBT` es el siguiente si hace falta barrer más combinaciones |
+| ¿Hay estrategia con ventaja? | ✅ **sí**: momentum transversal, ventaja medida (`E-10`, `E-13`, `E-14`) |
+| ¿Se puede instalar? | ✅ **sí, con condiciones**: regla fija + sleeve del 10 % (`E-14`/`E-15`), incumpliendo el `DD p95 < 20 %` por 2 puntos y con la advertencia de fragilidad paramétrica |
+| ¿Qué falta? | **`P3`**: escribir la rotación para Freqtrade y probarla en modo aviso |

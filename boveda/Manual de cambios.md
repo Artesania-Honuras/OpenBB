@@ -318,3 +318,13 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** el usuario ha dicho **tres veces** que «la app sigue igual». El problema real es que una pestaña abierta antes de un reinicio se queda con la imagen vieja y **no hay forma de distinguirlo mirando la pantalla**. Con la huella, la pregunta «¿estoy viendo la versión nueva?» se responde en un segundo: si la hora no coincide con la última modificación de `app.py`, es una pestaña vieja.
 - **Evidencia:** PID reiniciado 16:35:51, `app.py` modificado 16:35:26, health `ok`.
 - **Reversión:** quitar las dos líneas de `st.caption` del final del bloque de la barra lateral.
+
+---
+
+## C-31 — `--pares` en el validador por activo
+
+- **Fecha:** 2026-10-19
+- **Qué:** `validar_estrategia.py` acepta `--pares A,B,C`; al haber más de uno activa la tabla resumen (antes solo la activaba `--todos`).
+- **Por qué:** `--todos` recorre **todos** los archivos del directorio, y con la ampliación a 24 pares (`C-27`) ese comando dejó de servir para reproducir `E-07`/`E-08`/`E-09`, que son de 7. Sin `--pares`, la documentación habría prometido una reproducción que ya no era tal.
+- **Evidencia:** `--pares` de 7 en `validar_momentum.py` reproduce `E-11` exacto (mismo patrón); en `validar_estrategia.py` el cambio es el mismo criterio de rebanado.
+- **Reversión:** quitar el argumento y volver a `if not args.todos: return`.

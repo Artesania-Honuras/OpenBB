@@ -443,3 +443,26 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - `P3`: escribir la estrategia de rotación en Freqtrade (long-only, 24 pares, K=3, semanal) con `stake` equivalente al 10 %. **No tocar los bots que están corriendo** hasta que el puente esté probado.
 - `P16`: automatizar la re-optimización semestral, solo si se quiere aspirar al número grande. La regla fija ya es suficiente para empezar.
+
+---
+
+## S-18 — 2026-10-19 — Cierre, auditoría de la bóveda y seguimiento del plan
+
+**Hecho**
+
+- Auditoría de los siete archivos de la bóveda contra lo que realmente hay. Encontrado y corregido:
+  - `INDICE.md`: seguía diciendo **S-03** como última sesión, **13 columnas** en el contexto, y «hoy ninguna estrategia cumple la puerta», que ya era falso.
+  - `Plan de mejora.md`: decía **«propuesta, nada aplicado»**, **8 pestañas**, **7 pares** de validación y marcaba el paso 1f como siguiente cuando estaba hecho. El paso 1e citaba `D-18`, que está refutada.
+  - `README.md`: dos menciones a **13 columnas**, `P3` todavía «bloqueado por P15» y el `estado.py` esperado en **23/23**.
+- `--pares` también en `validar_estrategia.py` (`C-31`): con 24 pares en el directorio, `--todos` había dejado de reproducir `E-07`/`E-08`/`E-09`.
+- Reescrita la compuerta de aceptación con el **estado real criterio por criterio** para la regla desplegable: criterio 2 ✅, criterio 4 ✅, criterio 3 **❌ por 2 puntos** y criterio 1 no aplica (es cartera, no por activo).
+- El plan de mejora pasa de «propuesta» a **«en ejecución»**, con los pasos 0→1g cerrados y `1h` como siguiente. La sección 12 pasa de «decisiones que faltan» a **seguimiento con la respuesta a cada pregunta**.
+
+**Decidido**
+
+- Ninguna decisión nueva de estrategia. Se cierra la documentación y se deja el plan sincronizado con la evidencia.
+- El aviso de la bóveda queda explícito: **la puerta se incumple por 2 puntos y así se dice**; no se ajusta el criterio para que cuadre.
+
+**Abierto**
+
+- `P3`: escribir la rotación en Freqtrade (regla fija, 24 pares, K=3, semanal, 10 %).

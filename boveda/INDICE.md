@@ -1,7 +1,8 @@
 # INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-03
+> Última actualización: 2026-10-19 · Sesión S-18
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
+> **Estado en una línea:** hay una regla desplegable (`E-14`: L=30/K=3/semanal, +820 %, Calmar 9,95) y un tamaño decidido (`E-15`: sleeve del 10 %). Falta escribirla en Freqtrade (`P3`).
 
 ---
 
@@ -101,8 +102,12 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | Ámbito | Fuente | Nota |
 |---|---|---|
 | Código | `scripts\`, `strategies\` | Lo que corre |
-| Contexto | `data\context\contexto_diario.parquet` | Evidencia del puente; 13 columnas |
-| Medición | `scripts\validar_estrategia.py` | La misma herramienta siempre |
+| Contexto | `data\context\contexto_diario.parquet` | Evidencia del puente; **14 columnas** |
+| Velas | `freqtrade_bridge\user_data\data\binance\*-4h.feather` | **24 pares**, todos terminando en la misma vela (verificado) |
+| Medición (por activo) | `scripts\validar_estrategia.py` | La misma herramienta siempre; `--pares` para reproducir subconjuntos |
+| Medición (cartera) | `scripts\validar_momentum.py` | Momentum transversal, `--fijo`, `--riesgo`, `--pares` |
+| Dimensionado | `scripts\dimensionar.py` | Bootstrap por bloques: traducción sleeve → cartera |
+| Descarga de datos | `scripts\descargar_velas.py` | Binance público + verificación de cola (`--verificar`) |
 | Capa rápida | `scripts\fuentes_externas.py` | Funding de perpetuos (Binance, sin clave, con caché) |
 | Estado | `estado.py` | Solo lectura, tabla ✅/❌ |
 | Historia | `boveda\*` | Cambios, resultados, sesiones |
@@ -116,8 +121,8 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 ### Del proyecto (infraestructura)
 
 1. API local responde 200 y una llamada funcional en < 60 s.
-2. Contexto con 13 columnas y sin NaN desde 2021.
-3. `estado.py` sin ❌ críticos.
+2. Contexto con 14 columnas y sin NaN desde 2021.
+3. `estado.py` sin ❌ críticos (24 chequeos).
 4. Repo limpio y pusheado.
 5. Cualquier cambio nuevo tiene `C-NN` y su evidencia.
 
@@ -130,7 +135,16 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 3. Monte Carlo con **P(pérdida) < 25%** y **drawdown p95 < 20%**.
 4. Supervivencia en ≥ 60% de las ventanas walk-forward.
 
-Hoy **ninguna** la cumple.
+**Estado de la regla desplegable (`E-14` + `E-15`, sleeve del 10 %):**
+
+| # | Criterio | Medido | Estado |
+|---|---|---|---|
+| 1 | ≥ 2/3 de los activos | No aplica igual: es una **cartera**, no una estrategia por activo. Equivalente medido: P(azar ≥) = **0,5 %** y Calmar 9,95 frente a 4,52 de la cesta | ➖ no aplica |
+| 2 | Bate la referencia ajustada | Calmar **9,95 vs 4,52** de la cesta; mediana del azar +20,5 % contra +820 % | ✅ |
+| 3 | P(pérdida) < 25 % y DD p95 < 20 % | P(año perdedor) **19,5 %** ✅ · DD p95 **−22,0 %** ❌ (por 2 puntos) | ❌ parcial |
+| 4 | Supervivencia ≥ 60 % de ventanas | **7/11 = 63,6 %** | ✅ |
+
+> **Decisión declarada (`D-25`):** se instala al 10 % **incumpliendo el criterio 3 por 2 puntos**. Al 5 % se cumpliría (DD p95 −11,5 %) pero el CAGR baja a +4 %. No se finge que se cumple: se elige y se anota.
 
 ---
 
@@ -138,7 +152,7 @@ Hoy **ninguna** la cumple.
 
 | Prioridad | Pendiente | Estado |
 |---|---|---|
-| P1 | Encontrar un gatillo con ventaja OOS real | 🔴 abierto, redefinido - la ventaja **existe y está medida** (`E-10`, Calmar 35,8 vs cesta 3,83, percentil 100), pero su caída natural es del ~87 % (`D-21`). Lo que falta no es un gatillo nuevo, es **cuánto capital** |
+| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ✅ cerrado — la ventaja **existe, está medida y tiene tamaño**: regla fija `E-14`, cartera `E-15`. Reevaluado como: "lo que faltaba no era un gatillo, era cuánto capital" (`D-21`) |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
 | P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 desbloqueado - hay regla fija (`E-14`: L=30/K=3/semanal) y tamaño (`E-15`: 10 %). Falta escribir la estrategia y el puente |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
@@ -159,8 +173,9 @@ Hoy **ninguna** la cumple.
 
 ## 8. Cómo retomar en 3 pasos
 
-1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla.
+1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (24 chequeos).
 2. **Contexto:** leer este INDICE (secciones 4 y 7) para saber qué está vivo y qué falta.
-3. **Historia:** leer la última entrada de `Log de sesiones.md` y continuar por el pendiente P1.
+3. **Historia:** leer la última entrada de `Log de sesiones.md` y continuar por **`P3`** (escribir la rotación en Freqtrade con regla fija y sleeve del 10 %).
 
 > Si el paso 1 muestra un ❌ crítico, se atiende antes de cualquier otra cosa.
+> Si el panel «sigue igual», mirar la huella de versión de la barra lateral (`C-30`): si la hora no coincide con la última modificación de `app.py`, es una pestaña vieja.

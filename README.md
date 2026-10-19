@@ -36,7 +36,7 @@ OpenBB Platform (tu PC)  ──►  API local 127.0.0.1:6900  ──►  /docs (
         │
         │  exportación manual
         ▼
-data/context/contexto_diario.parquet   (13 columnas macro)
+data/context/contexto_diario.parquet   (14 columnas macro)
         │  lectura directa en populate_indicators()
         ▼
 Freqtrade (velas + decisión técnica + ejecución)
@@ -231,7 +231,7 @@ obb.currency.price.historical('EURUSD', provider='ecb').to_df()
 .\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --exportar
 ```
 
-Reescribe `data\context\contexto_diario.parquet` (36.636 filas × 13 columnas).
+Reescribe `data\context\contexto_diario.parquet` (36.636 filas × 14 columnas).
 Usa `--forzar` para ignorar la caché.
 
 ### 6.3 Ver el estado vivo (funding, libro de órdenes)
@@ -246,7 +246,7 @@ Usa `--forzar` para ignorar la caché.
 # Un par, detallado
 .\venvs\openbb\Scripts\python.exe scripts\validar_estrategia.py --pair BTC_USDT --stake 0.1
 
-# Los 7 pares
+# Los 7 pares originales (hoy hay 24: usar --pares para reproducir)
 .\venvs\openbb\Scripts\python.exe scripts\validar_estrategia.py --todos --stake 0.1
 
 # Experimento dirigido: entrada fija 20/50, se optimiza solo la SALIDA
@@ -623,7 +623,7 @@ riesgo.
 |---|---|
 | P1 | Gatillo con ventaja fuera de muestra — **redefinido**: la ventaja existe y está medida; falta el **tamaño** |
 | P2 | Refresco automático del contexto |
-| P3 | Instalar estrategia en los bots (bloqueado por P15) |
+| P3 | Instalar estrategia en los bots: regla fija + sleeve 10 % (E-14/E-15). **Siguiente paso** |
 | P4 | Clave FRED gratuita (opcional) |
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |
@@ -658,7 +658,7 @@ cd C:\Users\DELL\.ipython\OpenBB
 .\run-openbb-app.ps1     # ventana 2: restaurar ventana 1 si se cerró
 ```
 
-Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **23/23 ✅**.
+Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **24/24 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
 `... scripts\puente_freqtrade.py --exportar --forzar`.
 

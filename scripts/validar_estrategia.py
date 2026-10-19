@@ -374,6 +374,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pair", default="BTC_USDT")
     parser.add_argument("--todos", action="store_true", help="valida todos los pares disponibles")
+    parser.add_argument(
+        "--pares", default=None,
+        help="subconjunto separado por comas (ej. 'BTC_USDT,ETH_USDT'). Sirve para reproducir "
+             "una medicion anterior cuando hay mas pares en el directorio.",
+    )
     parser.add_argument("--inicio", default="2021-01-01")
     parser.add_argument("--fin", default="2026-10-01")
     parser.add_argument("--sims", type=int, default=5000)
@@ -389,18 +394,21 @@ def main() -> None:
     args = parser.parse_args()
 
     pares = [args.pair]
-    if args.todos:
+    if args.pares:
+        pares = sorted(p.strip().upper() for p in args.pares.split(",") if p.strip())
+    elif args.todos:
         pares = sorted(p.name.replace("-4h.feather", "") for p in VELAS.glob("*-4h.feather"))
 
     grid = GRID_SALIDAS if args.salidas else GRID
     base = BASE_ENTRADA if args.salidas else None
     etiqueta = "entrada fija 20/50 · se optimiza la SALIDA" if args.salidas else ""
+    resumen = args.todos or bool(args.pares)   # con varios pares, tabla resumen
 
     filas = [evaluar_par(p, args.inicio, args.fin, args.sims, args.stake,
-                         verbose=not args.todos, grid=grid, base=base,
+                         verbose=not resumen, grid=grid, base=base,
                          etiqueta=etiqueta) for p in pares]
 
-    if not args.todos:
+    if not resumen:
         return
 
     tabla = pd.DataFrame(filas)
