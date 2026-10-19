@@ -232,3 +232,15 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Rigor:** el ranking usa el cierre de la vela *i*, pero los pesos entran desde la vela *i+1*; el coste se aplica sobre el giro real (`FEE × Σ|Δw|`). Sin filtros macro, a propósito, para aislar la selección.
 - **Evidencia:** `data/reporte_momentum.txt` (walk-forward + nube al azar), `data/reporte_momentum_robustez.txt` (18 combinaciones fijas × 200 permutaciones). Resultado en `E-10`.
 - **Reversión:** borrar el script y los dos reportes.
+
+---
+
+## C-23 — Control de riesgo en el validador de momentum y criterio Calmar por defecto
+
+- **Fecha:** 2026-10-19
+- **Qué:** `scripts/validar_momentum.py` gana: `preparar_senales()` (régimen por media de la cesta y escala por volatilidad objetivo), soporte de esas señales dentro de `simular()` —salida inmediata a caja al perder el régimen, vuelta solo en rebalanceo, pesos escalados con el resto en caja—, `calmar()` como criterio de selección en entrenamiento, la bandera `--riesgo` con la tabla de 6 variantes y las banderas `--ma`, `--vol`, `--objetivo`.
+- **Por qué:** `E-10` dejó el momentum con ventaja pero con drawdown del 77-93 %. Había que medir si el control de riesgo lo arreglaba, y con la referencia corregida (la nube al azar lleva las **mismas** señales de riesgo).
+- **Cambio de comportamiento:** el criterio de selección por defecto pasa de **retorno bruto a Calmar**. Es un cambio de resultado, no de forma: `--objetivo retorno` reproduce `E-10` exacto (+1.112 %, DD −81,8 %), y el nuevo defecto da `E-11` variante B (+1.538 %, Calmar 19,22).
+- **Rigor:** las señales se calculan sobre la serie completa y se recortan por ventana. Es correcto (cada fecha usa solo datos pasados) y necesario: una media de 200 días no cabe en una ventana de prueba de 6 meses. La venta por pérdida de régimen se cobra con comisión; la vuelta espera al rebalanceo.
+- **Evidencia:** `data/reporte_momentum_riesgo.txt`; verificación de regresión antes del cambio (la línea base reprodujo `E-10` número a número). Resultado en `E-11`.
+- **Reversión:** `--objetivo retorno` y no usar `--ma`/`--vol`. Para revertir el código, quitar `preparar_senales`, las señales de `simular` y el bloque `--riesgo`.

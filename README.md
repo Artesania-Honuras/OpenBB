@@ -253,6 +253,9 @@ Usa `--forzar` para ignorar la caché.
 
 # Momentum transversal (rotación entre pares) contra elegir pares al azar
 .\venvs\openbb\Scripts\python.exe scripts\validar_momentum.py --sims 200
+
+# Control de riesgo: tabla de variantes (régimen, volatilidad objetivo, criterio)
+.\venvs\openbb\Scripts\python.exe scripts\validar_momentum.py --riesgo --sims 200
 ```
 
 Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
@@ -285,6 +288,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Validar 7 pares | `... validar_estrategia.py --todos --stake 0.1` |
 | Validar salidas (entrada fija) | `... validar_estrategia.py --todos --stake 0.1 --salidas` |
 | Validar momentum transversal | `... validar_momentum.py --sims 200` |
+| Variantes de riesgo del momentum | `... validar_momentum.py --riesgo --sims 200` |
 | Verificar familias | `... verificar_familias.py` |
 | Swagger | `http://127.0.0.1:6900/docs` |
 | Backtest Freqtrade | ver [sección 6.4](#64-medir-una-estrategia) |
@@ -473,6 +477,36 @@ la ventaja es modesta. Y **todas** las combinaciones tienen drawdowns de −75 %
 −93 %, porque la cartera está siempre 100 % invertida: no hay control de riesgo.
 Eso es exactamente lo siguiente que hay que construir, y es donde la capa lenta
 por fin tiene papel: no elegir entradas, sino cuánto capital está expuesto.
+
+### Control de riesgo del momentum (`E-11`) — qué funciona y qué no
+
+Tres piezas probadas como interruptores (no como parámetros a optimizar). La nube
+al azar lleva **las mismas señales de riesgo**, así que lo único que cambia es el
+criterio de selección. Referencia: cesta a peso igual **+1.121,8 %**, DD **−81,9 %**,
+Calmar **13,69**.
+
+| Variante | OOS | DD | Calmar | Percentil azar |
+|---|---|---|---|---|
+| A) Retorno bruto, sin control (= `E-10`) | +1.112 % | −81,8 % | 13,61 | 99 |
+| **B) Calmar, sin control** | **+1.538 %** | **−80,1 %** | **19,22** | **100** |
+| C) Calmar + régimen 200 d | +160 % | −69,7 % | 2,30 | 97 |
+| D) Calmar + régimen 200 d + vol 60 % | +374 % | −47,3 % | 7,91 | 99,5 |
+| E) Calmar + vol 60 % | +630 % | −74,3 % | 8,49 | 98 |
+| F) Calmar + régimen 100 d + vol 40 % | +184 % | −49,9 % | 3,69 | 88,5 |
+
+**Veredicto: ninguna variante cumple las tres condiciones** (DD mejor que −20 %,
+percentil ≥ 95, Calmar mejor que la cesta). El control de riesgo sale caro: el
+filtro de régimen recorta el drawdown de −80 % a −70 % y **se lleva dos tercios
+del retorno**; el Calmar se hunde de 19,2 a 2,3 porque entra tarde y sale tarde.
+Lo que sí funcionó fue arreglar un error de diseño: seleccionar en entrenamiento
+por **Calmar** en vez de por retorno bruto (el bruto premiaba el máximo riesgo).
+Se adopta Calmar como criterio por defecto; `--objetivo retorno` reproduce `E-10`.
+
+**Lo que esto dice del fondo del problema:** con 7 altcoins el drawdown es
+**estructural** — en un mercado bajista caen las siete a la vez. El DD < 20 % no
+se alcanza con filtros sobre la cesta: hacen falta filtro **absoluto por activo**
+y **más universo** (20-30 pares), que es donde entran `CCXT` y `VectorBT` del
+ecosistema.
 
 ### Pendientes
 

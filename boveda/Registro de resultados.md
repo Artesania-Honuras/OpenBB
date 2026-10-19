@@ -149,3 +149,30 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Decidido:** no se integra nada todavía. El siguiente experimento es **control de riesgo** (filtro de régimen y/o volatilidad objetivo), y ahí es donde la capa lenta de OpenBB por fin tiene papel: no para elegir entradas, sino para **decidir cuánto capital está expuesto**.
 - **Coste de búsqueda declarado:** 18 combinaciones × 11 ventanas × 7 pares + 200 permutaciones por ventana. Nota metodológica: seleccionar en entrenamiento por **retorno compuesto bruto** empuja hacia el máximo riesgo (K=1, K=2); la próxima iteración debe seleccionar por **retorno ajustado por riesgo**.
 - **Salidas crudas:** `data/reporte_momentum.txt`, `data/reporte_momentum_robustez.txt`.
+
+---
+
+## E-11 — Control de riesgo sobre el momentum: qué funciona y qué no
+
+- **Fecha:** 2026-10-19
+- **Hipótesis:** el momentum transversal tiene ventaja (`E-10`) pero un drawdown del 77-93 %. Se probaron tres piezas de control de riesgo y una corrección de diseño mía.
+- **Método:** las tres piezas, como **interruptores** (no como parámetros a optimizar, para no inflar la búsqueda): (1) **filtro de régimen** — si la cesta a peso igual pierde su media de *N* días, se pasa a caja, venta inmediata y vuelta solo en rebalanceo; (2) **volatilidad objetivo** — peso × (objetivo / vol realizada de 30 días), con tope 1, sin apalancamiento; (3) **criterio de selección en entrenamiento** — retorno bruto o **Calmar** (retorno / |drawdown|).
+  Detalle que hace honesta la comparación: **la nube al azar lleva las mismas señales de riesgo**, así que lo único que cambia sigue siendo el criterio de selección.
+- **N:** 6 variantes × 18 combinaciones × 11 ventanas × 200 permutaciones. Salida cruda: `data/reporte_momentum_riesgo.txt`.
+- **Números** (referencia: cesta a peso igual **+1.121,8 %**, DD **−81,9 %**, **Calmar 13,69**):
+
+| Variante | OOS | DD | Calmar | Ventanas | Percentil azar | P(azar ≥) |
+|---|---|---|---|---|---|---|
+| A) Retorno bruto, sin control (= `E-10`) | +1.112 % | −81,8 % | 13,61 | 7/11 | 99 | 1,0 % |
+| **B) Calmar, sin control** | **+1.538 %** | **−80,1 %** | **19,22** | 7/11 | **100** | **0,0 %** |
+| C) Calmar + régimen 200 d | +160 % | −69,7 % | 2,30 | 3/11 | 97 | 3,0 % |
+| D) Calmar + régimen 200 d + vol 60 % | +374 % | −47,3 % | 7,91 | 3/11 | 99,5 | 0,5 % |
+| E) Calmar + vol 60 % | +630 % | −74,3 % | 8,49 | 7/11 | 98 | 2,0 % |
+| F) Calmar + régimen 100 d + vol 40 % | +184 % | −49,9 % | 3,69 | 4/11 | 88,5 | 11,5 % |
+
+- **Veredicto:** ⚠️ **ninguna variante cumple las tres condiciones** (DD mejor que −20 %, percentil ≥ 95, Calmar mejor que la cesta). Dos hallazgos:
+  1. **El control de riesgo sale caro.** El filtro de régimen recorta el drawdown de −80 % a −70 % pero **se come dos tercios del retorno** (+1.538 % → +160 %) y el Calmar se hunde de 19,2 a 2,3: entra tarde, después de la caída, y sale tarde, después de la subida. La volatilidad objetivo baja el DD a −47 % pagando lo mismo. **Se paga más retorno del drawdown que se ahorra**, porque el retorno de la estrategia vive justo en las fases que el filtro corta.
+  2. **Lo que sí funcionó fue arreglar mi propio error.** Cambiar la selección en entrenamiento de retorno bruto a **Calmar** mejora las tres cosas a la vez: +1.538 % (vs +1.112 %), DD −80,1 % (vs −81,8 %) y Calmar **19,22** frente a los **13,69** de la cesta. Y P(azar ≥ B) = 0,0 %. El retorno bruto premia el máximo riesgo (elegía K=1); el ajustado por riesgo no.
+- **Decidido:** se adopta **Calmar como criterio de selección por defecto** (reversible con `--objetivo retorno`, que reproduce `E-10`). Se **descartan** el filtro de régimen sobre la cesta y la volatilidad objetivo: cuestan más de lo que protegen.
+- **Lo que esto dice del problema de fondo:** con 7 altcoins, el drawdown es **estructural**. En un mercado bajista caen las siete a la vez, así que cualquier cartera siempre invertida hereda la caída, y cualquier filtro sobre la cesta entra y sale tarde. El DD < 20 % no se alcanza con filtros agregados; hacen falta dos cosas distintas: (a) **filtro absoluto por activo** (mantener solo los K mejores que además estén por encima de su propia tendencia) y (b) **más universo** (20-30 pares), para que siempre haya algo tendiendo arriba. La segunda necesita CCXT/VectorBT.
+- **Coste de búsqueda declarado:** 6 variantes fijas (interruptores) × 18 combinaciones × 200 permutaciones por variante. Dos objetivos probados en entrenamiento; se declara porque elegir la función objetivo *después* de ver los resultados es un grado de libertad del investigador.

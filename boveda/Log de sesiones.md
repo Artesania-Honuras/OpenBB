@@ -331,3 +331,30 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - `P11`: filtro de régimen y/o volatilidad objetivo sobre el momentum. Es el único camino que hoy tiene evidencia a favor.
 - Nota metodológica anotada para la próxima iteración: seleccionar en entrenamiento por retorno **ajustado por riesgo**, no por retorno bruto.
+
+---
+
+## S-14 — 2026-10-19 — Control de riesgo sobre el momentum
+
+**Hecho**
+
+- Ampliado `scripts/validar_momentum.py` (`C-23`): filtro de régimen sobre la cesta, volatilidad objetivo, Calmar como criterio de selección y bandera `--riesgo` con 6 variantes.
+- Verificación de regresión antes de tocar el defecto: la línea base reprodujo `E-10` número a número (+1.112 %, DD −81,8 %, percentil 99).
+- Experimento medido en `data/reporte_momentum_riesgo.txt`, con la **nube al azar llevando las mismas señales de riesgo** (si no, la comparación se contamina).
+
+**Resultado**
+
+- **Lo que falló:** el filtro de régimen recorta el drawdown de −80 % a −70 % pero se lleva dos tercios del retorno (+1.538 % → +160 %), y el Calmar cae de 19,2 a 2,3. La volatilidad objetivo baja el DD a −47 % pagando otro tanto. Se paga más retorno del drawdown que se ahorra.
+- **Lo que funcionó:** cambiar la selección en entrenamiento de retorno bruto a **Calmar**. Mejora retorno (1.538 vs 1.112), drawdown (−80,1 vs −81,8) y Calmar (19,22 vs 13,69 de la cesta) a la vez, y P(azar ≥ B) = 0,0 %. Era un error mío de diseño: el retorno bruto premia el máximo riesgo.
+- **Ninguna variante** alcanza el DD < 20 % del criterio del proyecto.
+
+**Decidido**
+
+- Calmar pasa a ser el criterio por defecto; `--objetivo retorno` reproduce `E-10` para que nada quede sin poder rehacerse.
+- Filtro de régimen agregado y volatilidad objetivo: **descartados**. El problema no se resuelve con filtros sobre la cesta.
+- `D-16`: el drawdown es **estructural** con 7 altcoins (en un mercado bajista caen las siete). El siguiente trabajo es filtro **absoluto por activo** y ampliar el universo a 20-30 pares, que es donde entran CCXT y VectorBT del ecosistema.
+
+**Abierto**
+
+- `P12`: momentum absoluto por activo (mantener solo los K mejores que además estén por encima de su propia tendencia).
+- `P13`: ampliar el universo de 7 a 20-30 pares — es la única vía que ataca el drawdown por construcción, no por filtro.
