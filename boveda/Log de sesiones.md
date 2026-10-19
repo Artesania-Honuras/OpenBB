@@ -200,3 +200,27 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P1 (bloqueo principal) y P8 (revalidar el walk-forward) siguen abiertos.
 - Tras la actualización del equipo: relanzar API y panel, luego `estado.py` → 23/23 ✅.
+
+---
+
+## S-09 — 2026-10-19 — Plan de mejora escrito en la bóveda
+
+**Hecho**
+
+- `boveda/Plan de mejora.md`: inventario de las 869 rutas y de las 12 fuentes sin usar (F1-F12), déficits declarados (D1-D5), mapa de integración con Freqtrade por niveles, packs A/B/C y orden con puertas.
+- Fila añadida al índice de la memoria (`INDICE.md` §3) y registro `C-16`.
+- Comprobado antes de escribir: API 6900 y panel 8501 siguen arriba tras la actualización de VS Code.
+
+**Se rompió / se resolvió**
+
+- Nada. No se tocó código ni datos: es planificación.
+
+**Decidido**
+
+- La capa macro (la que ya existe) es **régimen**, nunca gatillo; los gatillos tienen que venir de datos de alta frecuencia (derivados, funding, basis, opciones, on-chain).
+- Recomendación registrada: empezar por el **paso 0** (revalidar los 7 pares con el contexto corregido) y después el **pack A**.
+
+**Abierto**
+
+- El usuario debe decidir: empezar por el paso 0, elegir pack (A recomendado) y pasar la lista de repositorios que mencionó (no están en el contexto de la sesión).
+- P1 y P8 siguen abiertos.

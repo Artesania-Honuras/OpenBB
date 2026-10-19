@@ -40,6 +40,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | `Registro de resultados.md` | Una fila `E-NN` por experimento: hipótesis, método, números, veredicto |
 | `Log de sesiones.md` | Bitácora: qué se hizo, qué se rompió, qué se decidió, qué quedó abierto |
 | `Plantillas.md` | Formatos vacíos para que el registro sea consistente |
+| `Plan de mejora.md` | Hoja de ruta de datos y validación: fuentes disponibles (F1-F12), déficits (D1-D5), packs A/B/C y puertas |
 
 > Manual de uso completo (instalación, arranque, comandos, problemas): `README.md` en la raíz.
 

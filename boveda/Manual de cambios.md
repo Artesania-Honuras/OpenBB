@@ -155,3 +155,14 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Corrección aplicada:** deshechos los tres cambios en `seconBrain` (página borrada, índice y log revertidos a su texto anterior) sin tocar los cambios que el usuario ya tenía pendientes allí. Nada de OpenBB se commiteó en ese repositorio.
 - **Evidencia:** `git status` de `seconBrain` sin rastro de OpenBB; los pendientes que había antes de empezar siguen igual. Regla escrita en `CLAUDE.md` (línea 1 del archivo la enlaza: "MAPA DEL PROYECTO").
 - **Reversión:** quitar la sección y la fila del resumen.
+
+---
+
+## C-16 — Plan de mejora registrado en la bóveda
+
+- **Fecha:** 2026-10-19
+- **Qué:** nuevo documento `boveda/Plan de mejora.md`: inventario de lo que ya existe, las 12 fuentes de OpenBB sin usar (F1-F12) con su relación con Freqtrade, los 5 déficits declarados (D1-D5), el mapa de integración con Freqtrade por niveles (1-6), los 3 packs de trabajo (A/B/C) con esfuerzo y objetivo, y el orden propuesto con puertas de validación. Enlace añadido en `INDICE.md` §3.
+- **Por qué:** el usuario pidió el plan por escrito dentro de la bóveda del proyecto (no en el chat, no en otra bóveda).
+- **Evidencia:** documento con 12 secciones; inventario de rutas obtenido de `openapi.json` (869 rutas, 18 providers).
+- **Impacto:** **ninguno** sobre el código o los datos. Es planificación, no cambio. Nada de lo descrito se aplica hasta que el usuario elija pack y pase la puerta de validación.
+- **Reversión:** borrar el documento y la fila del índice.
