@@ -69,6 +69,7 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 - `CLAUDE.md` con las reglas obligatorias y el puntero al índice.
 - `estado.py`: checklist de solo lectura con tabla ✅/❌.
 - `.gitignore` y repo `OpenBB` público en GitHub; commit y push.
+- **Verificado:** commit `f4fe7b5`, repo `https://github.com/Artesania-Honuras/OpenBB` (público), `estado.py` → **22/22 ✅**.
 
 **Se rompió / se resolvió**
 

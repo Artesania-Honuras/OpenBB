@@ -90,5 +90,5 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Fecha:** 2026-10-19
 - **Qué:** `boveda\` con 5 archivos, `CLAUDE.md` con reglas, `estado.py` (checklist de solo lectura), `.gitignore`, repo `OpenBB` público en GitHub.
 - **Por qué:** memoria auditable dentro del propio proyecto, versionada, sin dependencias de terceros.
-- **Evidencia:** commit inicial y push verificados; `estado.py` imprime la tabla completa.
+- **Evidencia:** repo público `https://github.com/Artesania-Honuras/OpenBB`, commit inicial `f4fe7b5` con 22 archivos (0,6 MB); `estado.py` → 22/22 chequeos ✅.
 - **Reversión:** `git revert` del commit de memoria o borrar `boveda\` y `CLAUDE.md`.
