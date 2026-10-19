@@ -662,6 +662,16 @@ Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **24/24 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
 `... scripts\puente_freqtrade.py --exportar --forzar`.
 
+> **Paciencia con la API en frío.** Después de reiniciar el equipo puede tardar
+> **3-5 minutos** en escuchar en el 6900 (importa todo OpenBB desde cero: ~150 s de
+> CPU y ~800 MB). No está colgada. Comprobarlo con
+> `Get-NetTCPConnection -LocalPort 6900 -State Listen` o abriendo
+> `http://127.0.0.1:6900/docs`. Matarla antes de tiempo solo reinicia la espera.
+>
+> **Los bots de Freqtrade no arrancan solos:** si `estado.py` dice
+> `Puertos 8080/8081/8082: ninguno`, hay que relanzarlos desde su propio directorio.
+> El panel y la API no los tocan ni los reinician.
+
 ---
 
 *Manual mantenido junto con la memoria del proyecto. Cualquier cambio se registra

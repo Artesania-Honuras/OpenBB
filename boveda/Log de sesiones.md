@@ -466,3 +466,27 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 **Abierto**
 
 - `P3`: escribir la rotación en Freqtrade (regla fija, 24 pares, K=3, semanal, 10 %).
+
+---
+
+## S-19 — 2026-10-19 — Reinicio del equipo: recuperación y dos falsos negativos del chequeo
+
+**Hecho**
+
+- El equipo se había reiniciado (uptime 6 min al preguntar). `estado.py` lo detectó bien: API y panel caídos. **Pero se equivocó en dos cosas** (`C-32`): decía que no había procesos de Freqtrade (había **10**) y que los puertos 8080/8081 estaban cerrados (estaban los tres, más el 8082 del bot MT5).
+- Causa 1: el chequeo buscaba `freqtrade.exe` por **nombre de imagen**, y los bots corren como `python.exe`. Causa 2: `tasklist` responde en la codificación OEM y con `PYTHONUTF8=1` la decodificación UTF-8 reventaba en el hilo lector, tapando el error real con un `AttributeError`.
+- Arreglados los dos, más el puerto 8082.
+- Relanzados API y panel. La API tardó **~3,5 minutos** en frío (147 s de CPU, 812 MB) frente a los ~60 s que tenía anotados `D-05`: no estaba colgada, estaba importando. Queda anotado para no matarla pensando que se colgó.
+
+**Resultado**
+
+- `estado.py` → **24/24 ✅**, con API (6900), panel (8501) y **3 bots** (8080, 8081, 8082) vivos.
+
+**Decidido**
+
+- Un chequeo de estado que da falso negativo es peor que no tenerlo: se corrige el chequeo, nunca el dato.
+- El arranque en frío de la API se documenta como «minutos», no como «un minuto».
+
+**Abierto**
+
+- `P3`: escribir la rotación en Freqtrade.

@@ -328,3 +328,18 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Por qué:** `--todos` recorre **todos** los archivos del directorio, y con la ampliación a 24 pares (`C-27`) ese comando dejó de servir para reproducir `E-07`/`E-08`/`E-09`, que son de 7. Sin `--pares`, la documentación habría prometido una reproducción que ya no era tal.
 - **Evidencia:** `--pares` de 7 en `validar_momentum.py` reproduce `E-11` exacto (mismo patrón); en `validar_estrategia.py` el cambio es el mismo criterio de rebanado.
 - **Reversión:** quitar el argumento y volver a `if not args.todos: return`.
+
+---
+
+## C-32 — `estado.py`: dos falsos negativos que mentían sobre el sistema
+
+- **Fecha:** 2026-10-19
+- **Qué se encontró:** tras un reinicio del equipo, `estado.py` dijo **3 fallos críticos** y, entre ellos, `Freqtrade Procesos: AttributeError` y `Puertos 8080/8081: ninguno` — **con los tres bots vivos**. Dos defectos distintos:
+  1. **Buscaba `freqtrade.exe` por nombre de imagen** (`tasklist /FI "IMAGENAME eq freqtrade.exe"`), pero los bots corren como **`python.exe`** con `freqtrade.exe trade ...` en la línea de comandos. Resultado: 0 procesos siempre que se lanzan así. Ahora se cuentan por **línea de comandos** (`Get-CimInstance` + `-match 'freqtrade.exe'`).
+  2. **`text=True` con `PYTHONUTF8=1`**: la salida de `tasklist` viene en la codificación **OEM** de Windows, la decodificación UTF-8 reventaba en el hilo lector y el `AttributeError` tapaba la causa real. Ahora se decodifica a mano con `errors="replace"`.
+- **Además:** el chequeo de puertos incluye **8082** (el bot de reporte MT5), y el nombre pasa a `Puertos 8080/8081/8082`.
+- **Por qué importa:** un chequeo de estado que da falso negativo es **peor que no tenerlo**: induce a «arreglar» lo que no está roto o a desconfiar de lo que sí funciona. El caso contrario —decir ✅ con el servicio caído— habría sido peor todavía.
+- **EVIDENCIA:** mismo minuto, antes y después —
+  antes: `Freqtrade Procesos ❌ AttributeError` · `Puertos 8080/8081 ❌ ninguno` · veredicto 3 críticos.
+  después: `Freqtrade Procesos ✅ 10 procesos` · `Puertos 8080/8081/8082 ✅ 3 escuchando (8080, 8081, 8082)` · veredicto 24/24 con la API arriba.
+- **Reversión:** volver a `tasklist` por imagen y `text=True`. No se recomienda: es lo que fallaba.

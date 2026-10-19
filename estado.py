@@ -70,10 +70,13 @@ def _puerto(puerto: int) -> bool:
 
 def _git(*args: str) -> tuple[int, str]:
     try:
+        # Sin `text=True`: con PYTHONUTF8=1 la decodificacion automatica falla
+        # si git (o tasklist) responde en la codificacion OEM de Windows.
         r = subprocess.run(
-            ["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=20
+            ["git", *args], cwd=ROOT, capture_output=True, timeout=20
         )
-        return r.returncode, (r.stdout or r.stderr).strip()
+        salida = (r.stdout or r.stderr).decode("utf-8", errors="replace")
+        return r.returncode, salida.strip()
     except Exception as e:  # noqa: BLE001
         return 1, str(e)
 
@@ -221,19 +224,28 @@ def revisar() -> list[dict]:
         add("Externos", nombre, ok, detalle)
 
     # --- Freqtrade (solo observacion) -------------------------------------
+    # OJO: los bots NO se llaman `freqtrade.exe` en el administrador de tareas:
+    # corren como `python.exe` con `freqtrade.exe trade ...` en la linea de
+    # comandos. Buscar por nombre de imagen daba 0 procesos con los bots vivos.
     try:
-        out = subprocess.run(
-            ["tasklist", "/FI", "IMAGENAME eq freqtrade.exe", "/FO", "CSV", "/NH"],
-            capture_output=True, text=True, timeout=20,
-        ).stdout
-        n = sum(1 for linea in out.splitlines() if linea.startswith('"freqtrade.exe"'))
+        ps = (
+            "Get-CimInstance Win32_Process -Filter \"Name like '%python%'\" | "
+            "Where-Object { $_.CommandLine -match 'freqtrade.exe' -and "
+            "$_.CommandLine -match '(trade|webserver)' } | "
+            "Measure-Object | Select-Object -ExpandProperty Count"
+        )
+        salida = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps],
+            capture_output=True, timeout=40,
+        ).stdout.decode("utf-8", errors="replace").strip()
+        n = int(salida or 0)
         add("Freqtrade", "Procesos", n > 0, f"{n} procesos")
     except Exception as e:  # noqa: BLE001
-        add("Freqtrade", "Procesos", False, type(e).__name__)
+        add("Freqtrade", "Procesos", False, f"{type(e).__name__}: {e}")
 
-    puertos = [p for p in (8080, 8081) if _puerto(p)]
-    add("Freqtrade", "Puertos 8080/8081", bool(puertos),
-        f"{len(puertos)} escuchando" if puertos else "ninguno")
+    puertos = [p for p in (8080, 8081, 8082) if _puerto(p)]
+    add("Freqtrade", "Puertos 8080/8081/8082", bool({8080, 8081} & set(puertos)),
+        f"{len(puertos)} escuchando ({', '.join(map(str, puertos))})" if puertos else "ninguno")
 
     # --- Repo -------------------------------------------------------------
     codigo, rama = _git("rev-parse", "--abbrev-ref", "HEAD")
