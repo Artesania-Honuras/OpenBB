@@ -782,3 +782,10 @@ iejo, sin_registro).
 - Fuentes: **carga múltiple de distintas fuentes** → registro, primaria/fallback, bandera de
   discrepancia y carga por lotes.
 - Registrado en **§24** del documento. **Sin cambios en la app.**
+
+**Capa visual (misma sesión)**
+
+- Añadida al plan como trabajo transversal **D0** (**§25**): diagnóstico por código (sin tema,
+  sin CSS, 9 pestañas, gráficos por defecto), tokens, inventario de componentes, estándar de
+  gráficos, jerarquía de la primera pantalla, estados, accesibilidad y criterios D0.1–D0.10.
+- **Sin cambios en la app.**

@@ -722,4 +722,137 @@ Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`)
 
 ---
 
+---
+
+## 25. Capa visual y dashboard profesional (transversal)
+
+> Añadido a petición del usuario (2026-10-20). No cambia el alcance funcional; cambia **cómo se presenta**. Se ejecuta en paralelo a las fases 0–1.
+
+### 25.1. Diagnóstico por código
+
+| Hecho | Evidencia | Efecto |
+|---|---|---|
+| Sin tema propio | no existe `.streamlit/config.toml` | colores y tipografía por defecto |
+| Sin CSS | 0 reglas propias | espaciado y jerarquía por defecto |
+| 9 pestañas planas | `st.tabs([...])` | todo al mismo nivel; no hay recorrido |
+| Filas de 6 métricas | `st.columns(6)` | se aprieta a 1280 px; ninguna es protagonista |
+| Gráficos por defecto | `st.line_chart` / `st.area_chart` | estilo Altair genérico, sin unidades, fuente ni anotaciones |
+| Tablas crudas | `st.dataframe` | sin formato es-ES, unidades ni fuente |
+| Sin estados | `-` cuando falta dato | no hay skeleton, vacío ni error |
+| Sin marca | `page_title="OpenBB local"` | aspecto de prototipo |
+
+**Conclusión:** el panel es funcional, pero **no parece un producto**. "Profesional" no es más widgets: es **jerarquía, consistencia y confianza**.
+
+### 25.2. Qué hace profesional a las referencias
+
+| Referencia | Elemento | Por qué funciona | Traducción |
+|---|---|---|---|
+| OpenBB Workspace | Widgets/cards, tema oscuro, densidad | Cada bloque tiene título, dato y contexto; se lee en diagonal | Cards con anatomía fija y grid |
+| FinanceToolkit docs | Tablas + narrativa + gráficos anotados | Explica antes de mostrar; números consistentes | "Insight + dato + fuente" |
+| FinanceDatabase | Tablas limpias, filtros | Encuentra sin ruido | Tabla con filtros y formato |
+| Video/Terminal | Una pantalla, fuentes a la vista | Velocidad y trazabilidad | Fuente/as-of, no la estética |
+
+**No copiar:** la estética verde-sobre-negro del terminal. **Sí copiar:** su densidad informativa y sus fuentes visibles.
+
+### 25.3. Sistema de diseño (tokens)
+
+| Token | Valor propuesto |
+|---|---|
+| Fondo / superficie | `#0B0F14` / `#121821` (oscuro), `#FFFFFF` / `#F6F8FA` (claro) |
+| Texto / muted | `#E6EDF3` / `#8B98A5` |
+| Acento | `#4C8DFF` |
+| Semánticos | positivo `#2EA043`, negativo `#F85149`, aviso `#D29922`, neutro `#8B98A5` |
+| Tipografía UI | Inter / Source Sans, 12/14/16/20/28 |
+| Números | IBM Plex Mono / JetBrains Mono, **tabular** |
+| Espaciado | 4/8/12/16/24/32/48 |
+| Radio / sombra | 8–12 px / sutil |
+| Grid | 12 columnas, gutter 24, ancho máximo 1440 |
+
+Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha o etiqueta).
+
+### 25.4. Inventario de componentes
+
+| Componente | Anatomía | Uso |
+|---|---|---|
+| `KPI` | etiqueta · valor · delta · percentil · fuente | Fila superior (4) |
+| `MetricCard` | título · valor · contexto · sparkline · fuente | Detalle |
+| `SourceBadge` | fuente · as-of · retraso · estado | Cada tarjeta |
+| `DeltaChip` | flecha · valor · periodo | Cambios |
+| `ChartFrame` | título · unidad · rango · fuente · anotaciones | Todos los gráficos |
+| `DataTable` | números a la derecha · unidades · formato es-ES | Tablas |
+| `ContextBar` | activo · periodo · benchmark | Cabecera |
+| `Tabs/Pills` | Mira · Entiende · Compara | Navegación |
+| `EmptyState` / `ErrorState` / `Skeleton` | mensaje + acción | Estados |
+| `ReportTemplate` | portada · métricas · gráficos · fuente · aviso | PDF |
+
+### 25.5. Estándar de gráficos
+
+- **Una sola librería** (Plotly o Altair), con plantilla propia; **cero** `st.line_chart` en vistas principales.
+- Ejes con unidad y periodo; hover con fecha y valor; rango 1M/6M/1A/5A/Máx.
+- Anotaciones solo si explican (shock, cambio de régimen); nada de 3D, tartas para series temporales ni doble eje sin necesidad.
+- Fuente y as-of dentro del marco del gráfico.
+
+### 25.6. Jerarquía de la primera pantalla
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ OpenBB local · contexto al 2026-10-20 · [Inversor|Analista]  │
+├──────────────────────────────────────────────────────────────┤
+│ ¿Cómo está el entorno?                         ● Neutro      │
+│ 3 frases: régimen, riesgo, qué vigilar.                      │
+├──────────────┬──────────────┬──────────────┬─────────────────┤
+│ VIX 18,4     │ Curva +52 pb │ CPI 2,9 %    │ Funding 8,1 %   │
+│ pct 61       │ +3 pb ayer   │ -0,1 pp      │ pct 44          │
+├──────────────┴──────────────┴──────────────┴─────────────────┤
+│ [Gráfico principal: VIX 5 años · bandas · fuente CBOE]       │
+├──────────────────────────────────────────────────────────────┤
+│ Qué cambió ayer · 3 bullets                                  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Regla de los 10 segundos:** alguien que no es analista debe poder decir qué es lo importante sin hacer clic.
+
+### 25.7. Estados y confianza
+
+- **Loading:** skeleton con la forma del contenido, no spinner infinito.
+- **Vacío:** "no hay datos para este activo/periodo" + acción.
+- **Error:** qué falló, qué se conserva, qué hacer.
+- **Dato viejo:** badge ámbar "as-of 2026-10-19"; nunca un verde que mienta.
+- **Fuente:** siempre; si es fallback, se dice.
+- **Aviso:** "información, no asesoramiento" visible.
+
+### 25.8. Accesibilidad y responsive
+
+- Contraste AA (4.5:1), foco visible, navegación por teclado.
+- Nada de color como único significado (flecha + texto).
+- 1440/1280/1024 usables; móvil en P3.
+- `prefers-reduced-motion` respetado.
+
+### 25.9. Entregables y criterios de aceptación
+
+| ID | Entregable | Fase | Criterio |
+|---|---|---|---|
+| D0.1 | Tokens (color, tipo, espaciado) | 0 | 0 colores hardcodeados |
+| D0.2 | Inventario de componentes | 0 | 100 % de tarjetas con la misma anatomía |
+| D0.3 | Estándar de gráficos | 0–1 | 0 `st.line_chart` en vistas principales |
+| D0.4 | Grid y layout | 1 | 1440/1280 sin desbordes |
+| D0.5 | Formato numérico es-ES | 1 | 20/20 muestras correctas |
+| D0.6 | Tema oscuro/claro + `config.toml` | 1 | Contraste AA |
+| D0.7 | Estados (skeleton/vacío/error/viejo) | 1 | 4/4 estados |
+| D0.8 | Accesibilidad | 1 | Teclado + contraste + no color-only |
+| D0.9 | Plantilla de informe | 2 | Fuente, fecha y aviso |
+| D0.10 | Marca y móvil | 3 | Logo/favicon; 390 px usable |
+
+**Pruebas:** 5 capturas de regresión visual (antes/después), test de los 10 segundos con una persona no técnica, contraste medido y formato numérico contra 20 muestras.
+
+### 25.10. Qué no hacer
+
+- Más widgets para parecer "completo".
+- Gráficos 3D, tartas de series temporales, doble eje decorativo.
+- Rojo/verde como único código.
+- Ocultar la fuente o la fecha para "limpiar".
+- Copiar la estética del terminal.
+
+---
+
 > Este documento no es una decisión. Es la base para tomarla.
