@@ -376,7 +376,7 @@ with tab_resumen:
             else:
                 st.info(
                     "El contexto no tiene la columna de funding. Regenéralo con:\n\n"
-                    "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\puente_freqtrade.py --exportar\n```"
+                    "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\refrescar_contexto.py\n```"
                 )
         except Exception as e:  # noqa: BLE001
             st.error(f"No se pudo leer la capa rápida: {e}")
@@ -869,7 +869,7 @@ with tab_estrategia:
         },
         {
             "ID": "E-14",
-            "Qué se probó": "Configuración fija, sin re-optimizar (lo que se instala)",
+            "Qué se probó": "Configuración fija, sin re-optimizar (lo que se creía instalable)",
             "Resultado": "+820 % · Calmar 9,95 · 7/11 ventanas… con UNA fase del rebalanceo",
             "Veredicto": "❌ Refutado por E-16",
         },

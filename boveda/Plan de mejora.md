@@ -1,8 +1,8 @@
 # Plan de mejora — de "datos que no dicen nada" a "datos que deciden"
 
-- **Fecha:** 2026-10-19 (actualizado en S-18)
-- **Estado:** **en ejecución.** Pasos 0 a 1g hechos; **1h (escribir la rotación en Freqtrade) es el siguiente**.
-- **Contexto:** el panel funciona (24/24 ✅, 9 pestañas) y el plan ya no es una propuesta: midió,
+- **Fecha:** 2026-10-19 (actualizado en S-26)
+- **Estado:** **cerrado en la línea de señales.** Pasos 0 a 1h hechos y corregidos: la regla se refutó (`E-16`/`E-17`) y el macro como filtro tampoco aporta (`E-18`). Lo que queda es operación y contexto, no estrategia.
+- **Contexto:** el panel funciona (26/26 ✅, 9 pestañas) y el plan ya no es una propuesta: midió,
   descartó y se quedó con lo único que sobrevivió a las pruebas.
 - **Regla que manda:** ningún dato entra en vivo si no bate el **benchmark de misma exposición**
   fuera de muestra. Ver `Registro de resultados.md`.
@@ -15,7 +15,7 @@
 |---|---|
 | API local | `127.0.0.1:6900` · 869 rutas · 18 providers |
 | Panel visual | `127.0.0.1:8501` · **9 pestañas** · huella de versión para detectar pestañas viejas |
-| Contexto diario | **14 columnas** × 36.636 filas, con retrasos anti look-ahead |
+| Contexto diario | **14 columnas** × 36.637 filas (crece a diario), con retrasos anti look-ahead |
 | Puente a Freqtrade | parquet + `merge_asof` (0 NaN verificado) |
 | Velas | **24 pares** 4h, todos terminando en la misma vela (verificado; EOS descartado por retirado) |
 | Validación por activo | walk-forward + Monte Carlo + costes (`validar_estrategia.py`) |
@@ -131,7 +131,7 @@ El parquet se refresca **solo** a las 09:05 desde `C-38` (validado y con copia d
 
 ## 7. Eje 6 — Operación y app
 
-- ✅ **Refresco automático diario del contexto** (`C-38`): tarea 09:05, valida antes de guardar, conserva el anterior, log y chequeo en `estado.py` (26/26). **Falta** un aviso activo (Telegram/correo) si falla: hoy el aviso es el chequeo de estado.
+- ✅ **Refresco automático diario del contexto** (`C-38`): tarea 09:05, valida antes de guardar, conserva el anterior, log y chequeo en `estado.py` (26/26). **El aviso vive en el panel** (`C-39`): verde si el último refresco terminó bien, rojo si falló, ámbar si lleva más de 48 h. **Falta** el aviso fuera del panel (Telegram/correo).
 - **Calendario de eventos** en el panel (CPI, FOMC) con los próximos 30 días.
 - **Régimen actual vs histórico:** percentil del VIX/funding de hoy frente a 5 años.
 - **"Qué cambió desde ayer":** diff del contexto, no una tabla entera.
@@ -185,7 +185,7 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 1f | **Ampliar el universo a 24 pares** ✅ `E-13` | ❌ **mi hipótesis era falsa**: retorno y Calmar suben, el DD **empeora** (−80,0 % → −87,1 %). El drawdown es de la clase de activo (`D-21`) |
 | 1g | **Configuración fija + dimensionado** ✅ `E-14`/`E-15` | ❌ **refutado**: la fase era un parámetro oculto (`E-16`); en mediana la regla no bate a la cesta y el walk-forward tampoco (`E-17`). El dimensionado queda sin objeto |
 | 1h | **Escribir la rotación en Freqtrade** (`P3`) | ✅ **cerrado en falso positivo evitado**: escrita y verificada (296/296), **refutada antes de tocar un bot**. No se copia |
-| 2 | Refresco automático + panel con calendario y régimen | ✅ refresco hecho (`C-38`, tarea 09:05 verificada, **26/26**). ⚪ el calendario y la vista de régimen siguen pendientes |
+| 2 | Refresco automático + panel con calendario y régimen | ✅ refresco hecho y **visible** (`C-38` tarea 09:05 verificada, `C-39` tarjeta de aviso, **26/26**). ⚪ el calendario y la vista de régimen siguen pendientes |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |
 
@@ -206,19 +206,20 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 - **Acumular indicadores técnicos:** hay 59 rutas de `technical` y meter 20 sería
   garantizar sobreajuste.
 - **Pagar datos antes de saber si el gratis aporta:** primero A, después se paga con criterio.
-- **Tocar los bots en vivo antes del paso 1h y sin modo aviso:** sigue bloqueado, y con
-  razón. Ahora ya hay número y tamaño, así que el paso 1h es lo que desbloquea, no un
-  filtro más.
+- **Tocar los bots en vivo sin una regla que haya pasado la puerta:** sigue bloqueado, y con
+  razón. Ya no es que falte el paso 1h: es que **no hay nada que desplegar**. La rotación se
+  escribió y se refutó (`E-16`/`E-17`); no se copia a los bots.
 
 ---
 
-## 12. Seguimiento del plan (estado al cierre de S-18)
+## 12. Seguimiento del plan (estado al cierre de S-26)
 
 | Pregunta abierta del plan | Respuesta |
 |---|---|
 | ¿Se empieza por el paso 0 (revalidar con el contexto corregido)? | ✅ hecho: `E-07` — 0/7 → 1/7, el veredicto no cambió |
-| ¿Pack A, B o C? | ✅ **A cerrado como vía**: funding (`E-08`) y salidas (`E-09`) dieron negativo. El trabajo real no era añadir features, era **cambiar la señal de entrada** |
-| ¿Lista de repositorios y su papel? | ✅ 9 repos con veredicto en `Ecosistema de herramientas.md`. Ninguno adoptado todavía; `VectorBT` es el siguiente si hace falta barrer más combinaciones |
-| ¿Hay estrategia con ventaja? | ✅ **sí**: momentum transversal, ventaja medida (`E-10`, `E-13`, `E-14`) |
-| ¿Se puede instalar? | ✅ **sí, con condiciones**: regla fija + sleeve del 10 % (`E-14`/`E-15`), incumpliendo el `DD p95 < 20 %` por 2 puntos y con la advertencia de fragilidad paramétrica |
-| ¿Qué falta? | **`P3`**: escribir la rotación para Freqtrade y probarla en modo aviso |
+| ¿Pack A, B o C? | ✅ **A cerrado como vía**: funding (`E-08`) y salidas (`E-09`) dieron negativo. El trabajo real era **cambiar la señal de entrada**, y esa vía también se cerró (`E-16`/`E-17`) |
+| ¿Lista de repositorios y su papel? | ✅ 9 repos con veredicto en `Ecosistema de herramientas.md`. Ninguno adoptado; `VectorBT` **en espera**, no urgente: no hay hipótesis que barrer |
+| ¿Hay estrategia con ventaja? | ❌ **no**: la ventaja de `E-10`/`E-14` era en buena parte la fase del rebalanceo (`E-16`/`E-17`). El macro no la rescata (`E-18`) |
+| ¿Se puede instalar? | ❌ **no**: no queda nada que instalar (`D-31`). `P3` quedó escrita y verificada, y **no se copia** a los bots |
+| ¿Qué falta? | Mantenimiento (`P2` aviso externo, `P6` pruebas, `P9` reinicio tras cambios) y contexto informativo. **Ninguna señal pendiente de despliegue** |
+| ¿Y el panel? | ✅ sirve para lo que sí hace bien: mostrar el entorno. Refresco diario validado y visible (`C-38`/`C-39`) |

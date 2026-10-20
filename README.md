@@ -265,8 +265,9 @@ apagado a las 09:05, se ejecuta al iniciar sesión (`-StartWhenAvailable`).
 `estado.py` comprueba que la tarea existe, que corrió hace menos de 48 h y que
 su último resultado fue 0.
 
-El modo manual sigue disponible: `scripts\puente_freqtrade.py --exportar --forzar`
-(no valida ni conserva el anterior).
+El modo manual recomendado es `scripts\refrescar_contexto.py` (valida y conserva el
+anterior). `puente_freqtrade.py --exportar --forzar` sigue existiendo, pero **no valida
+ni conserva el anterior**: solo para diagnosticar.
 
 El `.parquet` **no se versiona** (es binario regenerable); el CSV tampoco.
 
@@ -373,7 +374,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | BCE falla (`URLError`) | Certificados de Windows | Usar los lanzadores (cargan certifi) |
 | `results: []` | Proveedor requiere clave | Ver sección 11 (FRED/EIA) |
 | Primera consulta tarda 30-60 s | Proveedor externo lento | Normal; las siguientes usan caché |
-| Contexto desactualizado | No se reexportó | `puente_freqtrade.py --exportar` |
+| Contexto desactualizado | La tarea diaria no corrió | Mirar la tarjeta del panel o `data\refresco_contexto.log`; lanzarla con `Start-ScheduledTask` |
 | Panel 8501 no abre | La API está caída | Arrancar `.\run-openbb-api.ps1` y refrescar |
 | Cambié `app.py` y no veo nada nuevo | Streamlit sirve el script que cargó al arrancar | Reiniciar el panel y `Ctrl+F5` en el navegador |
 | `git push` rechazado | Remoto adelantado | `git pull --rebase` y reintentar |
@@ -463,9 +464,14 @@ Memoria: `boveda/INDICE.md`, `Manual de cambios.md`, `Registro de resultados.md`
 | D-03 | `eia` excluido | Requiere clave en build |
 | D-04 | SSL certifi | EURUSD 7.117 filas |
 | D-05 | Autobuild off | Arranque ~60 s |
-| D-06 | Contexto con retrasos de publicación | 36.636 × 13, 0 NaN en 2026 |
+| D-06 | Contexto con retrasos de publicación | 36.637 × 14, 0 NaN en 2026 |
 | D-07 | Puente por archivo | 14.886 velas fusionadas |
 | D-08 | No integrar la estrategia | 0/7 baten la referencia |
+
+> Las decisiones de investigación (**D-09 … D-34**: funding, fase del rebalanceo,
+> cierre de la línea de señales, refresco verificado) viven en
+> `boveda/INDICE.md`, sección 4. El resumen que importa: **no hay nada que
+> instalar** (`D-31`, `D-33`).
 
 ### Resultado de la validación (2021-01 → 2026-10) — revalidado con el contexto corregido
 
@@ -784,8 +790,10 @@ riesgo.
    .\venvs\openbb\Scripts\python.exe estado.py
    ```
 2. **Mapa:** leer `boveda/INDICE.md` (secciones 4 y 7).
-3. **Historia:** leer la última entrada de `boveda/Log de sesiones.md` y seguir
-   por el pendiente P1.
+3. **Historia:** leer la última entrada de `boveda/Log de sesiones.md`. La línea de
+   señales está **cerrada** (`D-31`, `D-33`): P1 no está abierto, está **cerrado en
+   negativo**. Lo que queda es mantenimiento (P6, P9), un aviso externo al panel si el
+   refresco falla, y —si se quiere entender— P14.
 
 Si el paso 1 muestra un ❌ crítico, se atiende antes de cualquier otra cosa.
 
@@ -801,7 +809,7 @@ cd C:\Users\DELL\.ipython\OpenBB
 
 Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **26/26 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
-`... scripts\puente_freqtrade.py --exportar --forzar`.
+`... scripts\refrescar_contexto.py` (o se lanza la tarea programada).
 
 > **Paciencia con la API en frío.** Después de reiniciar el equipo puede tardar
 > **3-5 minutos** en escuchar en el 6900 (importa todo OpenBB desde cero: ~150 s de

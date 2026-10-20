@@ -648,3 +648,33 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 **Decidido**
 
 - Lo que no se ve en el panel no cuenta: la tarea ya existía y ya fallaba en silencio. El aviso pasa a estar donde se mira.
+
+---
+
+## S-26 — 2026-10-19 — Cierre: que lo escrito diga lo que es
+
+**Hecho**
+
+- Auditoría de lo que está escrito **en presente** en README, `INDICE`, `Plan de mejora`,
+  `Ecosistema de herramientas` y los textos del panel, después de `E-16`, `E-17`, `E-18`,
+  `C-38` y `C-39`.
+- **14 correcciones** (detalle en `C-40`): cifras (36.636 → 36.637; 24 → 26 chequeos;
+  13 → 14 columnas), estados («en ejecución» → cerrado; «sí hay estrategia» → **no**;
+  «P2 abierto» → hecho), comandos (`puente_freqtrade` → `refrescar_contexto`) y
+  afirmaciones («la señal nueva es momentum» → rama cerrada).
+- El histórico (Log, Manual) se dejó **intacto**: un registro que se reescribe deja de ser
+  registro.
+
+**Resultado**
+
+- `AppTest`: **0 excepciones**, 9 pestañas, tarjeta de refresco en verde.
+- Panel reiniciado a las **21:19** (versión `app.py` 21:16), health **200**.
+- `estado.py`: **26/26** tras el commit.
+- `grep` final: **0** afirmaciones vivas obsoletas; las que quedan con 24/24 o 36.636 están
+  dentro de entradas fechadas.
+
+**Decidido**
+
+- Nada nuevo. Se confirma `D-31`/`D-33`: OpenBB es panel informativo, no fuente de señales.
+- Regla de cierre: antes de cerrar una sesión, **buscar las cifras viejas**, no solo añadir
+  la entrada nueva.

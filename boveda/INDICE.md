@@ -1,6 +1,6 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-25
+> Última actualización: 2026-10-19 · Sesión S-26
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
 > **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
 
@@ -57,7 +57,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-03 | Provider `eia` excluido | Su build hook exige `EIA_API_KEY` en vivo y aborta la instalación | 2026-10-19 |
 | D-04 | SSL forzado a certifi | `EURUSD` vía BCE devuelve 7.117 filas | 2026-10-19 |
 | D-05 | `OPENBB_AUTO_BUILD=false` | Arranque ~60 s sin cuelgues | 2026-10-19 |
-| D-06 | Contexto diario con retrasos de publicación | 36.636 filas × 14 columnas, 1926→2026, 0 NaN en 2026 | 2026-10-19 |
+| D-06 | Contexto diario con retrasos de publicación | 36.637 filas × 14 columnas (crece a diario), 1926→2026, 0 NaN en 2026 | 2026-10-19 |
 | D-07 | Puente por archivo (parquet), no por HTTP | Merge con 14.886 velas 4h sin look-ahead | 2026-10-19 |
 | D-08 | **No integrar** la estrategia al bot | Walk-forward revalidado con el contexto corregido (`E-07`): 7/7 OOS positivos, **1/7** baten la referencia ajustada por exposición (y por 0,3 puntos) | 2026-10-19 |
 | D-09 | El funding de perpetuos **no** se usa como filtro | `E-08`: evitar el funding alto resta 8 puntos de mediana; exigir funding positivo sube 2,1 pero sigue en 1/7. Se conserva como dato de estado | 2026-10-19 |
@@ -101,7 +101,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 - `equity.profile` falla ("FINRA security lookup was not readable").
 - Sin `fred_api_key` faltan `tips_yields` y parte de `economy`.
 - Sin `EIA_API_KEY` no hay provider `eia`.
-- El contexto se refresca **a mano**; no hay tarea programada.
+- El contexto se refresca **solo** (tarea diaria 09:05, `C-38`) y el panel avisa si el último intento falló o tiene más de 48 h (`C-39`). Sigue faltando un aviso **fuera** del panel (Telegram/correo).
 
 ---
 
@@ -130,13 +130,13 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 
 1. API local responde 200 y una llamada funcional en < 60 s.
 2. Contexto con 14 columnas y sin NaN desde 2021.
-3. `estado.py` sin ❌ críticos (24 chequeos).
+3. `estado.py` sin ❌ críticos (26 chequeos).
 4. Repo limpio y pusheado.
 5. Cualquier cambio nuevo tiene `C-NN` y su evidencia.
 
 ### De una estrategia (compuerta de integración)
 
-No se integra ninguna estrategia al bot si no cumple **las cuatro**:
+No se integra ninguna estrategia al bot si no cumple **las cinco**:
 
 1. Ventaja fuera de muestra en **≥ 2/3** de los activos.
 2. Bate la **referencia ajustada por exposición** (no solo ser positivo).
@@ -186,7 +186,7 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 
 1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (26 chequeos).
 2. **Contexto:** leer este INDICE (secciones 4 y 7) para saber qué está vivo y qué falta.
-3. **Historia:** leer la última entrada de `Log de sesiones.md`. La línea de señales está **cerrada**: no hay nada que instalar. Lo abierto es mantenimiento (`P2`, `P6`, `P9`) y, si se quiere entender el mercado-neutral, `P14` (saber, no operar).
+3. **Historia:** leer la última entrada de `Log de sesiones.md`. La línea de señales está **cerrada**: no hay nada que instalar. Lo abierto es mantenimiento (`P6`, `P9`, y un aviso **externo** al panel si el refresco falla) y, si se quiere entender el mercado-neutral, `P14` (saber, no operar).
 
 > Si el paso 1 muestra un ❌ crítico, se atiende antes de cualquier otra cosa.
 > Si el panel «sigue igual», mirar la huella de versión de la barra lateral (`C-30`): si la hora no coincide con la última modificación de `app.py`, es una pestaña vieja.

@@ -448,3 +448,35 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   - 4 estados simulados con un log aparte: ok → «Refresco al día»; allo → «El último refresco falló»; iejo → «Sin refrescar desde hace 72 h»; sin_registro → «Sin registro de refrescos». **4/4**.
   - Función pura: **5/5** (--autoprueba).
 - **Reversión:** quitar la tarjeta y volver al aviso por mtime. No se recomienda: era el que no distinguía «no corrió» de «corrió y falló».
+
+---
+
+## C-40 — Consistencia: cifras, estados y comandos vivos al día
+
+- **Fecha:** 2026-10-19
+- **Qué se hizo:** auditoría de todo lo que está escrito **en presente** (README, INDICE, Plan, Ecosistema, panel) después de `E-16`, `E-17`, `E-18`, `C-38` y `C-39`. El histórico **no** se reescribió: las entradas del Log y del Manual conservan sus cifras de su momento (24/24, 36.636), porque un registro que se corrige deja de ser registro.
+- **Correcciones (14):**
+
+| # | Dónde | Decía | Ahora |
+|---|---|---|---|
+| 1 | `INDICE` §4 | «se refresca **a mano**; no hay tarea» | tarea diaria 09:05 + tarjeta `C-39`; falta aviso **externo** |
+| 2 | `INDICE` §6 | «no cumple **las cuatro**» | **cinco** (criterio 5: 42 fases) |
+| 3 | `INDICE` §6 | «**24** chequeos» | **26** |
+| 4 | `INDICE` D-06 | 36.636 filas | **36.637**, y crece a diario |
+| 5 | `INDICE` §8 | «lo abierto es (P2, P6, P9)» | P2 hecho; queda P6, P9 y el aviso externo |
+| 6 | `README` D-06 | «36.636 × **13**» | «36.637 × **14**» |
+| 7 | `README` §11 | «Decisiones vivas» con D-08 «no integrar» | decisiones de **instalación** + puntero a D-09…D-34 y «no hay nada que instalar» |
+| 8 | `README` §9 | contexto desactualizado → `puente_freqtrade` | mirar la tarjeta/log y lanzar la tarea |
+| 9 | `README` tras reiniciar | refresco con `puente_freqtrade --forzar` | `refrescar_contexto.py` (o la tarea) |
+| 10 | `README` §6.2 | «modo manual sigue disponible» | el manual **recomendado** es `refrescar_contexto.py`; el otro solo diagnostica |
+| 11 | `README` cómo retomar | «lo abierto (P2/P6/P9)» | P6, P9 y aviso externo |
+| 12 | `Plan` §inicio/§7/§11/§12 | «en ejecución, 1h siguiente», 24/24, 36.636, «el paso 1h desbloquea», §12 «sí hay estrategia / sí se puede instalar» | **cerrado en señales**, 26/26, 36.637, §12 reescrita |
+| 13 | `Ecosistema` §2/§4 | «la señal nueva es momentum», «el siguiente experimento es control de riesgo», «VectorBT es lo siguiente» | rama **cerrada** (`D-30`/`D-31`), macro refutado (`E-18`), VectorBT **en espera** |
+| 14 | `app.py` | funding: `puente_freqtrade --exportar`; E-14 «lo que **se instala**» | `refrescar_contexto.py`; «lo que **se creía** instalable» |
+
+- **EVIDENCIA:**
+  - `grep` de los patrones viejos (`24/24`, `36.636`, `puente_freqtrade`, «se refresca a mano», «P2 abierto») → **0** en documentos vivos; solo quedan en entradas fechadas del Log/Manual.
+  - `AppTest` sobre `app.py`: **0 excepciones**, 9 pestañas.
+  - Panel reiniciado a las **21:19** (versión `app.py` 21:16), health **200**.
+  - `estado.py`: **26/26**.
+- **Reversión:** no aplica (documentación y dos textos del panel).

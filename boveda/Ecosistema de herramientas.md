@@ -20,15 +20,16 @@ Un repo que no entra no es un repo malo: es que no tiene papel.
 
 ## 2. Lo que sí mueve la aguja ahora
 
-Solo dos cosas de esta lista cambian el trabajo de las próximas semanas, y en este orden:
+**Ahora mismo, ninguno.** La línea de señales está cerrada (`D-31`, `D-33`): no hay una
+hipótesis esperando a que la prueben más rápido. Eso cambia el veredicto de la lista:
 
-1. **VectorBT** — porque el proyecto ya demostró que su cuello de botella es *cuántas
-   hipótesis se pueden probar con rigor*. Mi motor hace 18 combinaciones con esfuerzo;
-   VectorBT hace miles y además ya trae drawdown, Sharpe y Calmar.
+1. **VectorBT** — **en espera, no urgente.** Su argumento era «probar miles de
+   hipótesis», y hoy no hay ninguna que probar. Entra el día que aparezca una señal
+   medible que exija barrer una rejilla; antes de eso, solo añadiría una dependencia.
 2. **CCXT** — **el disparador no se cumplió.** Decía que entraría si el momentum se
    llevaba a 20-30 pares; se llevó a 24 (`E-13`) y bastó con `urllib` sobre el
-   endpoint público de Binance (`C-26`). Sigue en la lista, pero su disparador ahora
-   es otro: **más de un exchange o más temporalidades**.
+   endpoint público de Binance (`C-26`). Su disparador sigue siendo otro: **más de un
+   exchange o más temporalidades**.
 
 ## 3. Lo que NO se adopta y por qué (para no repetir la pregunta)
 
@@ -39,9 +40,16 @@ Solo dos cosas de esta lista cambian el trabajo de las próximas semanas, y en e
 
 ## 4. Cómo se relaciona con lo ya decidido
 
-- `D-12`: la base EMA 20/50 quedó descartada → el trabajo es cambiar la **señal**, y
-  la señal nueva es momentum transversal (`D-13`).
-- `D-13` + `P11`: el momentum tiene ventaja estadística frente al azar pero un drawdown
-  del 77-93 %. El siguiente experimento es **control de riesgo** (filtro de régimen,
-  volatilidad objetivo), y ahí es donde la capa lenta de OpenBB por fin tiene un papel
-  real: no elegir entradas, sino **decidir cuánto capital está expuesto**.
+- `D-12`: la base EMA 20/50 quedó descartada → el trabajo pasó a cambiar la **señal**.
+- `D-13` + `P11`: el momentum tenía ventaja frente al azar pero un drawdown del 77-93 %.
+  Se probó el control de riesgo, no el filtro de régimen: `E-16` midió el **efecto de la
+  fase del rebalanceo** (42 fases, +95,8 % a +3.776 %) y `E-17` lo confirmó en
+  walk-forward: 24 pares, Calmar mediano 3,56 frente a 4,52 de la cesta, 18/42 por
+  encima. La «ventaja» era en buena parte un parámetro no declarado. **Rama cerrada**
+  (`D-30`, `D-31`).
+- `E-18` + `D-33`: el macro de OpenBB como **filtro de mercado** tampoco bate a la cesta
+  (Calmar 4,21 vs 5,16; percentil 75; P(azar ≥) 25,2 %). OpenBB se queda como **panel
+  de información**, no como fuente de señales.
+- Consecuencia para esta lista: ninguna herramienta de aquí desbloquea nada mientras no
+  haya una señal que medir. VectorBT sigue siendo la mejor candidata **si** vuelve a
+  haber un cuello de botella de hipótesis; CCXT, si se amplía a más exchanges.
