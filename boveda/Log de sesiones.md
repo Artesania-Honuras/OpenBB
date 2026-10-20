@@ -805,3 +805,31 @@ iejo, sin_registro).
   global** para renta variable de Europa/Asia/LatAm. Recomendación: `openbb-yfinance` como fallback,
   registro de cobertura y estado **"no cubierto"**; nunca fallback silencioso.
 - **Sin cambios en la app.**
+
+**Cierre de sesión — 2026-10-20**
+
+**Hecho**
+
+- Plan actualizado y coherente: **§25.11** (tema nativo, corrección), **§26** (todos los mercados,
+  cobertura real), Fase 2 a **6–8 semanas**, `F2-10` y métricas.
+- `P19` en `INDICE.md` y §13 de `Plan de mejora.md` actualizados.
+- Commits de la sesión: `949c4be`, `22f5154`, `7f6b5db` y el commit de cierre (solo `.md`;
+  **0 archivos de app**).
+- `estado.py` al cierre: **26/27**; falla **"Sin cambios pendientes"** por 3 archivos ajenos:
+  `boveda/Manual de cambios.md` (sin diff), `boveda/Registro de resultados.md` (línea partida
+  preexistente) y `.obsidian/` (config del editor). **No se tocaron.**
+
+**Decidido**
+
+- Tema: **nativo System/Light/Dark**; no se construye conmutador propio.
+- Alcance: **todos los mercados** = 7 clases de activo + macro; cobertura real visible.
+- `openbb-yfinance` como **fallback global** y **10 años diarios**: propuestos, **no aprobados**.
+- Se mantiene: 2 modos Inversor/Analista; MCP + Claude Desktop recomendado; local-first.
+
+**Pendiente (próxima sesión)**
+
+1. Aprobar `openbb-yfinance` + 10 años.
+2. Confirmar MCP + Claude Desktop vs API key.
+3. Aprobar fases 0–1; solo entonces implementar (`C-43`).
+4. Decidir si el layout actual se queda (recortar D0) o se mantiene la jerarquía.
+5. Resolver los 3 archivos ajenos para un 27/27 (o dejarlos fuera del repo).

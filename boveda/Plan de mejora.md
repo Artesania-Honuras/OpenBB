@@ -242,3 +242,5 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 **Capa visual (transversal, §25):** D0 corre en paralelo a las fases 0–1: tokens, componentes, estándar de gráficos y criterios D0.1–D0.10. El tema se cambia con el **conmutador nativo System/Light/Dark** de Streamlit; no se construye uno propio. Sin esto, un cambio no se percibe como producto.
 
 **Alcance (2026-10-20):** **todos los mercados** (7 clases). La cobertura real se mide y se muestra; hoy falta proveedor global para Europa/Asia/LatAm, así que se añade un fallback y un estado "no cubierto" visible (§26).
+
+**Estado al cierre (2026-10-20):** propuesta, **sin implementar**. Aprobar `openbb-yfinance` + 10 años y las fases 0–1 antes de tocar código.

@@ -2,7 +2,8 @@
 
 > Última actualización: 2026-10-20 · Sesión S-29
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
-> **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
+> **Estado en una línea:** **no hay señal que desplegar** - ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien - y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
+> **Plan de producto `P19`:** propuesta no aprobada. Tema nativo y alcance **todos los mercados** registrados; faltan aprobar `openbb-yfinance` + 10 años, MCP vs API y fases 0–1. **Sin cambios de código.**
 
 ---
 
@@ -182,7 +183,7 @@ No se integra ninguna estrategia al bot si no cumple **las cinco**:
 | P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
 | P17 | **Prueba de fase obligatoria**: 42 fases, reportar rango y mediana | ✅ **hecha y aplicada** — `C-34`, `scripts/auditar_fase.py`, 80 s; criterio 5 de la compuerta (`D-32`) |
 | P18 | ~~¿Sirve el macro para decidir cuándo estar en la cesta?~~ | ❌ **cerrado en negativo** — `E-18`: la regla a priori pierde contra no hacer nada y las que ganan no superan el azar. `D-33` |
-| P19 | **Plan de producto: de panel técnico a fuente de investigación para inversores** (4 fases: contexto, lenguaje, descubrimiento, agente) | 📝 **propuesta registrada, no aprobada** — documento `Analisis y plan - fuente de investigacion.md`; respuestas del usuario en §24; **capa visual D0 y tema nativo en §25/§25.11**; **alcance: todos los mercados en §26**; faltan MCP vs API e historial; sin cambios de código (`S-29`) |
+| P19 | **Plan de producto: de panel técnico a fuente de investigación para inversores** (4 fases: contexto, lenguaje, descubrimiento, agente) | 📝 **propuesta registrada, no aprobada** — documento `Analisis y plan - fuente de investigacion.md`; respuestas del usuario en §24; **capa visual D0 y tema nativo en §25/§25.11**; **alcance: todos los mercados en §26**; faltan aprobar `openbb-yfinance` + 10 años, MCP vs API y fases 0–1; sin cambios de código (`S-29`) |
 
 ---
 
