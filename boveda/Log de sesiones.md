@@ -530,8 +530,10 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 **Hecho**
 
-- Anadido ase a simular/walk_forward/
-ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprobado: E-13 se reproduce exacto).
+- Anadido 
+ase a simular/walk_forward/
+ube_al_azar/evaluar_config (C-34), con 
+ase=0 bit-identico al historico (comprobado: E-13 se reproduce exacto).
 - Escrito scripts/auditar_fase.py: 42 fases × walk-forward completo × 2 universos (24 y 7 pares).
 - Actualizados panel, INDICE, README y registro.
 
@@ -633,7 +635,8 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 
 **Hecho**
 
-- scripts\estado_contexto.py: esumen() puro con seis estados; parsea el log **hacia atrás** (los fallos llevan líneas de continuación) y expone filas, columnas, última fecha y horas desde el último intento.
+- scripts\estado_contexto.py: 
+esumen() puro con seis estados; parsea el log **hacia atrás** (los fallos llevan líneas de continuación) y expone filas, columnas, última fecha y horas desde el último intento.
 - Tarjeta en **Contexto Freqtrade**: verde si el último refresco terminó bien, roja si falló (con el motivo), ámbar si lleva **más de 48 h**, gris si no hay registro. Expansor con las últimas líneas del log.
 - Se retira el aviso viejo, que medía el mtime y recomendaba un comando obsoleto.
 - OPENBB_REFRESCO_LOG como gancho de prueba.
@@ -642,7 +645,9 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 
 - Función pura: **5/5**.
 - App real con AppTest: **0 excepciones**.
-- Los 4 estados simulados avisan correctamente: **4/4** (ok, allo, iejo, sin_registro).
+- Los 4 estados simulados avisan correctamente: **4/4** (ok, 
+allo, 
+iejo, sin_registro).
 - El panel arranca tras el reinicio del equipo; API y panel levantados a mano otra vez (no arrancan solos).
 
 **Decidido**
@@ -733,7 +738,11 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 - Envoltorio completo: refresco **OK 58 s** → aviso `SIN sin problemas` → código **0**.
 - `estado.py`: **27/27**; repo limpio.
 
-**Pendiente declarado**
+**Cierre (14:41)**
 
-- **Falta el token de Telegram**. El canal está montado y probado en seco, pero **no ha
-  entregado ningún mensaje real**. Se verifica con `--probar` cuando esté.
+- Token de **@AgentFinacieroBot** configurado en data\notificador.json (ignorado; no aparece
+  en ningún archivo versionado).
+- --probar → **mensaje entregado**, log OK.
+- Flujo de alerta: primera ejecución envía, segunda deduplica (envío interceptado, sin falso aviso).
+  El estado de dedupe se restauró después de la prueba.
+- Panel: **«Aviso externo: activo»**; estado.py 27/27.

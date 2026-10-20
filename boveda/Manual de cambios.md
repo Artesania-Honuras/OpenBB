@@ -367,7 +367,9 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **Que se cambio:** simular(..., fase=0), y se propaga a walk_forward, 
 ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - L - fase) % rebal == 0.
 - **Por que:** E-16 encontro que la fase era un parametro oculto de primer orden (40x de rango). Sin poder desplazarla, no se puede auditar nada hacia atras.
-- **Garantia de no-regresion:** ase=0 es el comportamiento historico. Verificado: walk_forward con ase=0 da **+3.118,3 % / −87,1 % / Calmar 35,82 / 6/11**, identico a E-13. La auditoria mide lo mismo que se midio.
+- **Garantia de no-regresion:** 
+ase=0 es el comportamiento historico. Verificado: walk_forward con 
+ase=0 da **+3.118,3 % / −87,1 % / Calmar 35,82 / 6/11**, identico a E-13. La auditoria mide lo mismo que se midio.
 - **Ademas:** scripts\\auditar_fase.py, que repite el walk-forward en las 42 fases para los dos universos.
 - **Coste:** 42 walk-forward completos ≈ **80 s** (1,9 s cada uno). La prueba de fase es barata; no hay excusa para no hacerla.
 - **EVIDENCIA:** data/reporte_fase.txt · E-17.
@@ -398,7 +400,8 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 - **Por qué importa:** es el mismo defecto de C-32 con otra cara. Un chequeo que dice ✅ cuando la fuente falló no informa: tranquiliza. Y el 504 era real: tres llamadas seguidas dieron 504, 200, 200 — un fallo transitorio de pasarela.
 - **Arreglo:** ok exige **2xx/3xx**; los 5xx se **reintentan una vez** (1 s) antes de declarar fallo. Un 4xx falla sin reintento: el servidor contestó, y contestó que no.
 - **EVIDENCIA:** antes BCE ✅ HTTP 504; después BCE ✅ HTTP 200, y si el 504 persiste el veredicto baja a **degradado**, que es lo honesto.
-- **Reversión:** volver a eturn True en el except HTTPError. No se recomienda: es el falso positivo.
+- **Reversión:** volver a 
+eturn True en el except HTTPError. No se recomienda: es el falso positivo.
 
 ---
 
@@ -406,7 +409,8 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 
 - **Fecha:** 2026-10-19
 - **Que se hizo:** scripts\validar_macro_cesta.py: cesta diaria, régimen macro con lag, coste por cambio, y contraste por **desplazamiento circular** de la misma serie de posiciones (500 sorteos). Escribe data\reporte_macro_cesta.txt en UTF-8 desde Python (no desde la consola, C-35).
-- **Bug encontrado al primer intento:** el contexto (data\context\contexto_diario.parquet) guarda fechas **naive** y las velas son **UTC**. El eindex no encontraba ninguna etiqueta, el régimen quedaba todo False y **todas las variantes daban 0 % dentro del mercado**. Se detectó porque el control invertido daba justo el 100 %: un resultado imposible delata el bug, no la estrategia.
+- **Bug encontrado al primer intento:** el contexto (data\context\contexto_diario.parquet) guarda fechas **naive** y las velas son **UTC**. El 
+eindex no encontraba ninguna etiqueta, el régimen quedaba todo False y **todas las variantes daban 0 % dentro del mercado**. Se detectó porque el control invertido daba justo el 100 %: un resultado imposible delata el bug, no la estrategia.
 - **Arreglo:** localizar el índice del contexto a UTC antes de alinear. Lección: **cuando un resultado es demasiado limpio (todo cero), sospechar de la alineación antes que del mercado.**
 - **EVIDENCIA:** E-18.
 - **Reversión:** quitar el test. No se recomienda: es la respuesta a la única pregunta que quedaba abierta.
@@ -417,7 +421,8 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 
 - **Fecha:** 2026-10-19
 - **Qué se hizo:** P2. El contexto se refrescaba a mano (puente_freqtrade.py --exportar). Ahora:
-  1. scripts\refrescar_contexto.py: descarga con orzar=True, **valida**, guarda con escritura atómica y deja copia del anterior. Log en data\refresco_contexto.log.
+  1. scripts\refrescar_contexto.py: descarga con 
+orzar=True, **valida**, guarda con escritura atómica y deja copia del anterior. Log en data\refresco_contexto.log.
   2. scripts\instalar_refresco.ps1: registra la tarea diaria a las 09:05 (idempotente; -Quitar la elimina).
   3. scripts\_refresco_oculto.ps1: lanza Python sin ventana y **propaga el código de salida**.
   4. estado.py: nuevo chequeo **«Refresco programado»** (existe, corrió hace < 48 h, resultado 0). 26 chequeos.
@@ -439,13 +444,18 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 
 - **Fecha:** 2026-10-19
 - **Qué se hizo:** la pestaña **Contexto Freqtrade** medía la antigüedad por la **fecha del archivo** (mtime) y mandaba ejecutar puente_freqtrade.py --exportar, que ya no es el comando correcto. Se sustituye por una tarjeta que mide **cómo terminó la última ejecución**:
-  - scripts\estado_contexto.py: función **pura** esumen() (sin Streamlit) con estados ok, allo, iejo, sin_registro, sin_datos, ilegible. Busca **hacia atrás** la última línea del log con fecha y nivel, porque los fallos de validación escriben líneas de continuación.
+  - scripts\estado_contexto.py: función **pura** 
+esumen() (sin Streamlit) con estados ok, 
+allo, 
+iejo, sin_registro, sin_datos, ilegible. Busca **hacia atrás** la última línea del log con fecha y nivel, porque los fallos de validación escriben líneas de continuación.
   - pp.py: tarjeta verde/roja/ámbar, detalle (filas, columnas, hasta qué fecha, cuándo se escribió) y un expansor con el registro.
   - OPENBB_REFRESCO_LOG: variable de entorno **solo para pruebas**, para simular estados sin tocar el registro real.
 - **Por qué se mide así:** un refresco puede escribir el archivo y fallar después, o llevar tres días sin correr con el archivo aparentemente normal. La fecha del archivo no distingue esos casos; el resultado del trabajo sí.
 - **EVIDENCIA (pruebas de la app real, no de la función):**
   - AppTest sobre pp.py: **0 excepciones**, 9 pestañas.
-  - 4 estados simulados con un log aparte: ok → «Refresco al día»; allo → «El último refresco falló»; iejo → «Sin refrescar desde hace 72 h»; sin_registro → «Sin registro de refrescos». **4/4**.
+  - 4 estados simulados con un log aparte: ok → «Refresco al día»; 
+allo → «El último refresco falló»; 
+iejo → «Sin refrescar desde hace 72 h»; sin_registro → «Sin registro de refrescos». **4/4**.
   - Función pura: **5/5** (--autoprueba).
 - **Reversión:** quitar la tarjeta y volver al aviso por mtime. No se recomienda: era el que no distinguía «no corrió» de «corrió y falló».
 
@@ -519,5 +529,5 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   - Simulación real de `FALLO` con `OPENBB_REFRESCO_LOG`: mensaje correcto (36.637 × 14, CPI 1956, motivo y última línea del log).
   - Envoltorio completo ejecutado a mano: refresco **OK 58 s** → aviso **`SIN sin problemas`** → código **0**.
   - `--probar` sin configuración: explica qué falta y no falla.
-- **Pendiente declarado:** **no hay token todavía**, así que el canal **no ha entregado un mensaje real**. Cuando se pegue en `data\notificador.json`, se verifica con `--probar`. No se da por cerrado hasta que ese mensaje llegue.
+- **Cierre (2026-10-20 14:41):** token del bot **@AgentFinacieroBot** guardado en data\notificador.json (ignorado por Git; comprobado que **no aparece en ningún archivo versionado**). --probar **entregó el mensaje** (log OK), el flujo de alerta envía una vez y deduplica la segunda (prueba con envío interceptado, sin falso aviso), y el panel muestra **«Aviso externo: activo»**. **Entrega real verificada.**
 - **Reversión:** quitar la llamada a `avisar.py` del envoltorio. La tarea vuelve a ser solo refresco.

@@ -87,7 +87,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-33 | **El macro no sirve como filtro de mercado; OpenBB es un panel de información** | `E-18`: la regla a priori (`VIX<25` + pendiente) da Calmar **4,21** frente a **5,16** de la cesta y cae en el percentil 75 del azar (P = 25,2 %). Las 2 variantes de 12 que sí baten a la cesta quedan en percentiles 68 y 72: lo que mejora es **estar fuera del mercado**, no la señal. Se cierra la línea de señales | 2026-10-19 |
 | D-34 | **Un dato que envejece no avisa: el refresco va con validación, copia y escritura atómica** | `C-38`: la primera ejecución del validador rechazó un contexto **correcto** (termina mañana por el retraso de publicación) y así se descubrió el supuesto. Prueba del validador **7/7** (rechaza columna faltante, cero, fecha atrasada, ×10, NaN entero y columna de más). La tarea diaria corrió sola y devolvió **0** | 2026-10-19 |
 | D-35 | **Un refresco no puede perder historia: si el proveedor recorta, se conserva lo anterior y se falla en voz alta** | `C-41`: el 2026-10-20 la OECD devolvió 20 meses e ignoró `start_date`; el refresco habría borrado el CPI 1956-2025 (36.509 NaN) con un `OK` verde. La caché ahora se une (`_combinar`), el validador rechaza NaN nuevos (**8/8**) y `estado.py` vigila el rango del CPI (**27/27**) | 2026-10-20 |
-| D-36 | **El aviso externo corre siempre después del refresco y no cambia su resultado; sin credenciales se declara, no se finge** | `C-42`: `avisar.py` se ejecuta tras el refresco (también si falla), deduplica 12 h y sale con 0 si falta el token. Pruebas **8/8** y envoltorio completo con código 0; **entrega real pendiente del token** | 2026-10-20 |
+| D-36 | **El aviso externo corre siempre después del refresco y no cambia su resultado; sin credenciales se declara, no se finge** | `C-42`: `avisar.py` se ejecuta tras el refresco (también si falla), deduplica 12 h y sale con 0 si falta el token. Pruebas **8/8**, envoltorio con código 0 y **entrega real verificada** con el bot @AgentFinacieroBot | 2026-10-20 |
 
 ### Capacidades verificadas
 
@@ -164,7 +164,7 @@ No se integra ninguna estrategia al bot si no cumple **las cinco**:
 | Prioridad | Pendiente | Estado |
 |---|---|---|
 | P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **cerrado en negativo** (`E-17` + `E-18`): en momentum no existe, y el macro como filtro temporal tampoco lo aporta |
-| P2 | ~~Refresco programado del contexto (hoy manual)~~ | ✅ **hecho** (`C-38`/`C-39`): `scripts\refrescar_contexto.py` (valida, escribe atómico, conserva el anterior), tarea diaria 09:05, chequeo en `estado.py` y **tarjeta de aviso en el panel** (verde/roja/ámbar). Probada corriendo sola: resultado **0**. Aviso externo montado (C-42), **pendiente el token de Telegram** |
+| P2 | ~~Refresco programado del contexto (hoy manual)~~ | ✅ **hecho** (`C-38`/`C-39`): `scripts\refrescar_contexto.py` (valida, escribe atómico, conserva el anterior), tarea diaria 09:05, chequeo en `estado.py` y **tarjeta de aviso en el panel** (verde/roja/ámbar). Probada corriendo sola: resultado **0**. Aviso externo **verificado** (C-42, entrega real por Telegram) |
 | P3 | ~~Instalar la estrategia en los bots de Freqtrade~~ | ✅ **cerrado en falso positivo evitado**: escrita (`strategies/rotacion_momentum.py`), verificada (296/296 selecciones) y **refutada antes de tocar un bot** (`E-16`). No se copia a Freqtrade |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
