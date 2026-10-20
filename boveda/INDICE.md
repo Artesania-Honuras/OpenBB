@@ -1,8 +1,8 @@
 # INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-18
+> Última actualización: 2026-10-19 · Sesión S-20
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
-> **Estado en una línea:** hay una regla desplegable (`E-14`: L=30/K=3/semanal, +820 %, Calmar 9,95) y un tamaño decidido (`E-15`: sleeve del 10 %). Falta escribirla en Freqtrade (`P3`).
+> **Estado en una línea:** la regla `E-14` **no es desplegable**. Su +820 % es la **mediana de 42 fases** del rebalanceo (rango +96 % a +3.776 %); con el calendario natural (lunes) da **+95,8 %, DD −87,9 %, Calmar 1,09**, por debajo de la cesta (+370 %, Calmar 4,52) y **sin distinguirse del azar** (P = 24 %). `E-16`. El código está escrito y verificado; **no se instala**.
 
 ---
 
@@ -75,9 +75,12 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-21 | El drawdown del momentum en cripto es **de la clase de activo** | `E-13`: 3 mecanismos + universo ×3 y el DD sigue en 80-90 %. Correlación entre altcoins en las caídas, no tamaño de cesta. La pregunta pasa a ser de **tamaño de la exposición**, no de filtro | 2026-10-19 |
 | D-22 | El percentil frente al azar **no es comparable entre universos** | `E-13`: mediana del azar −17,9 % con 24 pares vs +100,7 % con 7. Con más pares el azar empeora porque incluye más basura. La referencia válida es la cesta | 2026-10-19 |
 | D-23 | Un mecanismo que cambia de signo según el universo **no es un mecanismo** | `E-13`: la volatilidad objetivo 60 % gana en las 4 medidas con 24 pares y pierde en las 4 con 7 (`E-11` E). No se adopta, por buena que sea la tabla | 2026-10-19 |
-| D-24 | El número desplegable es la **configuración fija**, no el walk-forward | `E-14`: L=30/K=3/semanal da **+820 %** (CAGR 47 %) y Calmar 9,95; el +3.118 % exige re-optimizar cada 6 meses. Además la idea es frágil: 60/5 da Calmar 0,78 | 2026-10-19 |
-| D-25 | **Sleeve del 10 %**, declarando que incumple el `DD p95 < 20 %` por 2 puntos | `E-15`: 10 % → caída típica −13 %, 5 % peor −22 %, 1 año perdedor de cada 5, ningún camino pierde >25 % en un año. Al 15 % la P(DD>20 %) salta al 42 % | 2026-10-19 |
-| D-26 | La puerta se cumple **a nivel de cartera**, no de estrategia | `E-15`: la estrategia cae 82 % y el 10 % del capital cae 13 %. La puerta mide el riesgo que el dueño del capital **ve**, no el del sleeve aislado | 2026-10-19 |
+| D-24 | ❌ **REFUTADA por `E-16`** — el número desplegable no es +820 % | La fase del rebalanceo era un **parámetro oculto**: 42 fases posibles, mediana +816 %, rango **+96 % a +3.776 %**. El +820 % era la mediana, no una propiedad de la regla. Con el calendario natural: **+95,8 %**, por debajo de la cesta (+370,3 %) | 2026-10-19 |
+| D-25 | ⚠️ **Sin objeto tras `E-16`** — el sleeve del 10 % se dimensionó sobre una regla que no bate a la cesta | La aritmética del bootstrap sigue siendo correcta; lo que no existe es el activo que dimensionaba. No se borra: si alguna vez aparece una regla que pase la fase, este es el método | 2026-10-19 |
+| D-26 | ⚠️ **Sin objeto tras `E-16`** — la puerta a nivel cartera presupone una estrategia con ventaja | La distinción cartera/estrategia sigue siendo válida; aplicada a la rotación, el criterio 2 falla **antes** de llegar al riesgo | 2026-10-19 |
+| D-27 | **La fase del rebalanceo es un parámetro, no un detalle** | `E-16`: con 42 fases semanales, el retorno va de **+95,8 % a +3.776 %** (40×) con el mismo motor y los mismos datos. Cualquier conclusión que dependa de cuándo se rebalancea hay que declararla como rango, nunca como número | 2026-10-19 |
+| D-28 | **La única implementación defendible es la que se elige a priori: lunes** | `E-16`: elegir miércoles porque da +3.776 % es *data snooping* sobre 42 variantes (`D-22`). El lunes es el calendario natural — y es el **mínimo** de las 42 fases. Ese es el número honesto: **+95,8 %**, Calmar 1,09 | 2026-10-19 |
+| D-29 | **Un resultado que cambia 40× con un parámetro oculto no es una ventaja** | `E-16`: al calendario natural, la rotación pierde contra la cesta en retorno, DD y Calmar, y cae en el percentil 76 del azar (P = 24 %). Es la misma prueba que refutó `D-18` y `D-23`, aplicada al calendario | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -135,16 +138,16 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 3. Monte Carlo con **P(pérdida) < 25%** y **drawdown p95 < 20%**.
 4. Supervivencia en ≥ 60% de las ventanas walk-forward.
 
-**Estado de la regla desplegable (`E-14` + `E-15`, sleeve del 10 %):**
+**Estado de la regla (`E-14` + `E-15` + `E-16`) — ❌ NO SE INSTALA:**
 
 | # | Criterio | Medido | Estado |
 |---|---|---|---|
-| 1 | ≥ 2/3 de los activos | No aplica igual: es una **cartera**, no una estrategia por activo. Equivalente medido: P(azar ≥) = **0,5 %** y Calmar 9,95 frente a 4,52 de la cesta | ➖ no aplica |
-| 2 | Bate la referencia ajustada | Calmar **9,95 vs 4,52** de la cesta; mediana del azar +20,5 % contra +820 % | ✅ |
-| 3 | P(pérdida) < 25 % y DD p95 < 20 % | P(año perdedor) **19,5 %** ✅ · DD p95 **−22,0 %** ❌ (por 2 puntos) | ❌ parcial |
-| 4 | Supervivencia ≥ 60 % de ventanas | **7/11 = 63,6 %** | ✅ |
+| 1 | ≥ 2/3 de los activos | No aplica igual: es una **cartera**. Equivalente: significación frente al azar **en el calendario real** | ➖ no aplica |
+| 2 | Bate la referencia ajustada | Al calendario natural: **+95,8 % vs +370,3 %** de la cesta; Calmar **1,09 vs 4,52** | ❌ **falla** |
+| 3 | P(pérdida) < 25 % y DD p95 < 20 % | DD de la estrategia **−87,9 %**; el sleeve del 10 % se calculó sobre la regla refutada | ❌ |
+| 4 | Supervivencia ≥ 60 % de ventanas | **5/11 = 45,5 %** con el calendario natural (era 7/11 con la fase favorable) | ❌ |
 
-> **Decisión declarada (`D-25`):** se instala al 10 % **incumpliendo el criterio 3 por 2 puntos**. Al 5 % se cumpliría (DD p95 −11,5 %) pero el CAGR baja a +4 %. No se finge que se cumple: se elige y se anota.
+> **Decisión (`D-28`/`D-29`):** la rotación **no se instala**. El `+820 %` no era una ventaja: era la mediana de 42 fases de un parámetro que nunca se declaró, y la implementación natural cae en el mínimo. El criterio 2 falla **antes** de discutir el tamaño de posición.
 
 ---
 
@@ -152,9 +155,9 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 
 | Prioridad | Pendiente | Estado |
 |---|---|---|
-| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ✅ cerrado — la ventaja **existe, está medida y tiene tamaño**: regla fija `E-14`, cartera `E-15`. Reevaluado como: "lo que faltaba no era un gatillo, era cuánto capital" (`D-21`) |
+| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **reabierto por `E-16`**: la ventaja de `E-14` no sobrevive a la fase del rebalanceo. El gatillo sigue sin existir |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
-| P3 | Instalar la estrategia en los bots de Freqtrade | 🔴 desbloqueado - hay regla fija (`E-14`: L=30/K=3/semanal) y tamaño (`E-15`: 10 %). Falta escribir la estrategia y el puente |
+| P3 | ~~Instalar la estrategia en los bots de Freqtrade~~ | ✅ **cerrado en falso positivo evitado**: escrita (`strategies/rotacion_momentum.py`), verificada (296/296 selecciones) y **refutada antes de tocar un bot** (`E-16`). No se copia a Freqtrade |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |
 | P6 | Tests propios (hoy solo verificación funcional) | 🟡 abierto |
@@ -167,7 +170,8 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 | P13 | ~~Ampliar el universo de 7 a 20-30 pares~~ | ✅ cerrado — `E-13`: **24 pares**. Sube el retorno y el Calmar, **no baja el DD** (`D-21`) |
 | P14 | **Momentum mercado-neutral** (largo en los K mejores, corto en los K peores) | 🟡 abierto, **no desplegable**: es el mecanismo estándar para bajar este DD, pero exige perpetuos y coste de funding; los bots son spot. Medirlo sería para saber, no para operar |
 | P15 | ~~Tamaño del sleeve~~ | ✅ cerrado — `E-15`/`D-25`: **10 %**, con las cuentas hechas. 5 % si se aplica la puerta al pie de la letra |
-| P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | 🟡 opcional — solo si se quiere el número grande; la regla fija ya es desplegable (`D-24`) |
+| P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
+| P17 | **Prueba de fase obligatoria** para cualquier regla nueva: medir las 42 fases y reportar el rango, no un número | 🟡 abierto — ya implementada en `scripts/verificar_rotacion.py` §3b; falta elevarla a criterio de la compuerta (`C-33`) |
 
 ---
 

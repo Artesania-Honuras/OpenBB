@@ -343,3 +343,18 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
   antes: `Freqtrade Procesos ❌ AttributeError` · `Puertos 8080/8081 ❌ ninguno` · veredicto 3 críticos.
   después: `Freqtrade Procesos ✅ 10 procesos` · `Puertos 8080/8081/8082 ✅ 3 escuchando (8080, 8081, 8082)` · veredicto 24/24 con la API arriba.
 - **Reversión:** volver a `tasklist` por imagen y `text=True`. No se recomienda: es lo que fallaba.
+
+---
+
+## C-33 — Estrategia de rotacion escrita, verificada y refutada antes de instalar
+
+- **Fecha:** 2026-10-19
+- **Que se hizo:**
+  1. strategies/rotacion_nucleo.py: la decision pura (momento a 30 d, top-K, calendario), sin depender de Freqtrade, para poder probarla fuera del bot.
+  2. strategies/rotacion_momentum.py: el envoltorio IStrategy. stake_amount **no** se toca: la config debe traer max_open_trades = 3 y stake_amount = "unlimited"; el sleeve del 10 % se impone **financiando la cuenta**, no dentro del codigo.
+  3. scripts/verificar_rotacion.py: verificacion offline contra el validador + **prueba de las 42 fases** + cesta + azar del mismo calendario.
+- **Que se encontro:** la seleccion coincide **296/296** y el shift es de **30,00 dias exactos** — la logica estaba bien. El problema no era el codigo: era el **calendario**. Con el lunes 00:00, la regla da **+95,8 %** (no +820 %), **pierde contra la cesta** (+370,3 %, Calmar 4,52 vs 1,09) y **no se distingue del azar** (P = 24 %). Ver E-16.
+- **Por que importa:** este es exactamente el caso para el que existe la verificacion offline. El codigo se escribio, se comprobo y **no se copio a Freqtrade ni se toco ningun bot**. El coste del error fue cero.
+- **No se borra el codigo.** Se queda como implementacion de referencia y como banco de pruebas: si aparece una regla que pase la fase, el envoltorio y el verificador ya estan.
+- **EVIDENCIA:** data/reporte_rotacion.txt · E-16 · D-27/D-28/D-29.
+- **Reversion:** borrar los tres archivos. No se recomienda: el verificador es la herramienta que detecto el fallo.

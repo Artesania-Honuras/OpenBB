@@ -490,3 +490,36 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 **Abierto**
 
 - `P3`: escribir la rotación en Freqtrade.
+
+---
+
+## S-20 — 2026-10-19 — P3: la estrategia se escribio, se verifico y se refuto
+
+**Hecho**
+
+- Escritos strategies/rotacion_nucleo.py, strategies/rotacion_momentum.py y scripts/verificar_rotacion.py.
+- Verificacion offline: **296/296** selecciones identicas al validador, shift de **30,00 dias exactos**.
+- Medida la fase del rebalanceo: **42 fases**, rango **+95,8 % a +3.776 %**, mediana **+816,5 %**.
+- Medida la cesta (+370,3 %, Calmar 4,52) y el azar con el mismo calendario (mediana +27,2 %).
+
+**Resultado**
+
+- La implementacion natural (lunes 00:00) da **+95,8 %, DD −87,9 %, Calmar 1,09, 5/11 ventanas**, percentil 76 del azar, **P(azar >=) 24,0 %**.
+- **Pierde contra no hacer nada** y no es significativa. E-16 la refuta.
+
+**Decidido**
+
+- La rotacion **no se instala**. No se copia nada a Freqtrade.
+- La **fase** es un parametro de primer orden (D-27): se reporta como rango, nunca como numero unico.
+- La implementacion defendible es la elegida **a priori** (D-28), aunque sea la peor de las 42. Elegir la mejor es *data snooping*.
+- La prueba de fase pasa a ser obligatoria para cualquier regla nueva (P17).
+
+**Lo que se gano**
+
+- Un error de despliegue evitado **con coste cero**, y una herramienta permanente que ya no hay que reescribir.
+- El +820 % dejo de ser una promesa y paso a ser un dato con su rango al lado.
+
+**Abierto**
+
+- P17: elevar la prueba de fase a criterio de la compuerta.
+- El gatillo con ventaja real sigue sin existir (P1 reabierto).

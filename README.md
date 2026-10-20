@@ -578,7 +578,7 @@ mercado-neutral (largo en los mejores, corto en los peores) es el mecanismo
 estándar contra este drawdown y no se ha medido; exige perpetuos y coste de
 funding, y los bots de Freqtrade son spot.
 
-### Configuración fija (`E-14`) — el número que se instala es +820 %
+### Configuración fija (`E-14`) — y la prueba que la refutó (`E-16`)
 
 El +3.118 % sale de **re-optimizar cada 6 meses**. Para operarlo hay que
 automatizar eso. Una regla fija —mismos parámetros de principio a fin— es lo que
@@ -592,12 +592,34 @@ se puede instalar y auditar. La propuesta, **elegida a priori en `E-10`**, es
 | 60 | 3 | +341 % | −92,1 % | 3,70 | +29,5 % | 6/11 | 0,5 % |
 | 60 | 5 | +68 % | −86,8 % | **0,78** | +9,4 % | 6/11 | 5,0 % |
 
-La ventaja sigue siendo real (P(azar ≥) 0,5 %) y la supervivencia 7/11. Pero **la
-sensibilidad a los parámetros es brutal**: la misma idea con `K=5` y `L=60` da
-+68 % y Calmar 0,78. Funciona en una región, no en general. Y la peor ventana de
-6 meses es **−61,2 %**.
+**Esa tabla tiene un parámetro que no aparece: la fase del rebalanceo.**
+«Semanal» no dice *cuándo*. El validador rebalancea cada 42 velas desde el inicio
+de la ventana — una fase arbitraria. Al escribir la estrategia para Freqtrade
+(`P3`) hubo que elegir una fecha concreta, y el calendario natural es el lunes
+00:00. El resultado cambió de +820 % a **+95,8 %**. Se midieron las 42 fases:
 
-### Dimensionado (`E-15`) — sleeve del 10 %
+| Medición (`E-16`) | Retorno | DD | Calmar |
+|---|---|---|---|
+| Validador, fase 0 (la de `E-14`) | +820,4 % | −82,5 % | 9,95 |
+| **Mediana de las 42 fases** | **+816,5 %** | −82 a −88 % | — |
+| Mejor fase (miércoles 08:00) | +3.776,3 % | −82,5 % | — |
+| **Peor fase (lunes 00:00, a priori)** | **+95,8 %** | **−87,9 %** | **1,09** |
+| Cesta a peso igual (no hacer nada) | +370,3 % | −81,9 % | 4,52 |
+| Azar, calendario del lunes (mediana) | +27,2 % | — | — |
+
+Con el calendario natural la rotación **pierde contra la cesta** en retorno,
+drawdown y Calmar, y **no se distingue del azar**: percentil 76, **P(azar ≥)
+24,0 %**. Ventanas de 6 meses: **5/11**. Las 42 fases son positivas, pero el
+rango es de **40×** y tiene **estacionalidad semanal sistemática** (domingo y
+lunes son el peor tramo; martes a jueves, el mejor). Elegir el miércoles porque
+da +3.776 % sería *data snooping* sobre 42 variantes.
+
+**Conclusión:** ❌ **la rotación no se instala.** El código está escrito y
+verificado (`C-33`): el núcleo elige **296/296** veces lo mismo que el validador
+y mide el momento a **30,00 días exactos**. Lo que falló no fue el código, fue la
+regla. El error de despliegue se evitó antes de tocar un bot.
+
+### Dimensionado (`E-15`) — sleeve del 10 % (sin objeto tras `E-16`)
 
 | sleeve | CAGR mediano | caída típica | 5 % peor | P(caída > 20 %) | P(año perdedor) |
 |---|---|---|---|---|---|
@@ -605,6 +627,9 @@ sensibilidad a los parámetros es brutal**: la misma idea con `K=5` y `L=60` da
 | **10 %** | **+8,0 %** | **−13,0 %** | **−22,0 %** | **9,0 %** | **19,5 %** |
 | 15 % | +12,0 % | −19,1 % | −31,7 % | 42,3 % | 20,6 % |
 | 20 % | +15,8 % | −24,8 % | −40,3 % | 77,4 % | 21,3 % |
+
+> **Sin objeto tras `E-16`.** La aritmética del bootstrap es correcta, pero
+> dimensionaba una regla que no supera la puerta. Se conserva como método.
 
 **Se elige el 10 %** y se declara que **incumple el `DD p95 < 20 %` por 2 puntos**
 (−22,0 %). Si la puerta se aplica al pie de la letra, el sleeve es el 5 % y el
@@ -623,7 +648,8 @@ riesgo.
 |---|---|
 | P1 | Gatillo con ventaja fuera de muestra — **redefinido**: la ventaja existe y está medida; falta el **tamaño** |
 | P2 | Refresco automático del contexto |
-| P3 | Instalar estrategia en los bots: regla fija + sleeve 10 % (E-14/E-15). **Siguiente paso** |
+| P3 | ~~Instalar estrategia en los bots~~ | ✅ **Cerrado en falso positivo evitado**: escrita y verificada, **refutada por la fase** (`E-16`). No se copia a Freqtrade |
+| P17 | **Prueba de fase obligatoria** para cualquier regla nueva (42 fases, reportar rango) | Abierto. Ya implementada en `scripts\verificar_rotacion.py` |
 | P4 | Clave FRED gratuita (opcional) |
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |

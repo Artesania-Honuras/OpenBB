@@ -285,3 +285,43 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - **Nota de honestidad sobre el modelo:** el 10 % cumple `P(pérdida) < 25 %` y **falla por poco** el `DD p95 < 20 %` (−22,0 %). Si la puerta se aplica al pie de la letra, el sleeve es **5 %** (p95 −11,5 %), que da +4,0 % de CAGR: demasiado pequeño para compensar el trabajo. **Se elige 10 % declarando que se incumple un criterio por 2 puntos**, no fingiendo que se cumple.
 - **Modelo declarado (y el error que se corrigió):** primero se probó sin rebalanceo —caja fija más sleeve que se deja correr— y salían drawdowns del 31 % con solo el 5 % invertido: **imposible**, y señal de que el modelo estaba mal, no de que el riesgo fuera alto (un sleeve que crece acaba siendo el 80 % de la cartera y entonces su drawdown es el de la cartera). Con fracción constante el resultado es el de la tabla. Es el modelo que corresponde a operar de verdad.
 - **Evidencia:** `data/reporte_dimensionado.txt`, `data/reporte_dimensionado.csv`.
+
+---
+
+## E-16 — La fase del rebalanceo: el parametro que nadie habia declarado
+
+**Pregunta.** La regla fija de E-14 (L=30, K=3, semanal) da +820 %. Pero "semanal" no dice **cuando**. ¿El resultado depende de ese instante?
+
+**Por que se midio.** Al escribir la estrategia para Freqtrade (P3) habia que elegir un momento concreto, y el calendario natural es el lunes 00:00. La primera medicion con ese calendario dio +95,8 %, no +820 %. Eso no se discute: se mide.
+
+**Metodo.**
+- Mismo motor, mismos datos, mismos 24 pares, misma comision (0,1 %/lado).
+- El validador rebalancea cuando (i - L) % 42 == 0: una rejilla semanal con **fase arbitraria**. Se recorren las **42 fases** (una por vela de 4 h de la semana).
+- Referencia 1: la **cesta a peso igual** (los 24 pares, sin rotar, sin decisiones).
+- Referencia 2: **K=3 pares al azar** con el mismo calendario del lunes y los mismos costes (200 semillas).
+- Verificacion previa: el nucleo que correra en el bot elige **296/296** veces el mismo conjunto que el validador, y el momento se mide siempre a 30,00 dias exactos.
+
+**Resultado.**
+
+| Medicion | Retorno | DD | Calmar |
+|---|---|---|---|
+| Validador, fase 0 (E-14) | +820,4 % | −82,5 % | 9,95 |
+| **Mediana de las 42 fases** | **+816,5 %** | −82 a −88 % | — |
+| Mejor fase (miercoles 08:00) | +3.776,3 % | −82,5 % | — |
+| **Peor fase (lunes 00:00)** | **+95,8 %** | **−87,9 %** | **1,09** |
+| Cesta a peso igual | +370,3 % | −81,9 % | 4,52 |
+| Azar, calendario del lunes (mediana) | +27,2 % | — | — |
+| Azar, calendario del lunes (p95) | +332,6 % | — | — |
+
+- Las 42 fases son positivas, pero el rango es de **40x** y tiene **estacionalidad semanal sistematica**: domingo y lunes son el peor tramo (+96 % a +250 %), martes a jueves el mejor (+1.050 % a +3.776 %).
+- Con el calendario natural: percentil **76** frente al azar, **P(azar >= esta) = 24,0 %**. No es significativo (el umbral es 5 %).
+- Ventanas de 6 meses con el calendario natural: **5/11** (45,5 %), peor −61,2 %.
+
+**Veredicto:** ❌ **la rotacion no es desplegable.** El +820 % no era una propiedad de la regla: era la mediana de una rejilla cuya fase nunca se declaro. La unica implementacion defendible a priori (lunes) es el **minimo** de las 42, **pierde contra no hacer nada** en retorno, drawdown y Calmar, y **no se distingue del azar**. Elegir el miercoles porque da +3.776 % seria *data snooping* sobre 42 variantes.
+
+**Lo que si queda:**
+- strategies/rotacion_momentum.py + otacion_nucleo.py: la implementacion fiel, verificada y **no instalada**.
+- scripts/verificar_rotacion.py: la prueba de fase, permanente, reutilizable para cualquier regla futura (P17).
+- D-27/D-28/D-29: la fase es un parametro; el numero honesto es el de la implementacion a priori; si cambia 40x, no es una ventaja.
+
+**Evidencia:** data/reporte_rotacion.txt (ejecucion completa), scripts/verificar_rotacion.py.

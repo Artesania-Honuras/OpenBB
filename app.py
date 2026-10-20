@@ -690,62 +690,73 @@ with tab_estrategia:
     st.markdown("#### La puerta de graduación")
     st.caption(
         "Una estrategia solo se instala en los bots de Freqtrade si cumple las cuatro "
-        "condiciones a la vez. Hoy no cumple ninguna."
+        "condiciones a la vez. Hoy no cumple ninguna, y la última candidata cayó antes "
+        "de llegar al riesgo."
     )
     puerta = pd.DataFrame([
         {
             "Criterio": "≥ 2/3 de los activos baten su referencia de misma exposición",
-            "Medido": "1/7 en E-07 · 0/7 en E-08 y E-09",
+            "Medido": "1/7 en E-07 · 0/7 en E-08 y E-09 · rotación: no aplica",
             "Estado": "❌",
         },
         {
-            "Criterio": "Monte Carlo: probabilidad de pérdida < 25 %",
-            "Medido": "8,6 % a 41,5 % según el activo",
-            "Estado": "❌",
+            "Criterio": "Bate la referencia (no solo ser positivo)",
+            "Medido": "Rotación +95,8 % vs cesta +370,3 % · Calmar 1,09 vs 4,52",
+            "Estado": "❌ E-16",
         },
         {
-            "Criterio": "Monte Carlo: drawdown del 5 % peor < 20 %",
-            "Medido": "estrategia −82,5 % · con sleeve del 10 %: −22,0 %",
+            "Criterio": "Monte Carlo: P(pérdida) < 25 % y DD p95 < 20 %",
+            "Medido": "DD de la rotación −87,9 % · el sleeve del 10 % ya no aplica",
             "Estado": "❌",
         },
         {
             "Criterio": "Supervivencia en ≥ 60 % de las ventanas walk-forward",
-            "Medido": "3 a 8 ventanas de 11",
-            "Estado": "❌",
+            "Medido": "5/11 = 45,5 % con el calendario real (era 7/11 con la fase favorable)",
+            "Estado": "❌ E-16",
         },
     ])
     st.dataframe(puerta, hide_index=True, width="stretch")
 
-    st.markdown("#### Qué se instalaría")
+    st.markdown("#### La prueba que la tumbó: la fase del rebalanceo")
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Regla fija", "L 30 d · K 3", help="Semanal, 24 pares, solo largos. Elegida a priori en E-10.")
-    c2.metric("CAGR esperado", "+47,2 %", help="+820 % en 5,7 años. El +3.118 % exige re-optimizar cada 6 meses.")
-    c3.metric("Caída del sleeve", "−82,5 %", help="La estrategia sola. Por eso el sleeve es el 10 % del capital.")
-    c4.metric("Sleeve recomendado", "10 %", help="Caída típica de cartera −13 %, 5 % peor −22 %.")
+    c1.metric("42 fases posibles", "40× de rango", help="De +95,8 % a +3.776 %, mismo motor y mismos datos.")
+    c2.metric("Rotación (lunes)", "+95,8 %", delta="−274,5 pts vs cesta", delta_color="inverse")
+    c3.metric("Cesta sin rotar", "+370,3 %", help="Los 24 pares a peso igual, sin decisiones.")
+    c4.metric("P(azar ≥ rotación)", "24,0 %", delta="no significativo", delta_color="off")
     st.caption(
-        "La puerta se cumple **a nivel de cartera**, no de estrategia: el sleeve cae 82 %, "
-        "el 10 % del capital cae 13 %. Con el 10 % se incumple el `DD p95 < 20 %` por 2 "
-        "puntos, y se declara: al 5 % sí se cumple, pero el CAGR baja a +4 %."
+        "«Semanal» no dice **cuándo**. El validador rebalanceaba cada 7 días desde una fase "
+        "arbitraria: con el lunes 00:00 —el calendario natural— la rotación cae en el "
+        "**mínimo** de las 42 fases. Elegir el miércoles porque da +3.776 % sería "
+        "data snooping sobre 42 variantes. El número honesto es el de la implementación "
+        "elegida a priori, y ese número pierde contra no hacer nada."
+    )
+
+    st.markdown("#### Qué se instalaría")
+    st.error(
+        "**Nada.** La regla `E-14` (+820 %) no era una ventaja: era la mediana de 42 fases "
+        "de un parámetro que nunca se declaró. La implementación natural da **+95,8 %**, "
+        "**pierde contra la cesta** (+370,3 %) y **no se distingue del azar** (P = 24 %). "
+        "El código está escrito y verificado (`C-33`), y **no se copia a Freqtrade**."
+    )
+    st.caption(
+        "El sleeve del 10 % y su bootstrap (`E-15`) siguen siendo aritmética correcta, pero "
+        "dimensionaban una regla que no supera la puerta. No se borran: se quedan como "
+        "método para cuando exista algo que dimensionar."
     )
 
     ruta_dim = ROOT / "data" / "reporte_dimensionado.csv"
     if ruta_dim.exists():
-        dim = pd.read_csv(ruta_dim)
-        dim.columns = [
-            "Sleeve %", "CAGR mediano %", "Caída típica %", "Caída 5 % peor %",
-            "P(caída > 20 %) %", "P(año perdedor) %", "P(año < −25 %) %",
-        ][: len(dim.columns)]
-        st.dataframe(dim.round(1), hide_index=True, width="stretch")
-        st.caption(
-            "Bootstrap por bloques de 7 días, 1.000 caminos, sobre la curva de la regla "
-            "fija. Fracción de sleeve constante (rebalanceada): es el modelo que "
-            "corresponde a operar de verdad."
-        )
-    st.warning(
-        "**Esto ya no es «no se instala nada».** Hay regla y hay tamaño. Lo que sigue "
-        "siendo cierto: la idea **no es robusta a los parámetros** (con K=5 y L=60 da "
-        "Calmar 0,78) y **la peor ventana de 6 meses es −61 %** del sleeve."
-    )
+        with st.expander("Ver el dimensionado que se había calculado (E-15, sin objeto)"):
+            dim = pd.read_csv(ruta_dim)
+            dim.columns = [
+                "Sleeve %", "CAGR mediano %", "Caída típica %", "Caída 5 % peor %",
+                "P(caída > 20 %) %", "P(año perdedor) %", "P(año < −25 %) %",
+            ][: len(dim.columns)]
+            st.dataframe(dim.round(1), hide_index=True, width="stretch")
+            st.caption(
+                "Bootstrap por bloques de 7 días, 1.000 caminos, sobre la curva de la regla "
+                "refutada. Se conserva como referencia del método, no como recomendación."
+            )
 
     st.markdown("#### Experimentos")
     experimentos = pd.DataFrame([
@@ -794,14 +805,20 @@ with tab_estrategia:
         {
             "ID": "E-14",
             "Qué se probó": "Configuración fija, sin re-optimizar (lo que se instala)",
-            "Resultado": "+820 % · CAGR 47,2 % · Calmar 9,95 · 7/11 ventanas · P(azar ≥) 0,5 %",
-            "Veredicto": "✅ Desplegable",
+            "Resultado": "+820 % · Calmar 9,95 · 7/11 ventanas… con UNA fase del rebalanceo",
+            "Veredicto": "❌ Refutado por E-16",
         },
         {
             "ID": "E-15",
             "Qué se probó": "Dimensionado: traducir la caída del sleeve a la cartera",
             "Resultado": "Sleeve 10 % → caída típica −13 %, 5 % peor −22 %, 1 año perdedor de cada 5",
-            "Veredicto": "✅ 10 %",
+            "Veredicto": "⚪ Sin objeto tras E-16",
+        },
+        {
+            "ID": "E-16",
+            "Qué se probó": "La fase del rebalanceo: 42 fases posibles, cesta y azar del mismo calendario",
+            "Resultado": "Rango +95,8 % a +3.776 % · lunes (a priori) +95,8 % vs cesta +370,3 % · P(azar) 24 %",
+            "Veredicto": "❌ No desplegable",
         },
     ])
     st.dataframe(experimentos, hide_index=True, width="stretch")
