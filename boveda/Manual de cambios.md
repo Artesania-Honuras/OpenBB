@@ -372,3 +372,18 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 - **Coste:** 42 walk-forward completos ≈ **80 s** (1,9 s cada uno). La prueba de fase es barata; no hay excusa para no hacerla.
 - **EVIDENCIA:** data/reporte_fase.txt · E-17.
 - **Reversion:** quitar el parametro y volver a (i - L) % rebal == 0. No se recomienda: es lo que ocultaba el defecto.
+
+---
+
+## C-35 — Reportes crudos en UTF-16: el panel mostraba D I M E N S I O N A D O
+
+- **Fecha:** 2026-10-19
+- **Sintoma:** en la pestaña *Reportes crudos*, todos los items se veían con un espacio entre letras (D I M E N S I O N A D O) y dos rombos al principio de cada archivo.
+- **Causa:** 14 de los 15 data/reporte_*.txt estaban en **UTF-16LE con BOM**. Tee-Object y > de PowerShell 5.1 escriben UTF-16 por defecto; el panel leía con encoding="utf-8", así que cada letra ASCII venía seguida de un byte nulo (que se pinta como espacio) y el BOM se convertía en \ufffd.
+- **No era un fallo de los datos.** En 12 de 15 el texto estaba íntegro; en **3** (`reporte_fase`, `reporte_rotacion`, `reporte_momentum_fijo`) había además **doble codificación**: Python escribía UTF-8, la consola lo leía como cp850 y `Tee-Object` lo guardaba en UTF-16. De ahí `ÔÇö` donde había un guion largo.
+- **Arreglo, en tres capas:**
+  1. `scripts\normalizar_reportes.py`: detecta UTF-16/UTF-8/cp1252, **deshace el mojibake** (codifica a cp850 y decodifica UTF-8) y reescribe **UTF-8 sin BOM, LF**. Idempotente. Convirtió 14 de 15 y reparó 3.
+  2. El panel lee **UTF-16, UTF-8 con BOM o UTF-8** (con aviso si no es UTF-8) y cambia la pila de 15 expansores por un **selector + bloque con scroll + botón de descarga**. Ese era el otro problema: «todos los items» apilados.
+  3. estado.py gana el chequeo **«Reportes en UTF-8»**: si alguien vuelve a usar > a secas, se ve en el estado, no en una captura.
+- **EVIDENCIA:** antes `15 archivos · 14 en UTF-16 · 6.427 bytes nulos en reporte_fase.txt · 3 con mojibake`; después `15 reportes · 0 nulos · 0 restos de mojibake · 25/25 ✅`.
+- **Reversión:** volver a Tee-Object y a leer sin codificación explícita. No se recomienda: es lo que producía el síntoma.

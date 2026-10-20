@@ -556,3 +556,24 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 **Abierto**
 
 - Decidir que se hace con el puente OpenBB ahora que la estrategia no existe: el contexto macro sigue siendo valido como informacion, no como filtro de una regla que no pasa la puerta.
+
+---
+
+## S-22 — 2026-10-19 — Reportes crudos legibles y selector en el panel
+
+**Hecho**
+
+- Detectada la causa del desorden en *Reportes crudos*: **14 de 15 .txt en UTF-16LE**. PowerShell Tee-Object/> escribe UTF-16; el panel leía UTF-8, de ahí D I M E N S I O N A D O y los rombos del BOM.
+- scripts\normalizar_reportes.py convierte a UTF-8 sin BOM (idempotente): **14 convertidos, 1 intacto**, y **3 reparados** de doble codificación (UTF-8 leído como cp850: `ÔÇö` → `—`).
+- El panel pasa de **15 expansores apilados** a un **selector** con tamaño, líneas, codificación, botón de descarga y bloque con scroll.
+- estado.py: nuevo chequeo **Reportes en UTF-8** (ahora 25).
+- README §6.4: aviso de no usar >/Tee-Object a secas y cómo normalizar.
+
+**Resultado**
+
+- estado.py → **25/25 ✅** (nuevo chequeo incluido).
+- Los 15 reportes se leen como texto normal.
+
+**Decidido**
+
+- La codificación se comprueba en el chequeo de estado, no a ojo: un defecto de presentación que se repite en cada regeneración es un defecto del proceso, no del archivo.

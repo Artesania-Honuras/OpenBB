@@ -185,6 +185,16 @@ def revisar() -> list[dict]:
         except Exception as e:  # noqa: BLE001
             add("Datos", "Velas 4h del puente", False, type(e).__name__)
 
+    # Reportes: si vuelven a generarse con `>` o `Tee-Object` de PowerShell 5.1,
+    # salen en UTF-16 y el panel los pinta con un byte nulo entre letras
+    # (`D I M E N S I O N A D O`). Se comprueba aqui para que no pase inadvertido.
+    reportes = sorted((ROOT / "data").glob("reporte_*.txt"))
+    if reportes:
+        malos = [r.name for r in reportes if b"\x00" in r.read_bytes()]
+        add("Datos", "Reportes en UTF-8", not malos,
+            f"{len(reportes)} reportes"
+            + (f" · UTF-16: {', '.join(malos[:3])}" if malos else ""))
+
     # --- Configuracion ----------------------------------------------------
     cfg = ROOT / "freqtrade_bridge" / "backtest.json"
     if cfg.exists():

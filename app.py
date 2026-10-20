@@ -859,20 +859,52 @@ with tab_estrategia:
 
     st.markdown("#### Reportes crudos")
     st.caption(
-        "Salida literal de los validadores. Para regenerarlos, los comandos están en el "
-        "`README.md`, sección 6.4."
+        "Salida literal de los validadores, sin reinterpretar. Elige uno en la lista; "
+        "se muestra tal cual, con su tamaño y su número de líneas."
     )
+
+    def _leer_reporte(ruta):
+        """Lee reportes en UTF-8, UTF-8 con BOM o UTF-16 (PowerShell antiguo)."""
+        crudo = ruta.read_bytes()
+        if crudo[:2] in (b"\xff\xfe", b"\xfe\xff"):
+            return crudo.decode("utf-16"), "utf-16"
+        if crudo[:3] == b"\xef\xbb\xbf":
+            return crudo.decode("utf-8-sig"), "utf-8 con BOM"
+        return crudo.decode("utf-8", errors="replace"), "utf-8"
+
     informes = sorted((ROOT / "data").glob("reporte_*.txt"))
     if not informes:
         st.info("Todavía no hay reportes en `data/`.")
-    for ruta in informes:
-        lineas = ruta.read_text(encoding="utf-8", errors="replace").splitlines()
-        titulo = f"{ruta.name} · {len(lineas)} líneas · {ruta.stat().st_size / 1024:.1f} KB"
-        with st.expander(titulo):
-            if len(lineas) > 120:
-                st.caption(f"Se muestran las últimas 120 de {len(lineas)} líneas.")
-                lineas = lineas[-120:]
-            st.code("\n".join(lineas), language="text")
+    else:
+        elegido = st.selectbox(
+            "Reporte",
+            [r.name for r in informes],
+            label_visibility="collapsed",
+        )
+        ruta = next(r for r in informes if r.name == elegido)
+        texto, codificacion = _leer_reporte(ruta)
+        texto = texto.replace("\r\n", "\n").replace("\r", "\n")
+        lineas = texto.splitlines()
+
+        if codificacion != "utf-8":
+            st.warning(
+                f"Este archivo está en **{codificacion}** y se está leyendo igualmente, "
+                "pero conviene normalizarlo: `python scripts\\normalizar_reportes.py`."
+            )
+
+        c1, c2, c3 = st.columns([3, 1, 1])
+        c1.caption(f"**{ruta.name}** · {len(lineas)} líneas · {ruta.stat().st_size / 1024:.1f} KB")
+        c2.download_button(
+            "Descargar",
+            texto,
+            file_name=ruta.name,
+            mime="text/plain",
+            width="stretch",
+        )
+        c3.caption(f"codificación: {codificacion}")
+
+        with st.container(height=520, border=True):
+            st.code(texto, language="text")
 
 # --- API -------------------------------------------------------------------
 with tab_api:

@@ -1,6 +1,6 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-21
+> Última actualización: 2026-10-19 · Sesión S-22
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
 > **Estado en una línea:** **la rama de momentum está cerrada** (`E-16`, `E-17`). La regla `E-14` era la mediana de 42 fases; el walk-forward de `E-13` era la fase 0, pegada al máximo; el de `E-10` era **el máximo exacto**. En mediana, ninguna variante bate a la cesta a peso igual (+370,3 %, Calmar 4,52). No hay nada desplegable y el código está escrito, verificado y **no instalado**.
 

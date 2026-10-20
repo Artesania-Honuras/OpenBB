@@ -257,9 +257,28 @@ Usa `--forzar` para ignorar la caché.
 
 # Control de riesgo: tabla de variantes (régimen, volatilidad objetivo, criterio)
 .\venvs\openbb\Scripts\python.exe scripts\validar_momentum.py --riesgo --sims 200
+
+# La fase del rebalanceo: ¿la estrategia decide igual que el validador? (42 fases)
+.\venvs\openbb\Scripts\python.exe scripts\verificar_rotacion.py
+.\venvs\openbb\Scripts\python.exe scripts\auditar_fase.py
 ```
 
 Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
+
+> **Si guardas la salida en un reporte**, no uses `>` ni `Tee-Object` a secas:
+> PowerShell 5.1 escribe **UTF-16** y además decodifica la salida de Python con
+> la codificación de la consola (cp850), así que rompe tildes y guiones. La
+> receta que funciona:
+>
+> ```powershell
+> $env:PYTHONIOENCODING = "utf-8"
+> [Console]::OutputEncoding = [Text.Encoding]::UTF8
+> .\venvs\openbb\Scripts\python.exe scripts\auditar_fase.py |
+>     Out-File -Encoding utf8 data\reporte_fase.txt
+> ```
+>
+> Si ya tienes alguno mal, `python scripts\normalizar_reportes.py` arregla
+> **las dos cosas**: la codificación y el mojibake. `estado.py` lo comprueba.
 
 ### 6.5 Verificar las 8 familias
 
@@ -707,7 +726,7 @@ cd C:\Users\DELL\.ipython\OpenBB
 .\run-openbb-app.ps1     # ventana 2: restaurar ventana 1 si se cerró
 ```
 
-Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **24/24 ✅**.
+Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **25/25 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
 `... scripts\puente_freqtrade.py --exportar --forzar`.
 
