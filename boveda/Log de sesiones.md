@@ -789,3 +789,12 @@ iejo, sin_registro).
   sin CSS, 9 pestañas, gráficos por defecto), tokens, inventario de componentes, estándar de
   gráficos, jerarquía de la primera pantalla, estados, accesibilidad y criterios D0.1–D0.10.
 - **Sin cambios en la app.**
+
+**Temas claro/oscuro (misma sesión)**
+
+- Decisión del usuario: **oscuro y claro, conmutables y modificables**. Registrada en **§25.11**:
+  Oscuro por defecto, Claro a un clic, acento (4 presets), densidad (Cómoda/Compacta),
+  persistencia por URL y tokens en un solo archivo. **Auto** queda para P2 (requiere puente JS).
+- Verificado en Streamlit 1.66: `st.context.theme.type` refleja el tema de la app, no el del SO;
+  no hay `base = "system"`; el tema nativo no cambia en caliente. La vía es CSS + plantillas propias.
+- **Sin cambios en la app.**

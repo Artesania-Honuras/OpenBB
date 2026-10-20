@@ -182,7 +182,7 @@ No se integra ninguna estrategia al bot si no cumple **las cinco**:
 | P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
 | P17 | **Prueba de fase obligatoria**: 42 fases, reportar rango y mediana | ✅ **hecha y aplicada** — `C-34`, `scripts/auditar_fase.py`, 80 s; criterio 5 de la compuerta (`D-32`) |
 | P18 | ~~¿Sirve el macro para decidir cuándo estar en la cesta?~~ | ❌ **cerrado en negativo** — `E-18`: la regla a priori pierde contra no hacer nada y las que ganan no superan el azar. `D-33` |
-| P19 | **Plan de producto: de panel técnico a fuente de investigación para inversores** (4 fases: contexto, lenguaje, descubrimiento, agente) | 📝 **propuesta registrada, no aprobada** — documento `Analisis y plan - fuente de investigacion.md`; respuestas del usuario en §24; **capa visual D0 en §25**; falta confirmar MCP vs API; sin cambios de código (`S-29`) |
+| P19 | **Plan de producto: de panel técnico a fuente de investigación para inversores** (4 fases: contexto, lenguaje, descubrimiento, agente) | 📝 **propuesta registrada, no aprobada** — documento `Analisis y plan - fuente de investigacion.md`; respuestas del usuario en §24; **capa visual D0 y temas claro/oscuro en §25/§25.11**; falta confirmar MCP vs API; sin cambios de código (`S-29`) |
 
 ---
 

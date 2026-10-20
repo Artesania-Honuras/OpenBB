@@ -768,7 +768,7 @@ Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`)
 | Radio / sombra | 8–12 px / sutil |
 | Grid | 12 columnas, gutter 24, ancho máximo 1440 |
 
-Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha o etiqueta).
+Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha o etiqueta). Las dos paletas viven en un único archivo de tokens; §25.11 fija el conmutador y el mecanismo.
 
 ### 25.4. Inventario de componentes
 
@@ -837,11 +837,13 @@ Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha
 | D0.3 | Estándar de gráficos | 0–1 | 0 `st.line_chart` en vistas principales |
 | D0.4 | Grid y layout | 1 | 1440/1280 sin desbordes |
 | D0.5 | Formato numérico es-ES | 1 | 20/20 muestras correctas |
-| D0.6 | Tema oscuro/claro + `config.toml` | 1 | Contraste AA |
+| D0.6 | Temas Oscuro/Claro + conmutador | 1 | 2/2 sin reiniciar; AA en ambos; persiste |
 | D0.7 | Estados (skeleton/vacío/error/viejo) | 1 | 4/4 estados |
 | D0.8 | Accesibilidad | 1 | Teclado + contraste + no color-only |
-| D0.9 | Plantilla de informe | 2 | Fuente, fecha y aviso |
+| D0.9 | Plantilla de informe | 2 | Fuente, fecha y aviso; siempre clara |
 | D0.10 | Marca y móvil | 3 | Logo/favicon; 390 px usable |
+| D0.11 | Tokens editables (acento/densidad) | 1 | 4 presets; cambiar acento = 1 archivo |
+| D0.12 | Matriz visual de temas | 1 | 2 temas × 2 densidades × 3 anchos |
 
 **Pruebas:** 5 capturas de regresión visual (antes/después), test de los 10 segundos con una persona no técnica, contraste medido y formato numérico contra 20 muestras.
 
@@ -852,6 +854,90 @@ Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha
 - Rojo/verde como único código.
 - Ocultar la fuente o la fecha para "limpiar".
 - Copiar la estética del terminal.
+
+### 25.11. Temas claro/oscuro y personalización
+
+> Decisión del usuario (2026-10-20): **tema oscuro y claro, conmutables y modificables**. Esta sección fija el cómo, con los límites reales de Streamlit 1.66.
+
+#### Decisión
+
+| Modo | Comportamiento | Estado |
+|---|---|---|
+| **Oscuro** (por defecto) | paleta oscura, contraste AA | sí, en caliente |
+| **Claro** | paleta clara, contraste AA | sí, en caliente |
+| **Auto (sistema)** | sigue la preferencia del SO | **opcional P2**; requiere puente JS; no se promete |
+
+Además: **acento** (4 presets), **densidad** (Cómoda / Compacta) y **Restablecer**. La elección se guarda en la URL (`?tema=claro&acento=azul&densidad=comoda`) y se recuerda al recargar; el enlace es compartible. El PDF usa **siempre la paleta clara**.
+
+#### Lo que permite Streamlit 1.66 (verificado)
+
+| Capacidad | Estado | Uso |
+|---|---|---|
+| `st.context.theme.type` | sí | devuelve el tema **de la app** (`dark`/`light`), no el del sistema |
+| `st.query_params` | sí | persistir tema, acento y densidad |
+| `st.segmented_control` | sí | conmutador |
+| Tema nativo en caliente | **no** | `config.toml` exige reinicio |
+
+**Honestidad técnica:** Streamlit no cambia su tema nativo en caliente y no tiene `base = "system"`. La vía robusta es una **capa de tokens CSS** + **plantillas de gráfico** + overrides de widgets. Algunos widgets nativos (tabla, bloques de código) pueden no seguir el cambio al 100 %: se prueban, se documenta la brecha y, si un widget clave no sigue, se sustituye por uno propio o se acepta el tema base. **Auto** se deja para P2 porque exigiría un componente JS que lea `prefers-color-scheme`; no se vende como gratis.
+
+#### Arquitectura: una sola fuente de verdad
+
+```
+tokens.json  ->  css(tokens)  ->  panel
+     |               |
+     +-> plotly_template(tokens)
+     +-> altair_theme(tokens)
+     +-> formato_numero(tokens)
+```
+
+- `tokens.json`: paletas `light`/`dark`, acento, espaciado, tipografía, radios. **Cero colores hardcodeados en componentes.**
+- El CSS se genera desde tokens: cambiar el acento es **un archivo**, no una caza de hex.
+- Los gráficos reciben la plantilla construida con los mismos tokens; **nunca** `theme="streamlit"` (seguiría el tema fijo del `config.toml`).
+- El PDF y la exportación usan la paleta clara, independientemente del tema del panel.
+
+#### Paletas (contraste AA)
+
+| Token | Claro | Oscuro |
+|---|---|---|
+| `bg` | `#FFFFFF` | `#0B0F14` |
+| `surface` | `#F6F8FA` | `#121821` |
+| `border` | `#D0D7DE` | `#1F2A37` |
+| `text` | `#1F2328` | `#E6EDF3` |
+| `muted` | `#57606A` | `#8B98A5` |
+| `positive` | `#1A7F37` | `#3FB950` |
+| `negative` | `#CF222E` | `#F85149` |
+| `warn` | `#9A6700` | `#D29922` |
+| `accent` | `#0969DA` | `#4C8DFF` |
+
+Los semánticos son **fijos por tema**; el acento no los sustituye. El color nunca va solo: flecha + texto.
+
+#### Conmutador
+
+- Cabecera: `Oscuro · Claro` (segmented control), selector de acento y densidad.
+- Al cambiar: se actualiza `st.query_params`, se reconstruyen CSS, plantillas de gráfico y tablas; **sin reiniciar**.
+- **Persistencia:** al cargar se leen los parámetros; si no hay, Oscuro/azul/Cómoda. El enlace resultante reproduce la vista.
+- **Sin parpadeo:** el `config.toml` base es oscuro (coincide con el default) y el override se inyecta al inicio del script; si hay flash al pasar a claro, se mide y se corrige.
+- **Restablecer** vuelve a Oscuro/azul/Cómoda.
+
+#### Criterios de aceptación
+
+- 2/2 temas conmutan **sin reiniciar**; 100 % de superficies propias siguen el tema.
+- Contraste AA en ambos; 0 señales solo por color.
+- Persistencia tras recarga y enlace compartido.
+- 0 colores hardcodeados; cambiar acento = 1 archivo; 4 presets.
+- Matriz 2 temas × 2 densidades × 3 anchos (1440/1280/1024) sin desbordes.
+- PDF siempre claro.
+- Brecha de widgets nativos documentada (cuáles, por qué y alternativa).
+
+#### Riesgos y mitigación
+
+| Riesgo | Mitigación |
+|---|---|
+| Widget nativo no sigue el tema | inventario de widgets; override CSS o reemplazo; se declara |
+| Parpadeo al cambiar | base oscura + CSS al inicio; medición; si persiste, se documenta |
+| Dos fuentes de color | tokens únicos; test que busca hex fuera de `tokens.json` |
+| El acento rompe el contraste | presets validados AA; el acento no toca semánticos |
+| Bucle de `query_params` | comparar antes de escribir; solo rerun si cambia |
 
 ---
 

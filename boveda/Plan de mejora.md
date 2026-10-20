@@ -238,3 +238,5 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | **3. Conversar** (4–6 sem) | Agente local con 6 herramientas y evaluación | ≥ 18/20, 20/20 citas, 0 consejos |
 
 **Regla:** no se abre una fase sin pasar la puerta anterior. El agente no sustituye al panel: lo maneja y lo explica.
+
+**Capa visual (transversal, §25):** D0 corre en paralelo a las fases 0–1: tokens, componentes, estándar de gráficos, **temas claro/oscuro conmutables** (Oscuro por defecto), acento/densidad y criterios D0.1–D0.12. Sin esto, un cambio no se percibe como producto.
