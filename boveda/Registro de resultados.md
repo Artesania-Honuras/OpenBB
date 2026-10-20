@@ -325,3 +325,43 @@ Los descartados también se registran: evitan repetir el mismo camino.
 - D-27/D-28/D-29: la fase es un parametro; el numero honesto es el de la implementacion a priori; si cambia 40x, no es una ventaja.
 
 **Evidencia:** data/reporte_rotacion.txt (ejecucion completa), scripts/verificar_rotacion.py.
+
+---
+
+## E-17 — La fase del rebalanceo en TODA la cadena (E-10 a E-15)
+
+**Pregunta.** E-16 refuto la regla fija. Pero el walk-forward, el 7/11, el Calmar 35,8 y el «percentil 99 frente al azar» se midieron con la **misma rejilla (fase 0)**. ¿Sobreviven?
+
+**Metodo.** Walk-forward completo (18 meses de entrenamiento, 6 de prueba, 18 combinaciones, objetivo Calmar) repetido para las **42 fases** de la rejilla semanal, en los dos universos. Nada mas cambia: mismos datos, mismos costes, mismo protocolo. ase=0 reproduce E-13 exacto (+3.118,3 % / −87,1 % / Calmar 35,82 / 6/11), lo que confirma que la auditoria mide lo mismo que se midio antes.
+
+**Resultado — 24 pares (E-13)**
+
+| | Retorno OOS | Calmar | Ventanas | DD |
+|---|---|---|---|---|
+| mediana de 42 fases | **+342,0 %** | **3,56** | 6/11 | −92,1 % |
+| minimo | −34,6 % | −0,36 | 5/11 | −97,4 % |
+| maximo | +3.272,3 % | 36,45 | 8/11 | −83,4 % |
+| **fase 0 (la de E-13)** | **+3.118,3 %** | **35,82** | 6/11 | −87,1 % |
+| cesta a peso igual | +370,3 % | **4,52** | — | −81,9 % |
+
+- 41/42 fases positivas, pero solo **18/42 (43 %)** superan a la cesta en Calmar.
+- La fase 0 esta **pegada al maximo** de la rejilla (36,45 en la fase 2).
+
+**Resultado — 7 pares (E-10)**
+
+| | Retorno OOS | Calmar | Ventanas |
+|---|---|---|---|
+| mediana de 42 fases | +129,7 % | **1,55** | 4/11 |
+| minimo | −61,3 % | −0,69 | 3/11 |
+| maximo | +1.538,1 % | 19,22 | 7/11 |
+| **fase 0 (la de E-10)** | **+1.538,1 %** | **19,22** | **7/11** |
+| cesta a peso igual | +1.282,6 % | **15,65** | — |
+
+- **Solo 1/42 fases supera a la cesta**, y esa una es la fase 0: el resultado publicado era **el maximo exacto** de 42 intentos.
+- El «percentil 99 frente al azar» comparaba la mejor fase con una nube medida en esa misma fase favorable.
+
+**Veredicto:** ❌ **la rama de momentum esta cerrada.** E-10, E-11, E-13 y E-14 comparten el mismo defecto: publicaron una fase, no un rango. No es que la regla necesite ajuste; es que el numero que la justificaba era el mejor de 42 y la implementacion natural (o la mediana) **no bate a no hacer nada**.
+
+**Lo que si sobrevive:** la direccion de E-13 (24 pares > 7 pares) se mantiene en las medianas (Calmar 3,56 vs 1,55). Pero es una comparacion entre dos variantes que **ninguna** supera a la cesta: irrelevante para decidir.
+
+**Evidencia:** data/reporte_fase.txt (las 84 filas, fase a fase), scripts/auditar_fase.py.

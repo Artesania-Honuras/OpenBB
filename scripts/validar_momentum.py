@@ -148,7 +148,7 @@ def preparar_senales(
 # --------------------------------------------------------------------------
 def simular(
     m: pd.DataFrame, params: dict, semilla: int | None = None,
-    senales: dict | None = None,
+    senales: dict | None = None, fase: int = 0,
 ) -> np.ndarray:
     """Retorno de la cartera en cada vela.
 
@@ -156,6 +156,10 @@ def simular(
     (mismo K, mismo calendario, mismo coste, mismas senales de riesgo). Esa es
     la referencia: el control de riesgo y el filtro absoluto se aplican IGUAL a
     los dos, asi que lo unico que cambia es el criterio de seleccion.
+
+    `fase` desplaza la rejilla de rebalanceo dentro de la ventana (0..rebal-1).
+    Por defecto 0, que es como se midio E-10..E-14: el numero historico no
+    cambia. Sirve para auditar si el resultado depende de CUANDO se rebalancea.
     """
     closes = m.to_numpy(dtype=float)
     rets = np.zeros_like(closes)
@@ -190,7 +194,7 @@ def simular(
             pesos = np.zeros(n_act)
 
         # 2. Rebalanceo al cierre de la vela i (solo datos conocidos) y solo si hay regimen
-        if i >= L and (i - L) % rebal == 0 and en_mercado[i]:
+        if i >= L + fase and (i - L - fase) % rebal == 0 and en_mercado[i]:
             if semilla is None:
                 momento = closes[i] / closes[i - L] - 1.0
                 orden = np.argsort(momento)[::-1]
@@ -237,7 +241,7 @@ def objetivo_entrenamiento(retornos: np.ndarray, tipo: str) -> float:
 # --------------------------------------------------------------------------
 def walk_forward(
     m: pd.DataFrame, inicio: str, fin: str,
-    senales: pd.DataFrame | None = None, objetivo: str = "retorno",
+    senales: pd.DataFrame | None = None, objetivo: str = "retorno", fase: int = 0,
 ) -> tuple[pd.DataFrame, np.ndarray, list[dict]]:
     combos = [dict(zip(GRID_MOMENTUM.keys(), v)) for v in itertools.product(*GRID_MOMENTUM.values())]
     fechas = pd.date_range(pd.Timestamp(inicio, tz="UTC"), pd.Timestamp(fin, tz="UTC"), freq="6MS")
@@ -254,11 +258,11 @@ def walk_forward(
 
         mejor, mejor_val = None, -np.inf
         for params in combos:
-            val = objetivo_entrenamiento(simular(train, params, senales=senales), objetivo)
+            val = objetivo_entrenamiento(simular(train, params, senales=senales, fase=fase), objetivo)
             if val > mejor_val:
                 mejor, mejor_val = params, val
 
-        ret_test = simular(test, mejor, senales=senales)
+        ret_test = simular(test, mejor, senales=senales, fase=fase)
         oos.append(ret_test)
         ventanas.append({"params": mejor, "test": test, "real": compuesto(ret_test)})
 
@@ -275,7 +279,8 @@ def walk_forward(
     return pd.DataFrame(filas), (np.concatenate(oos) if oos else np.array([])), ventanas
 
 
-def nube_al_azar(ventanas: list[dict], sims: int, senales: dict | None = None) -> np.ndarray:
+def nube_al_azar(ventanas: list[dict], sims: int, senales: dict | None = None,
+                 fase: int = 0) -> np.ndarray:
     """Distribucion del resultado si se eligieran los K pares al azar.
 
     Usa los mismos parametros (L, K, rebalanceo) que eligio el entrenamiento en
@@ -284,7 +289,7 @@ def nube_al_azar(ventanas: list[dict], sims: int, senales: dict | None = None) -
     """
     finales = np.empty(sims)
     for s in range(sims):
-        trozos = [simular(v["test"], v["params"], semilla=s, senales=senales) for v in ventanas]
+        trozos = [simular(v["test"], v["params"], semilla=s, senales=senales, fase=fase) for v in ventanas]
         finales[s] = compuesto(np.concatenate(trozos))
     return finales
 
@@ -292,15 +297,15 @@ def nube_al_azar(ventanas: list[dict], sims: int, senales: dict | None = None) -
 def evaluar_config(
     m: pd.DataFrame, inicio: str, fin: str, sims: int,
     objetivo: str = "retorno", ma: int | None = None, vol: float | None = None,
-    tendencia: int | None = None,
+    tendencia: int | None = None, fase: int = 0,
 ) -> dict:
     senales = preparar_senales(m, ma_dias=ma, vol_objetivo=vol, tendencia_dias=tendencia)
-    wf, oos, ventanas = walk_forward(m, inicio, fin, senales=senales, objetivo=objetivo)
+    wf, oos, ventanas = walk_forward(m, inicio, fin, senales=senales, objetivo=objetivo, fase=fase)
     if not len(oos):
         return {}
 
     comp, dd = compuesto(oos), max_dd(oos)
-    nube = nube_al_azar(ventanas, sims, senales=senales)
+    nube = nube_al_azar(ventanas, sims, senales=senales, fase=fase)
     pct = float((nube < comp).mean() * 100)
     return {
         "oos_%": comp * 100,

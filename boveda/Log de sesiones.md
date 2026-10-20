@@ -523,3 +523,36 @@ Bitácora cronológica. Formato en `Plantillas.md`.
 
 - P17: elevar la prueba de fase a criterio de la compuerta.
 - El gatillo con ventaja real sigue sin existir (P1 reabierto).
+
+---
+
+## S-21 — 2026-10-19 — Auditoria de fase de toda la cadena: la rama de momentum se cierra
+
+**Hecho**
+
+- Anadido ase a simular/walk_forward/
+ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprobado: E-13 se reproduce exacto).
+- Escrito scripts/auditar_fase.py: 42 fases × walk-forward completo × 2 universos (24 y 7 pares).
+- Actualizados panel, INDICE, README y registro.
+
+**Resultado**
+
+- **24 pares:** mediana +342,0 %, Calmar **3,56** (cesta **4,52**), DD mediano **−92,1 %**, solo **18/42** fases baten la cesta.
+- **7 pares:** mediana +129,7 %, Calmar **1,55** (cesta **15,65**), **1/42** fases baten la cesta — y esa una es la fase 0, que dio +1.538 % y Calmar 19,22: **el maximo exacto de 42**.
+- La fase 0 de E-13 (+3.118 %, Calmar 35,82) esta pegada al maximo de su rejilla (36,45).
+
+**Decidido**
+
+- E-10, E-11, E-13, E-14 y E-15 quedan **refutados como base de despliegue**: publicaron una fase, no un rango (D-30).
+- **La rama de momentum se cierra** (D-31). No se sigue optimizando: no hay mecanismo que supere a la cesta de forma robusta.
+- Regla nueva (D-32): ningun resultado de una rejilla temporal se reporta con una sola fase; se reporta rango y mediana.
+- La prueba de fase pasa a ser **obligatoria y barata** (80 s) para cualquier regla futura (P17).
+
+**Lo que se gano**
+
+- Se evitaron dos despliegues (la regla fija y el walk-forward) con coste cero.
+- El proyecto deja de gastar tiempo en una via muerta y conserva la herramienta que lo demuestra.
+
+**Abierto**
+
+- Decidir que se hace con el puente OpenBB ahora que la estrategia no existe: el contexto macro sigue siendo valido como informacion, no como filtro de una regla que no pasa la puerta.

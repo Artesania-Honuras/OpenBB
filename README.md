@@ -619,6 +619,29 @@ verificado (`C-33`): el núcleo elige **296/296** veces lo mismo que el validado
 y mide el momento a **30,00 días exactos**. Lo que falló no fue el código, fue la
 regla. El error de despliegue se evitó antes de tocar un bot.
 
+### La auditoría completa (`E-17`) — la rama de momentum se cierra
+
+La fase no era un defecto de la regla fija: era un defecto de **todo lo medido antes**.
+Se repitió el walk-forward completo (18 m / 6 m, 18 combinaciones, objetivo Calmar) en
+las **42 fases**, en los dos universos. `fase=0` reproduce `E-13` exacto, así que la
+auditoría mide lo mismo que se midió.
+
+| Universo | Retorno OOS mediano | Calmar mediano | Cesta (Calmar) | Fases que baten la cesta |
+|---|---|---|---|---|
+| 24 pares (`E-13`) | +342,0 % | 3,56 | 4,52 | **18/42** |
+| 7 pares (`E-10`) | +129,7 % | 1,55 | 15,65 | **1/42** |
+
+- `E-10` publicó **+1.538 % y Calmar 19,22**: el **máximo exacto** de las 42 fases, y la
+  única que bate a la cesta. Su mediana es Calmar 1,55.
+- `E-13` publicó +3.118 % y Calmar 35,82: pegado al máximo (36,45 en la fase 2). Su
+  mediana es 3,56, **por debajo** de la cesta.
+- La dirección de `E-13` (24 pares > 7 pares) sí sobrevive en las medianas — pero entre
+  dos variantes que **ninguna** supera a la cesta.
+
+**Conclusión:** ❌ **no hay nada desplegable y no se sigue optimizando.** No falta un
+ajuste: falta un mecanismo. La prueba cuesta **80 s** (`scripts\auditar_fase.py`), así
+que desde ahora es obligatoria para cualquier regla nueva (`D-32`).
+
 ### Dimensionado (`E-15`) — sleeve del 10 % (sin objeto tras `E-16`)
 
 | sleeve | CAGR mediano | caída típica | 5 % peor | P(caída > 20 %) | P(año perdedor) |

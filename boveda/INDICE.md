@@ -1,8 +1,8 @@
-# INDICE — Memoria del proyecto OpenBB local
+﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-20
+> Última actualización: 2026-10-19 · Sesión S-21
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
-> **Estado en una línea:** la regla `E-14` **no es desplegable**. Su +820 % es la **mediana de 42 fases** del rebalanceo (rango +96 % a +3.776 %); con el calendario natural (lunes) da **+95,8 %, DD −87,9 %, Calmar 1,09**, por debajo de la cesta (+370 %, Calmar 4,52) y **sin distinguirse del azar** (P = 24 %). `E-16`. El código está escrito y verificado; **no se instala**.
+> **Estado en una línea:** **la rama de momentum está cerrada** (`E-16`, `E-17`). La regla `E-14` era la mediana de 42 fases; el walk-forward de `E-13` era la fase 0, pegada al máximo; el de `E-10` era **el máximo exacto**. En mediana, ninguna variante bate a la cesta a peso igual (+370,3 %, Calmar 4,52). No hay nada desplegable y el código está escrito, verificado y **no instalado**.
 
 ---
 
@@ -81,6 +81,9 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-27 | **La fase del rebalanceo es un parámetro, no un detalle** | `E-16`: con 42 fases semanales, el retorno va de **+95,8 % a +3.776 %** (40×) con el mismo motor y los mismos datos. Cualquier conclusión que dependa de cuándo se rebalancea hay que declararla como rango, nunca como número | 2026-10-19 |
 | D-28 | **La única implementación defendible es la que se elige a priori: lunes** | `E-16`: elegir miércoles porque da +3.776 % es *data snooping* sobre 42 variantes (`D-22`). El lunes es el calendario natural — y es el **mínimo** de las 42 fases. Ese es el número honesto: **+95,8 %**, Calmar 1,09 | 2026-10-19 |
 | D-29 | **Un resultado que cambia 40× con un parámetro oculto no es una ventaja** | `E-16`: al calendario natural, la rotación pierde contra la cesta en retorno, DD y Calmar, y cae en el percentil 76 del azar (P = 24 %). Es la misma prueba que refutó `D-18` y `D-23`, aplicada al calendario | 2026-10-19 |
+| D-30 | **`E-10`, `E-11`, `E-13` y `E-14` publicaron una fase, no un rango** | `E-17`: el walk-forward de 7 pares da Calmar 19,22 en la fase 0 — el **máximo exacto de 42**; su mediana es 1,55 frente a 15,65 de la cesta. El de 24 pares da 35,82, pegado al máximo (36,45); su mediana es 3,56 frente a 4,52 | 2026-10-19 |
+| D-31 | **La rama de momentum se cierra** | `E-16` + `E-17`: ni la regla fija, ni el walk-forward, ni ninguno de los dos universos superan a la cesta de forma robusta. No se sigue optimizando: no hay mecanismo, hay una rejilla temporal | 2026-10-19 |
+| D-32 | **Ningún resultado de una rejilla temporal se reporta con una sola fase** | `E-16`/`E-17`: se reporta mediana, mínimo y máximo de las 42 fases. La prueba cuesta **80 s** (`C-34`); no hacerla ya no es un problema de coste, es una decisión | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -138,16 +141,17 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 3. Monte Carlo con **P(pérdida) < 25%** y **drawdown p95 < 20%**.
 4. Supervivencia en ≥ 60% de las ventanas walk-forward.
 
-**Estado de la regla (`E-14` + `E-15` + `E-16`) — ❌ NO SE INSTALA:**
+**Estado de la regla (`E-14` + `E-15` + `E-16` + `E-17`) — ❌ NO SE INSTALA:**
 
 | # | Criterio | Medido | Estado |
 |---|---|---|---|
 | 1 | ≥ 2/3 de los activos | No aplica igual: es una **cartera**. Equivalente: significación frente al azar **en el calendario real** | ➖ no aplica |
-| 2 | Bate la referencia ajustada | Al calendario natural: **+95,8 % vs +370,3 %** de la cesta; Calmar **1,09 vs 4,52** | ❌ **falla** |
-| 3 | P(pérdida) < 25 % y DD p95 < 20 % | DD de la estrategia **−87,9 %**; el sleeve del 10 % se calculó sobre la regla refutada | ❌ |
-| 4 | Supervivencia ≥ 60 % de ventanas | **5/11 = 45,5 %** con el calendario natural (era 7/11 con la fase favorable) | ❌ |
+| 2 | Bate la referencia ajustada | Calendario natural: **+95,8 % vs +370,3 %**; walk-forward, mediana de fases: **+342,0 % vs +370,3 %** | ❌ **falla** |
+| 3 | P(pérdida) < 25 % y DD p95 < 20 % | DD de la estrategia **−87,9 %**; walk-forward, DD mediano **−92,1 %**; peor −97,4 % | ❌ |
+| 4 | Supervivencia ≥ 60 % de ventanas | **5/11** calendario natural; **6/11** mediana del walk-forward (era 7/11 en fase 0) | ❌ |
+| 5 | **Sobrevive a las 42 fases** (`D-32`) | **18/42** baten la cesta con 24 pares; **1/42** con 7 pares (y esa es la fase 0) | ❌ **E-17** |
 
-> **Decisión (`D-28`/`D-29`):** la rotación **no se instala**. El `+820 %` no era una ventaja: era la mediana de 42 fases de un parámetro que nunca se declaró, y la implementación natural cae en el mínimo. El criterio 2 falla **antes** de discutir el tamaño de posición.
+> **Decisión (`D-31`):** la rama de momentum se **cierra**. No es que falte un ajuste: es que el número que la justificaba era el mejor de 42 intentos. No se instala, no se copia a Freqtrade y no se sigue optimizando.
 
 ---
 
@@ -155,7 +159,7 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 
 | Prioridad | Pendiente | Estado |
 |---|---|---|
-| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **reabierto por `E-16`**: la ventaja de `E-14` no sobrevive a la fase del rebalanceo. El gatillo sigue sin existir |
+| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **cerrado en negativo** (`E-17`): en momentum no existe. Ni la regla fija ni el walk-forward baten a la cesta en mediana |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
 | P3 | ~~Instalar la estrategia en los bots de Freqtrade~~ | ✅ **cerrado en falso positivo evitado**: escrita (`strategies/rotacion_momentum.py`), verificada (296/296 selecciones) y **refutada antes de tocar un bot** (`E-16`). No se copia a Freqtrade |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
@@ -171,7 +175,7 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 | P14 | **Momentum mercado-neutral** (largo en los K mejores, corto en los K peores) | 🟡 abierto, **no desplegable**: es el mecanismo estándar para bajar este DD, pero exige perpetuos y coste de funding; los bots son spot. Medirlo sería para saber, no para operar |
 | P15 | ~~Tamaño del sleeve~~ | ✅ cerrado — `E-15`/`D-25`: **10 %**, con las cuentas hechas. 5 % si se aplica la puerta al pie de la letra |
 | P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
-| P17 | **Prueba de fase obligatoria** para cualquier regla nueva: medir las 42 fases y reportar el rango, no un número | 🟡 abierto — ya implementada en `scripts/verificar_rotacion.py` §3b; falta elevarla a criterio de la compuerta (`C-33`) |
+| P17 | **Prueba de fase obligatoria**: 42 fases, reportar rango y mediana | ✅ **hecha y aplicada** — `C-34`, `scripts/auditar_fase.py`, 80 s; criterio 5 de la compuerta (`D-32`) |
 
 ---
 

@@ -706,13 +706,18 @@ with tab_estrategia:
         },
         {
             "Criterio": "Monte Carlo: P(pérdida) < 25 % y DD p95 < 20 %",
-            "Medido": "DD de la rotación −87,9 % · el sleeve del 10 % ya no aplica",
+            "Medido": "DD rotación −87,9 % · walk-forward DD mediano −92,1 % (peor −97,4 %)",
             "Estado": "❌",
         },
         {
             "Criterio": "Supervivencia en ≥ 60 % de las ventanas walk-forward",
-            "Medido": "5/11 = 45,5 % con el calendario real (era 7/11 con la fase favorable)",
+            "Medido": "5/11 calendario real · 6/11 mediana del walk-forward (era 7/11 en la fase 0)",
             "Estado": "❌ E-16",
+        },
+        {
+            "Criterio": "Sobrevive a las 42 fases del rebalanceo",
+            "Medido": "18/42 baten la cesta con 24 pares · 1/42 con 7 pares (y esa es la fase 0)",
+            "Estado": "❌ E-17",
         },
     ])
     st.dataframe(puerta, hide_index=True, width="stretch")
@@ -729,6 +734,23 @@ with tab_estrategia:
         "**mínimo** de las 42 fases. Elegir el miércoles porque da +3.776 % sería "
         "data snooping sobre 42 variantes. El número honesto es el de la implementación "
         "elegida a priori, y ese número pierde contra no hacer nada."
+    )
+
+    st.markdown("#### Y no era solo la regla fija: el walk-forward entero (E-17)")
+    st.caption(
+        "Repetido el walk-forward completo en las 42 fases, en los dos universos. "
+        "Lo que se publicó era la fase 0."
+    )
+    e1, e2, e3, e4 = st.columns(4)
+    e1.metric("24 pares · Calmar mediano", "3,56", delta="cesta 4,52", delta_color="inverse")
+    e2.metric("24 pares · fases que baten la cesta", "18/42", delta="43 %", delta_color="off")
+    e3.metric("7 pares · fases que baten la cesta", "1/42", delta="y es la fase 0", delta_color="off")
+    e4.metric("7 pares · Calmar de la fase 0", "19,22", help="El máximo exacto de las 42 fases. Su mediana es 1,55.")
+    st.caption(
+        "En 7 pares, el resultado publicado (+1.538 %, Calmar 19,22) es el **máximo exacto** "
+        "de 42 intentos y la única fase que bate a la cesta. En 24 pares, la fase 0 está "
+        "pegada al máximo (36,45) y solo 18 de 42 fases superan a la cesta. La rama de "
+        "momentum se cierra: no es un ajuste, es que no hay mecanismo."
     )
 
     st.markdown("#### Qué se instalaría")
@@ -819,6 +841,12 @@ with tab_estrategia:
             "Qué se probó": "La fase del rebalanceo: 42 fases posibles, cesta y azar del mismo calendario",
             "Resultado": "Rango +95,8 % a +3.776 % · lunes (a priori) +95,8 % vs cesta +370,3 % · P(azar) 24 %",
             "Veredicto": "❌ No desplegable",
+        },
+        {
+            "ID": "E-17",
+            "Qué se probó": "La fase en TODA la cadena: walk-forward completo × 42 fases × 2 universos",
+            "Resultado": "24 pares: mediana +342 %, Calmar 3,56 vs 4,52, 18/42 baten la cesta · 7 pares: 1/42",
+            "Veredicto": "❌ Rama cerrada",
         },
     ])
     st.dataframe(experimentos, hide_index=True, width="stretch")

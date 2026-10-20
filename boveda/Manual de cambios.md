@@ -358,3 +358,17 @@ Un cambio sin evidencia numérica no entra aquí: es una hipótesis.
 - **No se borra el codigo.** Se queda como implementacion de referencia y como banco de pruebas: si aparece una regla que pase la fase, el envoltorio y el verificador ya estan.
 - **EVIDENCIA:** data/reporte_rotacion.txt · E-16 · D-27/D-28/D-29.
 - **Reversion:** borrar los tres archivos. No se recomienda: el verificador es la herramienta que detecto el fallo.
+
+---
+
+## C-34 — La fase como parametro explicito en el validador
+
+- **Fecha:** 2026-10-19
+- **Que se cambio:** simular(..., fase=0), y se propaga a walk_forward, 
+ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - L - fase) % rebal == 0.
+- **Por que:** E-16 encontro que la fase era un parametro oculto de primer orden (40x de rango). Sin poder desplazarla, no se puede auditar nada hacia atras.
+- **Garantia de no-regresion:** ase=0 es el comportamiento historico. Verificado: walk_forward con ase=0 da **+3.118,3 % / −87,1 % / Calmar 35,82 / 6/11**, identico a E-13. La auditoria mide lo mismo que se midio.
+- **Ademas:** scripts\\auditar_fase.py, que repite el walk-forward en las 42 fases para los dos universos.
+- **Coste:** 42 walk-forward completos ≈ **80 s** (1,9 s cada uno). La prueba de fase es barata; no hay excusa para no hacerla.
+- **EVIDENCIA:** data/reporte_fase.txt · E-17.
+- **Reversion:** quitar el parametro y volver a (i - L) % rebal == 0. No se recomienda: es lo que ocultaba el defecto.
