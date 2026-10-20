@@ -1,8 +1,8 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-24
+> Última actualización: 2026-10-19 · Sesión S-25
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
-> **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38` ese contexto **se refresca solo, validado**.
+> **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
 
 ---
 
@@ -162,7 +162,7 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 | Prioridad | Pendiente | Estado |
 |---|---|---|
 | P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **cerrado en negativo** (`E-17` + `E-18`): en momentum no existe, y el macro como filtro temporal tampoco lo aporta |
-| P2 | ~~Refresco programado del contexto (hoy manual)~~ | ✅ **hecho** (`C-38`): `scripts\refrescar_contexto.py` (valida, escribe atómico, conserva el anterior) + tarea diaria 09:05 + chequeo en `estado.py`. Probada corriendo sola: resultado **0** |
+| P2 | ~~Refresco programado del contexto (hoy manual)~~ | ✅ **hecho** (`C-38`/`C-39`): `scripts\refrescar_contexto.py` (valida, escribe atómico, conserva el anterior), tarea diaria 09:05, chequeo en `estado.py` y **tarjeta de aviso en el panel** (verde/roja/ámbar). Probada corriendo sola: resultado **0** |
 | P3 | ~~Instalar la estrategia en los bots de Freqtrade~~ | ✅ **cerrado en falso positivo evitado**: escrita (`strategies/rotacion_momentum.py`), verificada (296/296 selecciones) y **refutada antes de tocar un bot** (`E-16`). No se copia a Freqtrade |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
 | P5 | Provider `eia` con `EIA_API_KEY` | 🟡 opcional |

@@ -12,6 +12,7 @@ Queda en http://127.0.0.1:8501
 from __future__ import annotations
 
 import json
+import sys
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -21,6 +22,10 @@ import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from estado_contexto import resumen as resumen_contexto  # noqa: E402
+
 API = "http://127.0.0.1:6900"
 PB = 10_000  # 1 punto porcentual = 100 puntos básicos
 
@@ -611,10 +616,12 @@ with tab_cot:
 # --- Contexto Freqtrade ----------------------------------------------------
 with tab_contexto:
     ruta = ROOT / "data" / "context" / "contexto_diario.parquet"
-    if not ruta.exists():
+    estado_ctx = resumen_contexto(ruta=ruta)
+
+    if estado_ctx["estado"] == "sin_datos":
         st.warning(
-            "No hay contexto exportado. Genera el archivo con:\n\n"
-            "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\puente_freqtrade.py --exportar\n```"
+            "No hay contexto exportado. Genéralo con:\n\n"
+            "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\refrescar_contexto.py\n```"
         )
     else:
         try:
@@ -622,12 +629,48 @@ with tab_contexto:
             ctx.index = pd.to_datetime(ctx.index)
             ctx = ctx.sort_index()
 
-            edad = (datetime.now() - datetime.fromtimestamp(ruta.stat().st_mtime)).days
-            if edad >= 2:
+            # --- Tarjeta de refresco -------------------------------------
+            # No se mide por la fecha del archivo: se mide por CÓMO TERMINÓ la
+            # última ejecución. Un refresco puede escribir y luego fallar, o
+            # llevar tres días sin correr con el archivo aparentemente normal.
+            e = estado_ctx
+            detalle = (
+                f"{e['filas']:,} filas · {e['columnas']} columnas · "
+                f"hasta {e['ultima_fecha']} · archivo escrito {e['escrito']:%Y-%m-%d %H:%M}"
+            )
+            if e["estado"] == "ok":
+                st.success(
+                    f"**Refresco al día.** Última ejecución hace {e['horas']:.1f} h "
+                    f"(resultado {e['nivel']}). {detalle}"
+                )
+            elif e["estado"] == "sin_registro":
+                st.info(
+                    f"**Sin registro de refrescos**, pero el archivo está fresco "
+                    f"(hace {e['horas']:.1f} h). {detalle}"
+                )
+            elif e["estado"] == "fallo":
+                st.error(
+                    "**El último refresco falló** y se conserva el contexto anterior. "
+                    f"Motivo: `{e['linea']}`"
+                )
+                st.caption(detalle)
+            elif e["estado"] == "viejo":
                 st.warning(
-                    f"El archivo tiene {edad} días sin reexportarse. Las últimas filas son "
-                    "copia del último dato (forward fill). Para actualizarlo:\n\n"
-                    "```powershell\n.\\venvs\\openbb\\Scripts\\python.exe scripts\\puente_freqtrade.py --exportar --forzar\n```"
+                    f"**Sin refrescar desde hace {e['horas']:.0f} h** (umbral 48). "
+                    f"{detalle}. Ejecútala ahora:\n\n"
+                    "```powershell\n"
+                    "Start-ScheduledTask -TaskName \"OpenBB - refresco de contexto\"\n"
+                    "```"
+                )
+            elif e["estado"] == "ilegible":
+                st.error("El archivo del contexto existe pero no se puede leer.")
+
+            with st.expander("Registro de refrescos (últimas líneas)"):
+                st.code("\n".join(e["lineas_log"]) or "(vacío)", language="text")
+                st.caption(
+                    "Tarea diaria a las **09:05**. Si el equipo estaba apagado, corre al "
+                    "iniciar sesión. El contexto termina **mañana** a propósito: cada serie "
+                    "lleva su retraso de publicación."
                 )
 
             if DIAS:
@@ -635,7 +678,7 @@ with tab_contexto:
 
             st.caption(
                 f"{len(ctx):,} filas · {len(ctx.columns)} columnas · "
-                f"última fecha {ctx.index[-1]:%Y-%m-%d} · archivo con {edad} días"
+                f"última fecha {ctx.index[-1]:%Y-%m-%d}"
             )
             st.info(
                 "Estas son las columnas exactas que ve tu estrategia de Freqtrade. "

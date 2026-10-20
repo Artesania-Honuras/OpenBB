@@ -626,3 +626,25 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 
 - **D-34:** un dato que envejece no avisa. El refresco deja de ser una costumbre y pasa a ser un trabajo verificado: si falla, conserva el anterior y se ve en el estado.
 - S4U queda **declarado como limitación**, no escondido: sin permisos de administrador la tarea corre con sesión abierta.
+
+---
+
+## S-25 — 2026-10-19 — El refresco, visible en el panel
+
+**Hecho**
+
+- scripts\estado_contexto.py: esumen() puro con seis estados; parsea el log **hacia atrás** (los fallos llevan líneas de continuación) y expone filas, columnas, última fecha y horas desde el último intento.
+- Tarjeta en **Contexto Freqtrade**: verde si el último refresco terminó bien, roja si falló (con el motivo), ámbar si lleva **más de 48 h**, gris si no hay registro. Expansor con las últimas líneas del log.
+- Se retira el aviso viejo, que medía el mtime y recomendaba un comando obsoleto.
+- OPENBB_REFRESCO_LOG como gancho de prueba.
+
+**Resultado**
+
+- Función pura: **5/5**.
+- App real con AppTest: **0 excepciones**.
+- Los 4 estados simulados avisan correctamente: **4/4** (ok, allo, iejo, sin_registro).
+- El panel arranca tras el reinicio del equipo; API y panel levantados a mano otra vez (no arrancan solos).
+
+**Decidido**
+
+- Lo que no se ve en el panel no cuenta: la tarea ya existía y ya fallaba en silencio. El aviso pasa a estar donde se mira.

@@ -432,3 +432,19 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   - tarea ejecutada por Windows: LastTaskResult 0, log OK … 206 s.
   - estado.py: **26/26 ✅**.
 - **Reversión:** instalar_refresco.ps1 -Quitar; y seguir usando puente_freqtrade.py --exportar --forzar (sin validación ni copia).
+
+---
+
+## C-39 — El refresco se ve en el panel (y avisa cuando falla)
+
+- **Fecha:** 2026-10-19
+- **Qué se hizo:** la pestaña **Contexto Freqtrade** medía la antigüedad por la **fecha del archivo** (mtime) y mandaba ejecutar puente_freqtrade.py --exportar, que ya no es el comando correcto. Se sustituye por una tarjeta que mide **cómo terminó la última ejecución**:
+  - scripts\estado_contexto.py: función **pura** esumen() (sin Streamlit) con estados ok, allo, iejo, sin_registro, sin_datos, ilegible. Busca **hacia atrás** la última línea del log con fecha y nivel, porque los fallos de validación escriben líneas de continuación.
+  - pp.py: tarjeta verde/roja/ámbar, detalle (filas, columnas, hasta qué fecha, cuándo se escribió) y un expansor con el registro.
+  - OPENBB_REFRESCO_LOG: variable de entorno **solo para pruebas**, para simular estados sin tocar el registro real.
+- **Por qué se mide así:** un refresco puede escribir el archivo y fallar después, o llevar tres días sin correr con el archivo aparentemente normal. La fecha del archivo no distingue esos casos; el resultado del trabajo sí.
+- **EVIDENCIA (pruebas de la app real, no de la función):**
+  - AppTest sobre pp.py: **0 excepciones**, 9 pestañas.
+  - 4 estados simulados con un log aparte: ok → «Refresco al día»; allo → «El último refresco falló»; iejo → «Sin refrescar desde hace 72 h»; sin_registro → «Sin registro de refrescos». **4/4**.
+  - Función pura: **5/5** (--autoprueba).
+- **Reversión:** quitar la tarjeta y volver al aviso por mtime. No se recomienda: era el que no distinguía «no corrió» de «corrió y falló».

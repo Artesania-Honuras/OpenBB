@@ -270,6 +270,12 @@ El modo manual sigue disponible: `scripts\puente_freqtrade.py --exportar --forza
 
 El `.parquet` **no se versiona** (es binario regenerable); el CSV tampoco.
 
+**En el panel**, la pestaña *Contexto Freqtrade* muestra una tarjeta con el
+resultado del último refresco: verde si terminó bien, roja si falló (con el
+motivo), ámbar si lleva más de 48 h, gris si no hay registro. Debajo, las
+últimas líneas del log. La lógica vive en `scripts\estado_contexto.py` y se
+puede probar sin panel: `python scripts\estado_contexto.py`.
+
 ### 6.3 Ver el estado vivo (funding, libro de órdenes)
 
 ```powershell
@@ -754,7 +760,7 @@ riesgo.
 | Prioridad | Pendiente |
 |---|---|
 | P1 | ~~Gatillo con ventaja fuera de muestra~~ | ❌ **cerrado en negativo** (`E-17` + `E-18`): en momentum no existe, y el macro como filtro temporal tampoco lo aporta |
-| P2 | ~~Refresco automático del contexto~~ | ✅ **hecho** (`C-38`): `scripts\refrescar_contexto.py` con validación y escritura atómica, tarea diaria a las 09:05, log en `data\refresco_contexto.log` |
+| P2 | ~~Refresco automático del contexto~~ | ✅ **hecho** (`C-38`/`C-39`): `scripts\refrescar_contexto.py` con validación y escritura atómica, tarea diaria a las 09:05, log y **tarjeta de aviso en el panel** |
 | P3 | ~~Instalar estrategia en los bots~~ | ✅ **Cerrado en falso positivo evitado**: escrita y verificada, **refutada por la fase** (`E-16`). No se copia a Freqtrade |
 | P17 | ~~Prueba de fase obligatoria~~ | ✅ hecha y aplicada (`C-34`): 42 fases, reportar rango |
 | P4 | Clave FRED gratuita (opcional) |
