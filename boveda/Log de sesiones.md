@@ -773,3 +773,12 @@ iejo, sin_registro).
 **Pendiente**
 
 - Aprobar (o corregir) las fases 0 y 1 antes de implementar.
+
+**Respuestas del usuario (misma sesión)**
+
+- Usuario prioritario: **inversor y analista** → 2 modos, no 3.
+- Modelo: **suscripción Anthropic con Claude** → ruta recomendada **MCP + Claude Desktop**
+  (sin API key); API key solo si se quiere el chat dentro del panel; Ollama como respaldo.
+- Fuentes: **carga múltiple de distintas fuentes** → registro, primaria/fallback, bandera de
+  discrepancia y carga por lotes.
+- Registrado en **§24** del documento. **Sin cambios en la app.**

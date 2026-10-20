@@ -4,6 +4,7 @@
 > Fecha: 2026-10-20 · Sesión S-29
 > Estado: **propuesta registrada, pendiente de aprobación**.
 > Entrada: petición del usuario (2026-10-20), transcripción del video y cuatro referencias.
+> **Actualización (2026-10-20):** respuestas del usuario en **§24** — Inversor/Analista, Claude vía MCP, múltiples fuentes.
 
 ---
 
@@ -632,5 +633,93 @@ Agente:
 - **Dónde queda:** este documento + `P19` en `INDICE.md` + `S-29` en `Log de sesiones.md` + puntero en `Plan de mejora.md`.
 - **Estado:** **propuesta, pendiente de aprobación**.
 - **Siguiente paso:** aprobar (o corregir) las fases 0 y 1; solo entonces se implementa y se registra como `C-43` en adelante.
+
+---
+
+## 24. Respuestas del usuario y ajustes al plan (2026-10-20)
+
+> Estas respuestas **ajustan** la propuesta; no la aprueban. Cuando haya conflicto, manda esta sección.
+
+| Pregunta | Respuesta | Consecuencia |
+|---|---|---|
+| Usuario prioritario | **Inversor y analista** | **Dos modos**, no tres: **Inversor** (por defecto) y **Analista** (denso). El inversor ve 3 respuestas; el analista abre serie, fórmula y fuente en ≤ 2 clics. |
+| Modelo | **Suscripción Anthropic con Claude** | La suscripción **no incluye la API**. Ruta recomendada: **MCP + Claude Desktop** (sin clave). Ollama como respaldo offline. API key solo si se quiere el chat dentro del panel (facturación aparte). |
+| Fuentes | **Carga múltiple de información de diferentes fuentes** | **Registro de fuentes** + adaptadores + contraste; **carga por lotes** de varios activos; fuente y as-of por dato; discrepancia visible. |
+
+### 24.1. Claude: qué permite la suscripción y qué no
+
+| Ruta | Qué usa | ¿Sirve la suscripción? | Coste | Privacidad | Integración |
+|---|---|---|---|---|---|
+| **MCP + Claude Desktop** | Servidor MCP local + Claude Desktop | **Sí** | 0 extra | Solo salen las respuestas de las herramientas consultadas | Chat fuera del panel; el panel sigue siendo la vista |
+| **API key + chat en el panel** | SDK/API de Anthropic | **No**; la API se factura aparte | Por token | Salen los datos consultados | Chat dentro del panel (mejor UX) |
+| **Ollama local** | Modelo local | No aplica | 0 | Nada sale | Chat dentro del panel, offline |
+| **Híbrido** | MCP + Ollama | Sí + local | 0 extra | Mixta | Claude para profundo, Ollama para rutina/offline |
+
+**Recomendación:** **MCP + Claude Desktop** como ruta principal (usa la suscripción, no pide clave) y **Ollama** como respaldo offline. La API key queda como opción si más adelante se quiere el chat integrado en el panel.
+
+**Consecuencia para la evaluación:** con MCP, la evaluación del LLM es **manual** (20 preguntas en Claude Desktop); la de las **herramientas** sí es automática. La evaluación automática del LLM exigiría API key.
+
+### 24.2. MCP: qué expondríamos
+
+Un servidor MCP local (`scripts/mcp_server.py`, futuro), por **stdio**, sin puerto y sin clave, con:
+
+- `contexto_ultimo()` — última fila del contexto.
+- `serie(nombre, desde)` — serie histórica.
+- `percentil(nombre, años)` — posición vs historia.
+- `buscar_activo(q)` — catálogo (FinanceDatabase).
+- `ficha(simbolo)` — métricas del activo.
+- `comparar(a, b, benchmark)` — retorno, riesgo, correlación.
+- `fuentes_estado()` — fuente, as-of y retraso de cada serie.
+
+Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`); el repo solo contiene el servidor y sus pruebas. El panel no cambia: sigue siendo la vista; Claude es la capa de conversación.
+
+### 24.3. Múltiples fuentes: registro, contraste y carga por lotes
+
+**Registro de fuentes** (por métrica): primaria, fallback, contraste, retraso, unidades y licencia.
+
+| Dato | Primaria | Fallback | Contraste |
+|---|---|---|---|
+| VIX / SPX | CBOE | Yahoo | — |
+| Tasas / EFFR | Fed | — | — |
+| EUR/USD | BCE | — | — |
+| CPI / PIB | OECD | — | — |
+| COT | CFTC | — | — |
+| Factores | French | — | — |
+| Funding BTC | Binance | — | — |
+| Fundamentales | FMP (si clave) | Yahoo | — |
+
+**Reglas de integridad:**
+
+- La **primaria manda**; el fallback solo entra si la primaria falla.
+- Si dos fuentes discrepan por encima de la tolerancia (p. ej. 1 % en precio, 0,1 pp en tipos), se muestra **bandera de discrepancia**; **no se mezcla en silencio**.
+- Cada dato lleva **fuente, as-of y retraso**.
+- **No se empalman series** de fuentes distintas sin documentar los puntos de empalme; si se empalma, se valida y se registra.
+- Para evitar look-ahead, el contraste respeta el **retraso más conservador** de las fuentes comparadas.
+- La caché no se encoge (`D-35`); el refresco valida y conserva el archivo anterior (`C-41`).
+
+**Carga por lotes:** N activos a la vez (watchlist), con límite de concurrencia, progreso, fallos parciales y caché. Aceptación propuesta: **10 activos en < 30 s**, sin bloquear el panel.
+
+**Riesgos:** doble conteo, look-ahead por retrasos distintos, licencias, límites de tasa, mapeo de tickers, monedas y zonas horarias, precios ajustados vs no ajustados.
+
+### 24.4. Cambios concretos al plan
+
+| Fase | Antes | Ahora |
+|---|---|---|
+| 1 | 3 modos (Principiante/Inversor/Analista) | **2 modos** (Inversor/Analista) + "ver detalle" |
+| 2 | FinanceDatabase + ficha | + **registro de fuentes**, contraste y **carga por lotes** |
+| 3 | Ollama primero, cloud opcional | **MCP + Claude Desktop** primero (suscripción), Ollama respaldo, API key opcional |
+| 20 | Ollama + cloud | + **Claude Desktop/MCP** (sin coste extra), API key opt-in |
+| 17 | — | + `F2-8` registro de fuentes, `F2-9` carga por lotes, `F3-7` servidor MCP |
+
+### 24.5. Preguntas que siguen abiertas
+
+4. ¿Mercados primero: EE. UU., Europa o cripto?
+5. ¿Historial mínimo por activo: 5, 10 o 20 años?
+6. ¿El informe lleva marca/nombre?
+7. ¿Móvil ahora o después?
+
+**Falta una confirmación para cerrar la Fase 3:** ¿la conversación va en **Claude Desktop vía MCP** (sin clave, usa tu suscripción) o quieres el **chat dentro del panel** (requiere API key y facturación aparte)? La recomendación es **MCP**.
+
+---
 
 > Este documento no es una decisión. Es la base para tomarla.
