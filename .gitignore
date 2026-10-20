@@ -23,6 +23,8 @@ freqtrade_bridge/user_data/
 *.key
 user_settings.json
 secrets.json
+data/notificador.json
+data/aviso_ultimo.json
 
 # Logs y temporales
 *.log

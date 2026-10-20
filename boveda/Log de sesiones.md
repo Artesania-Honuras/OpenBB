@@ -710,3 +710,30 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
   anterior y se falla en voz alta; un `OK` del refresco no prueba que los datos estén bien.
 - Lo que este incidente enseña: las comprobaciones tienen que mirar **invariantes**
   (desde cuándo hay dato, cuántos NaN), no solo que el archivo exista y termine hoy.
+
+---
+
+## S-28 — 2026-10-20 — Que el fallo avise solo
+
+**Hecho**
+
+- `scripts\avisar.py`: evalúa el contexto después de cada refresco y avisa por Telegram si
+  falló, lleva más de 48 h, no hay datos o **la historia está rota**. No repite el mismo
+  aviso en 12 h.
+- `_refresco_oculto.ps1` lo ejecuta **siempre**, incluso cuando el refresco falla; el
+  resultado de la tarea sigue siendo el del refresco (un problema de canal no lo falsea).
+- Configuración local en `data\notificador.json` (ignorado por Git) o variables de entorno.
+  Sin token no envía y **no marca la tarea como fallida**: lo declara.
+
+**Resultado**
+
+- `--autoprueba`: **8/8**.
+- Simulación real de `FALLO`: mensaje con motivo, 36.637 × 14, CPI desde 1956 y última
+  línea del log.
+- Envoltorio completo: refresco **OK 58 s** → aviso `SIN sin problemas` → código **0**.
+- `estado.py`: **27/27**; repo limpio.
+
+**Pendiente declarado**
+
+- **Falta el token de Telegram**. El canal está montado y probado en seco, pero **no ha
+  entregado ningún mensaje real**. Se verifica con `--probar` cuando esté.

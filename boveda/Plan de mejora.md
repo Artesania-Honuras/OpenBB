@@ -131,7 +131,7 @@ El parquet se refresca **solo** a las 09:05 desde `C-38` (validado y con copia d
 
 ## 7. Eje 6 — Operación y app
 
-- ✅ **Refresco automático diario del contexto** (`C-38`): tarea 09:05, valida antes de guardar, conserva el anterior, log y chequeo en `estado.py` (26/26). **El aviso vive en el panel** (`C-39`): verde si el último refresco terminó bien, rojo si falló, ámbar si lleva más de 48 h. **Falta** el aviso fuera del panel (Telegram/correo).
+- ✅ **Refresco automático diario del contexto** (`C-38`): tarea 09:05, valida antes de guardar, conserva el anterior, log y chequeo en `estado.py` (26/26). **El aviso vive en el panel** (`C-39`): verde si el último refresco terminó bien, rojo si falló, ámbar si lleva más de 48 h. El aviso **externo** está montado (C-42): corre tras cada refresco y avisa por Telegram; **falta el token** para que entregue.
 - **Calendario de eventos** en el panel (CPI, FOMC) con los próximos 30 días.
 - **Régimen actual vs histórico:** percentil del VIX/funding de hoy frente a 5 años.
 - **"Qué cambió desde ayer":** diff del contexto, no una tabla entera.

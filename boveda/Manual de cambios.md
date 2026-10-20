@@ -502,3 +502,22 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   - Pruebas: validador **8/8**; sembrado **6/6**; `AppTest` del panel **0 excepciones**; `estado.py` **27/27**.
 - **Reversión:** volver a sobrescribir la caché con la descarga recortada. No: es exactamente el fallo.
 - **Nota:** `data\context\contexto_diario_con_nan.parquet` se conserva como evidencia (ignorado por Git).
+
+---
+
+## C-42 — Aviso externo si el refresco falla o pierde historia
+
+- **Fecha:** 2026-10-20
+- **Qué se hizo:** `scripts\avisar.py`, ejecutado **después de cada refresco** por `scripts\_refresco_oculto.ps1`. Evalúa el estado real y manda un mensaje por Telegram solo si hay problema:
+  - `fallo`, `viejo` (> 48 h), `sin_datos`, `ilegible`, o **historia rota** (CPI empieza después de 1990 / NaN en 2026).
+  - **No repite** el mismo aviso en 12 h (clave = día + motivo + estado + fechas).
+  - Sin token **sale con 0**: la falta de credenciales no marca la tarea como fallida; deja `PEND` en `data\avisos.log` e imprime el mensaje.
+- **Configuración (no se versiona):** `data\notificador.json` con `telegram_token` y `telegram_chat`, o las variables `OPENBB_TELEGRAM_TOKEN` / `OPENBB_TELEGRAM_CHAT`. `.gitignore` actualizado.
+- **Por qué después del refresco y no dentro:** el aviso tiene que ver el resultado real (archivo y log), no suponerlo; y debe correr **también cuando el refresco falla**, que es cuando hace falta.
+- **EVIDENCIA:**
+  - `--autoprueba`: **8/8** (sano no avisa; fallo, historia rota y > 48 h sí; mensaje con datos; dedupe a 1 h y 13 h).
+  - Simulación real de `FALLO` con `OPENBB_REFRESCO_LOG`: mensaje correcto (36.637 × 14, CPI 1956, motivo y última línea del log).
+  - Envoltorio completo ejecutado a mano: refresco **OK 58 s** → aviso **`SIN sin problemas`** → código **0**.
+  - `--probar` sin configuración: explica qué falta y no falla.
+- **Pendiente declarado:** **no hay token todavía**, así que el canal **no ha entregado un mensaje real**. Cuando se pegue en `data\notificador.json`, se verifica con `--probar`. No se da por cerrado hasta que ese mensaje llegue.
+- **Reversión:** quitar la llamada a `avisar.py` del envoltorio. La tarea vuelve a ser solo refresco.

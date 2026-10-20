@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from estado_contexto import historia_rota, resumen as resumen_contexto  # noqa: E402
+from avisar import configurado as aviso_configurado  # noqa: E402
 
 API = "http://127.0.0.1:6900"
 PB = 10_000  # 1 punto porcentual = 100 puntos básicos
@@ -672,6 +673,13 @@ with tab_contexto:
                     "**La historia del contexto está incompleta.** El CPI empieza en "
                     f"{e['cpi_desde']} y hay {e['nan_2026']} NaN en 2026. Restaura "
                     "`contexto_diario_anterior.parquet` y revisa `C-41`."
+                )
+            if aviso_configurado():
+                st.caption("Aviso externo: **activo** (Telegram) tras cada refresco.")
+            else:
+                st.caption(
+                    "Aviso externo: **sin token**. Si el refresco falla, solo se verá aquí. "
+                    "Configúralo en `data\\notificador.json` (README §6.2)."
                 )
 
             with st.expander("Registro de refrescos (últimas líneas)"):

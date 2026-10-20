@@ -284,6 +284,24 @@ pasó a devolver 20 meses de CPI e ignoró `start_date`; el refresco escribió u
 `estado.py` comprueba que el CPI empiece antes de 1990. Si una descarga trae
 menos historia de la que había, el refresco falla y conserva el archivo anterior.
 
+### Aviso externo si el refresco falla
+
+La tarea ejecuta `scripts\avisar.py` **después** del refresco (también si falla).
+Avisa por Telegram cuando el refresco falla, lleva más de 48 h parado o el contexto
+perdió historia; no repite el mismo aviso en 12 h.
+
+1. Crea un bot con **@BotFather** y copia el token.
+2. Escribe ambos datos en `data\notificador.json` (ignorado por Git):
+
+   ```json
+   {"telegram_token": "123456:ABC...", "telegram_chat": "123456789"}
+   ```
+
+3. Comprueba el canal: `... scripts\avisar.py --probar`.
+4. Historial: `data\avisos.log` (una línea por ejecución: `SIN`, `PEND`, `OK`, `FALLO`).
+
+Sin configuración no envía nada y **no marca la tarea como fallida**: deja `PEND` en el log.
+
 ### 6.3 Ver el estado vivo (funding, libro de órdenes)
 
 ```powershell

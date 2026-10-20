@@ -8,6 +8,14 @@
 $root = Split-Path -Parent $PSScriptRoot
 $py = Join-Path $root "venvs\openbb\Scripts\python.exe"
 $script = Join-Path $root "scripts\refrescar_contexto.py"
+$avisar = Join-Path $root "scripts\avisar.py"
 
 & $py $script
-exit $LASTEXITCODE
+$refresco = $LASTEXITCODE
+
+# El aviso corre aunque el refresco falle: es cuando mas falta hace. Su
+# resultado no cambia el de la tarea (si el envio falla, queda en
+# data\avisos.log); la tarea debe reflejar el refresco, no el canal.
+& $py $avisar
+
+exit $refresco
