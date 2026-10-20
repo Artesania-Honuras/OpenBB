@@ -1,6 +1,6 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-20 · Sesión S-28
+> Última actualización: 2026-10-20 · Sesión S-29
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
 > **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
 
@@ -43,6 +43,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | `Plantillas.md` | Formatos vacíos para que el registro sea consistente |
 | `Plan de mejora.md` | Hoja de ruta de datos y validación: fuentes disponibles (F1-F12), déficits (D1-D5), packs A/B/C y puertas |
 | `Ecosistema de herramientas.md` | Los repositorios del usuario: qué es cada uno, qué papel tiene aquí y veredicto (adoptar / más adelante / no) |
+| `Analisis y plan - fuente de investigacion.md` | Análisis de producto (video + 4 referencias) y plan en 4 fases: propuesta `P19`, **sin implementar** |
 
 > Manual de uso completo (instalación, arranque, comandos, problemas): `README.md` en la raíz.
 
@@ -181,6 +182,7 @@ No se integra ninguna estrategia al bot si no cumple **las cinco**:
 | P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
 | P17 | **Prueba de fase obligatoria**: 42 fases, reportar rango y mediana | ✅ **hecha y aplicada** — `C-34`, `scripts/auditar_fase.py`, 80 s; criterio 5 de la compuerta (`D-32`) |
 | P18 | ~~¿Sirve el macro para decidir cuándo estar en la cesta?~~ | ❌ **cerrado en negativo** — `E-18`: la regla a priori pierde contra no hacer nada y las que ganan no superan el azar. `D-33` |
+| P19 | **Plan de producto: de panel técnico a fuente de investigación para inversores** (4 fases: contexto, lenguaje, descubrimiento, agente) | 📝 **propuesta registrada, no aprobada** — documento `Analisis y plan - fuente de investigacion.md`; sin cambios de código (`S-29`) |
 
 ---
 

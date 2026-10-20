@@ -746,3 +746,30 @@ iejo, sin_registro).
 - Flujo de alerta: primera ejecución envía, segunda deduplica (envío interceptado, sin falso aviso).
   El estado de dedupe se restauró después de la prueba.
 - Panel: **«Aviso externo: activo»**; estado.py 27/27.
+
+---
+
+## S-29 — 2026-10-20 — Análisis de producto y plan (sin código)
+
+**Hecho**
+
+- Análisis de la app como **fuente de investigación para inversores**: diagnóstico, brecha
+  pregunta→respuesta, 18 palancas de mejora, diseño del agente y plan en 4 fases.
+- Fuentes: video del Terminal clásico (transcripción), FinanceDatabase, FinanceToolkit,
+  `openbb-ai` y `agents-for-openbb`, con enlaces completos.
+- Registro: `Analisis y plan - fuente de investigacion.md`; `P19` en el índice.
+
+**Decisiones**
+
+- Ninguna decisión nueva aprobada. `P19` y `D-37`…`D-40` quedan como **propuestas**.
+- Se mantiene la línea: el agente **explica y compara**, no recomienda; local-first.
+
+**Resultado**
+
+- Documento completo (Parte I análisis, Parte II plan) con criterios de aceptación por fase.
+- **No se tocó código**: solo documentación en `boveda/`.
+- Estado del repo tras el registro: **solo documentación**; sin cambios de código.
+
+**Pendiente**
+
+- Aprobar (o corregir) las fases 0 y 1 antes de implementar.

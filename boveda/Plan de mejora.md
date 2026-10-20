@@ -223,3 +223,18 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | ¿Se puede instalar? | ❌ **no**: no queda nada que instalar (`D-31`). `P3` quedó escrita y verificada, y **no se copia** a los bots |
 | ¿Qué falta? | Mantenimiento (`P2` aviso externo, `P6` pruebas, `P9` reinicio tras cambios) y contexto informativo. **Ninguna señal pendiente de despliegue** |
 | ¿Y el panel? | ✅ sirve para lo que sí hace bien: mostrar el entorno. Refresco diario validado y visible (`C-38`/`C-39`) |
+
+---
+
+## 13. Plan de producto para inversores (propuesta S-29)
+
+> **No aprobado, no implementado.** El detalle vive en `Analisis y plan - fuente de investigacion.md`.
+
+| Fase | Qué | Puerta de salida |
+|---|---|---|
+| **0. Contexto** (1 sem) | Activo · periodo · benchmark + fuente/as-of + gráfico por tarjeta | 100 % de tarjetas actualizadas |
+| **1. Hablar claro** (2–3 sem) | Portada 3 respuestas, glosario, qué cambió, percentiles | 3/3 en < 60 s |
+| **2. Descubrir** (4–6 sem) | FinanceDatabase, buscador, ficha, comparador, informe | 10 consultas + ficha + export |
+| **3. Conversar** (4–6 sem) | Agente local con 6 herramientas y evaluación | ≥ 18/20, 20/20 citas, 0 consejos |
+
+**Regla:** no se abre una fase sin pasar la puerta anterior. El agente no sustituye al panel: lo maneja y lo explica.
