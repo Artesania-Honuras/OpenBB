@@ -387,3 +387,15 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   3. estado.py gana el chequeo **«Reportes en UTF-8»**: si alguien vuelve a usar > a secas, se ve en el estado, no en una captura.
 - **EVIDENCIA:** antes `15 archivos · 14 en UTF-16 · 6.427 bytes nulos en reporte_fase.txt · 3 con mojibake`; después `15 reportes · 0 nulos · 0 restos de mojibake · 25/25 ✅`.
 - **Reversión:** volver a Tee-Object y a leer sin codificación explícita. No se recomienda: es lo que producía el síntoma.
+
+---
+
+## C-36 — estado.py marcaba ✅ un HTTP 504 de la BCE
+
+- **Fecha:** 2026-10-19
+- **Síntoma:** en el chequeo de externos apareció BCE ✅ HTTP 504 en 11423 ms. Un 504 es *gateway timeout*: el dato no llegó.
+- **Causa:** _http devolvía True para **cualquier** HTTPError, incluidos 4xx y 5xx. El docstring lo decía sin rodeos: «Cualquier HTTP cuenta».
+- **Por qué importa:** es el mismo defecto de C-32 con otra cara. Un chequeo que dice ✅ cuando la fuente falló no informa: tranquiliza. Y el 504 era real: tres llamadas seguidas dieron 504, 200, 200 — un fallo transitorio de pasarela.
+- **Arreglo:** ok exige **2xx/3xx**; los 5xx se **reintentan una vez** (1 s) antes de declarar fallo. Un 4xx falla sin reintento: el servidor contestó, y contestó que no.
+- **EVIDENCIA:** antes BCE ✅ HTTP 504; después BCE ✅ HTTP 200, y si el 504 persiste el veredicto baja a **degradado**, que es lo honesto.
+- **Reversión:** volver a eturn True en el except HTTPError. No se recomienda: es el falso positivo.

@@ -21,6 +21,7 @@ import os
 import socket
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -44,20 +45,34 @@ except Exception:  # noqa: BLE001
 # --------------------------------------------------------------------------
 # Utilidades
 # --------------------------------------------------------------------------
-def _http(url: str, timeout: int = 10) -> tuple[bool, str, float]:
-    """Devuelve (alcanzable, detalle, milisegundos). Cualquier HTTP cuenta."""
-    inicio = datetime.now()
-    try:
-        req = Request(url, headers={"User-Agent": "estado-openbb/1.0"})
-        with urlopen(req, timeout=timeout) as r:
+def _http(url: str, timeout: int = 10, reintentos: int = 1) -> tuple[bool, str, float]:
+    """Devuelve (ok, detalle, milisegundos).
+
+    Un 2xx/3xx cuenta como alcanzable. Un 4xx/5xx **no**: que el servidor
+    conteste con un error no es que el dato esté disponible (un 504 de la BCE
+    se marcaba ✅). Los 5xx se reintentan una vez porque son la forma típica
+    de un fallo transitorio de pasarela.
+    """
+    for intento in range(reintentos + 1):
+        inicio = datetime.now()
+        try:
+            req = Request(url, headers={"User-Agent": "estado-openbb/1.0"})
+            with urlopen(req, timeout=timeout) as r:
+                ms = (datetime.now() - inicio).total_seconds() * 1000
+                return 200 <= r.status < 400, f"HTTP {r.status} en {ms:.0f} ms", ms
+        except HTTPError as e:
             ms = (datetime.now() - inicio).total_seconds() * 1000
-            return True, f"HTTP {r.status} en {ms:.0f} ms", ms
-    except HTTPError as e:
-        ms = (datetime.now() - inicio).total_seconds() * 1000
-        return True, f"HTTP {e.code} en {ms:.0f} ms", ms
-    except (URLError, TimeoutError, OSError) as e:
-        ms = (datetime.now() - inicio).total_seconds() * 1000
-        return False, f"{type(e).__name__} tras {ms:.0f} ms", ms
+            if e.code >= 500 and intento < reintentos:
+                time.sleep(1.0)
+                continue
+            return (200 <= e.code < 400), f"HTTP {e.code} en {ms:.0f} ms", ms
+        except (URLError, TimeoutError, OSError) as e:
+            ms = (datetime.now() - inicio).total_seconds() * 1000
+            if intento < reintentos:
+                time.sleep(1.0)
+                continue
+            return False, f"{type(e).__name__} tras {ms:.0f} ms", ms
+    return False, "sin respuesta", 0.0
 
 
 def _puerto(puerto: int) -> bool:
