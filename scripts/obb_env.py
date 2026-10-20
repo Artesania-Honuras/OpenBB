@@ -15,12 +15,44 @@ Uso:
 from __future__ import annotations
 
 import os
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable
+
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "data" / "cache"
 CERT_BUNDLE = ROOT / "venvs" / "openbb" / "Lib" / "site-packages" / "certifi" / "cacert.pem"
+
+
+def _temporal(idx) -> bool:
+    """True si el índice representa fechas (no posiciones)."""
+    if isinstance(idx, pd.DatetimeIndex):
+        return True
+    if isinstance(idx, pd.RangeIndex) or len(idx) == 0:
+        return False
+    primero = idx[0]
+    return isinstance(primero, (date, datetime, pd.Timestamp))
+
+
+def _combinar(viejo: pd.DataFrame, nuevo: pd.DataFrame) -> pd.DataFrame:
+    """Une una descarga nueva con la cache; lo nuevo gana en fechas repetidas.
+
+    Nunca devuelve una serie más corta que la cache. Si los esquemas no
+    coinciden o el índice no es temporal, devuelve lo nuevo tal cual.
+    """
+    if list(nuevo.columns) != list(viejo.columns):
+        return nuevo
+    if not (_temporal(nuevo.index) and _temporal(viejo.index)):
+        return nuevo
+    a = nuevo.copy()
+    a.index = pd.DatetimeIndex(a.index)
+    b = viejo.copy()
+    b.index = pd.DatetimeIndex(b.index)
+    combinado = pd.concat([a, b])
+    combinado = combinado[~combinado.index.duplicated(keep="first")].sort_index()
+    return combinado if len(combinado) > len(nuevo) else nuevo
 
 
 def preparar_entorno() -> Path:
@@ -54,14 +86,24 @@ def consultar(nombre: str, fn: Callable, forzar: bool = False):
     forzar : bool
         Si es True, ignora la cache y vuelve a consultar.
     """
-    import pandas as pd
-
     preparar_entorno()
     path = CACHE_DIR / f"{nombre}.parquet"
     if path.exists() and not forzar:
         return pd.read_parquet(path)
 
     df = fn().to_df()
+    if path.exists():
+        # Un refresco NO puede encoger una serie. Algunos proveedores recortan
+        # la ventana que devuelven (OECD pasó de décadas de CPI a 20 meses en
+        # octubre de 2026): sobrescribir la caché con eso borra historia que el
+        # contexto ya tenía. Se conserva lo anterior y lo nuevo gana en las
+        # fechas repetidas. Solo para índices temporales: un RangeIndex no es
+        # una fecha y mezclarlo por posición inventaría datos.
+        try:
+            viejo = pd.read_parquet(path)
+            df = _combinar(viejo, df)
+        except Exception:
+            pass  # esquema distinto o índice raro: se guarda lo nuevo
     try:
         df.to_parquet(path)
     except Exception:

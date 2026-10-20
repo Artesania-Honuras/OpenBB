@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,7 +79,7 @@ def resumen(
     r: dict = {
         "estado": "ok", "horas": None, "nivel": None, "linea": None,
         "filas": None, "columnas": None, "ultima_fecha": None,
-        "escrito": None, "lineas_log": [],
+        "escrito": None, "lineas_log": [], "cpi_desde": None, "nan_2026": None,
     }
 
     if not ruta.exists():
@@ -95,6 +95,12 @@ def resumen(
         r["filas"] = len(df)
         r["columnas"] = len(df.columns)
         r["ultima_fecha"] = indice.max().date()
+        # La historia también se vigila: un refresco puede ser "OK" y haber
+        # perdido décadas de CPI (pasó el 2026-10-20, ver C-41).
+        if "cpi_yoy" in df.columns:
+            cpi = df["cpi_yoy"].dropna()
+            r["cpi_desde"] = cpi.index.min().date() if len(cpi) else None
+            r["nan_2026"] = int(df.loc[indice >= "2026-01-01"].isna().sum().sum())
     except Exception:  # noqa: BLE001
         r["estado"] = "ilegible"
         r["lineas_log"] = _lineas(log)[-6:]
@@ -129,11 +135,23 @@ def main() -> int:
     if r["filas"] is not None:
         print(f"filas         : {r['filas']:,} x {r['columnas']}")
         print(f"ultima fecha  : {r['ultima_fecha']}")
+    if r["cpi_desde"]:
+        print(f"CPI desde     : {r['cpi_desde']} · NaN 2026: {r['nan_2026']}")
     if r["escrito"]:
         print(f"archivo       : {r['escrito']:%Y-%m-%d %H:%M:%S}")
     if r["linea"]:
         print(f"ultimo evento : {r['linea']}")
     return 0 if r["estado"] in ("ok", "viejo", "sin_registro") else 1
+
+
+def historia_rota(r: dict, desde: int = 1990) -> bool:
+    """True si el CPI empieza tarde o hay NaN en 2026.
+
+    Sin columna `cpi_yoy` no se puede juzgar y no se inventa un veredicto.
+    """
+    if r.get("cpi_desde") is None:
+        return False
+    return r["cpi_desde"] > date(desde, 1, 1) or bool(r.get("nan_2026"))
 
 
 def autoprueba() -> int:
@@ -171,6 +189,10 @@ def autoprueba() -> int:
         casos.append(("sin log, archivo fresco", resumen(parquet, log, ahora)["estado"], "sin_registro"))
 
         casos.append(("sin parquet", resumen(base / "no.parquet", log, ahora)["estado"], "sin_datos"))
+
+        casos.append(("historia sana", str(historia_rota({"cpi_desde": date(1956, 2, 15), "nan_2026": 0})), "False"))
+        casos.append(("historia perdida", str(historia_rota({"cpi_desde": date(2026, 6, 15), "nan_2026": 165})), "True"))
+        casos.append(("sin columna CPI", str(historia_rota({"cpi_desde": None})), "False"))
 
     correctos = 0
     for nombre, obtenido, esperado in casos:

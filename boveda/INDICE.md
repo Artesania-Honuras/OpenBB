@@ -1,6 +1,6 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-26
+> Última actualización: 2026-10-20 · Sesión S-27
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
 > **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien — y desde `C-38`/`C-39` ese contexto **se refresca solo, validado y visible en el panel**.
 
@@ -86,6 +86,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-32 | **Ningún resultado de una rejilla temporal se reporta con una sola fase** | `E-16`/`E-17`: se reporta mediana, mínimo y máximo de las 42 fases. La prueba cuesta **80 s** (`C-34`); no hacerla ya no es un problema de coste, es una decisión | 2026-10-19 |
 | D-33 | **El macro no sirve como filtro de mercado; OpenBB es un panel de información** | `E-18`: la regla a priori (`VIX<25` + pendiente) da Calmar **4,21** frente a **5,16** de la cesta y cae en el percentil 75 del azar (P = 25,2 %). Las 2 variantes de 12 que sí baten a la cesta quedan en percentiles 68 y 72: lo que mejora es **estar fuera del mercado**, no la señal. Se cierra la línea de señales | 2026-10-19 |
 | D-34 | **Un dato que envejece no avisa: el refresco va con validación, copia y escritura atómica** | `C-38`: la primera ejecución del validador rechazó un contexto **correcto** (termina mañana por el retraso de publicación) y así se descubrió el supuesto. Prueba del validador **7/7** (rechaza columna faltante, cero, fecha atrasada, ×10, NaN entero y columna de más). La tarea diaria corrió sola y devolvió **0** | 2026-10-19 |
+| D-35 | **Un refresco no puede perder historia: si el proveedor recorta, se conserva lo anterior y se falla en voz alta** | `C-41`: el 2026-10-20 la OECD devolvió 20 meses e ignoró `start_date`; el refresco habría borrado el CPI 1956-2025 (36.509 NaN) con un `OK` verde. La caché ahora se une (`_combinar`), el validador rechaza NaN nuevos (**8/8**) y `estado.py` vigila el rango del CPI (**27/27**) | 2026-10-20 |
 
 ### Capacidades verificadas
 
@@ -130,7 +131,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 
 1. API local responde 200 y una llamada funcional en < 60 s.
 2. Contexto con 14 columnas y sin NaN desde 2021.
-3. `estado.py` sin ❌ críticos (26 chequeos).
+3. `estado.py` sin ❌ críticos (27 chequeos).
 4. Repo limpio y pusheado.
 5. Cualquier cambio nuevo tiene `C-NN` y su evidencia.
 
@@ -184,7 +185,7 @@ No se integra ninguna estrategia al bot si no cumple **las cinco**:
 
 ## 8. Cómo retomar en 3 pasos
 
-1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (26 chequeos).
+1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (27 chequeos).
 2. **Contexto:** leer este INDICE (secciones 4 y 7) para saber qué está vivo y qué falta.
 3. **Historia:** leer la última entrada de `Log de sesiones.md`. La línea de señales está **cerrada**: no hay nada que instalar. Lo abierto es mantenimiento (`P6`, `P9`, y un aviso **externo** al panel si el refresco falla) y, si se quiere entender el mercado-neutral, `P14` (saber, no operar).
 

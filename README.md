@@ -277,6 +277,13 @@ motivo), ámbar si lleva más de 48 h, gris si no hay registro. Debajo, las
 últimas líneas del log. La lógica vive en `scripts\estado_contexto.py` y se
 puede probar sin panel: `python scripts\estado_contexto.py`.
 
+**Tres defensas contra un proveedor que recorta (`C-41`).** El 2026-10-20 la OECD
+pasó a devolver 20 meses de CPI e ignoró `start_date`; el refresco escribió un
+`OK` verde y perdió el CPI desde 1926. Desde entonces: la caché **nunca encoge**
+(`_combinar` en `obb_env.py`), el validador **rechaza NaN nuevos en historia** y
+`estado.py` comprueba que el CPI empiece antes de 1990. Si una descarga trae
+menos historia de la que había, el refresco falla y conserva el archivo anterior.
+
 ### 6.3 Ver el estado vivo (funding, libro de órdenes)
 
 ```powershell
@@ -807,7 +814,7 @@ cd C:\Users\DELL\.ipython\OpenBB
 .\run-openbb-app.ps1     # ventana 2: restaurar ventana 1 si se cerró
 ```
 
-Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **26/26 ✅**.
+Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **27/27 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
 `... scripts\refrescar_contexto.py` (o se lanza la tarea programada).
 

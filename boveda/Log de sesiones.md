@@ -678,3 +678,35 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 - Nada nuevo. Se confirma `D-31`/`D-33`: OpenBB es panel informativo, no fuente de señales.
 - Regla de cierre: antes de cerrar una sesión, **buscar las cifras viejas**, no solo añadir
   la entrada nueva.
+
+---
+
+## S-27 — 2026-10-20 — Un refresco verde que borró 70 años
+
+**Hecho**
+
+- Reinicio del equipo a las ~09:45: API, panel y bots caídos. Se levantaron API (200) y
+  panel (200); los bots aparecieron solos a las 12:02 (12 procesos, 8080/8081/8082), sin
+  tocarlos.
+- La tarea de las 09:05 corrió a las 09:50 y devolvió **0**. El log decía `OK` y el archivo
+  era válido: 36.637 × 14, último 2026-10-20. Pero `cpi_yoy` había perdido **1926–2025**:
+  36.509 NaN, primer dato 2026-06-15.
+- Causa: la OECD devuelve ahora **20 meses** e ignora `start_date`; la caché se sobrescribió
+  y el contexto se reconstruyó sin historia. El validador no lo miraba.
+- Se restauró el respaldo (`cpi_yoy` desde 1956), se sembró la caché desde el contexto
+  (reconstrucción exacta, 849 meses), se arregló `consultar()` para que **nunca encoja**,
+  el validador rechaza **NaN nuevos en historia** y `estado.py` vigila el rango del CPI.
+- Refresco real de nuevo: **OK en 79 s**, 36.637 × 14, último 2026-10-20, **0 NaN en 2026**,
+  ningún valor nuevo a NaN.
+
+**Resultado**
+
+- Validador **8/8**; sembrado **6/6**; `AppTest` **0 excepciones**; `estado.py` **27/27**.
+- API 200, panel 200, 24 pares de velas, 3 bots escuchando.
+
+**Decidido**
+
+- `D-35`: **un refresco no puede perder historia**. Si el proveedor recorta, se conserva lo
+  anterior y se falla en voz alta; un `OK` del refresco no prueba que los datos estén bien.
+- Lo que este incidente enseña: las comprobaciones tienen que mirar **invariantes**
+  (desde cuándo hay dato, cuántos NaN), no solo que el archivo exista y termine hoy.

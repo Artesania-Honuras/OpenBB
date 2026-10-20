@@ -2,7 +2,7 @@
 
 - **Fecha:** 2026-10-19 (actualizado en S-26)
 - **Estado:** **cerrado en la línea de señales.** Pasos 0 a 1h hechos y corregidos: la regla se refutó (`E-16`/`E-17`) y el macro como filtro tampoco aporta (`E-18`). Lo que queda es operación y contexto, no estrategia.
-- **Contexto:** el panel funciona (26/26 ✅, 9 pestañas) y el plan ya no es una propuesta: midió,
+- **Contexto:** el panel funciona (27/27 ✅, 9 pestañas) y el plan ya no es una propuesta: midió,
   descartó y se quedó con lo único que sobrevivió a las pruebas.
 - **Regla que manda:** ningún dato entra en vivo si no bate el **benchmark de misma exposición**
   fuera de muestra. Ver `Registro de resultados.md`.
@@ -185,7 +185,7 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 1f | **Ampliar el universo a 24 pares** ✅ `E-13` | ❌ **mi hipótesis era falsa**: retorno y Calmar suben, el DD **empeora** (−80,0 % → −87,1 %). El drawdown es de la clase de activo (`D-21`) |
 | 1g | **Configuración fija + dimensionado** ✅ `E-14`/`E-15` | ❌ **refutado**: la fase era un parámetro oculto (`E-16`); en mediana la regla no bate a la cesta y el walk-forward tampoco (`E-17`). El dimensionado queda sin objeto |
 | 1h | **Escribir la rotación en Freqtrade** (`P3`) | ✅ **cerrado en falso positivo evitado**: escrita y verificada (296/296), **refutada antes de tocar un bot**. No se copia |
-| 2 | Refresco automático + panel con calendario y régimen | ✅ refresco hecho y **visible** (`C-38` tarea 09:05 verificada, `C-39` tarjeta de aviso, **26/26**). ⚪ el calendario y la vista de régimen siguen pendientes |
+| 2 | Refresco automático + panel con calendario y régimen | ✅ refresco hecho y **visible** (`C-38` tarea 09:05 verificada, `C-39` tarjeta de aviso, **27/27**). ⚪ el calendario y la vista de régimen siguen pendientes |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |
 

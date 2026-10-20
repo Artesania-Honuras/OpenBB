@@ -190,6 +190,22 @@ def validar(
     if vacias:
         problemas.append(f"columnas enteras a NaN: {', '.join(vacias)}")
 
+    # Un proveedor que recorta su ventana no debe borrar historia ya validada.
+    # Esto habría cazado el CPI de octubre de 2026: la OECD devolvió 20 meses y
+    # el contexto perdió 1956-2025 sin que ninguna otra comprobación lo viera.
+    if anterior is not None and len(anterior) and len(nuevo):
+        comunes = nuevo.index.intersection(anterior.index)
+        for col in nuevo.columns:
+            if col not in anterior.columns:
+                continue
+            perdidos = anterior.loc[comunes, col].notna() & nuevo.loc[comunes, col].isna()
+            n = int(perdidos.sum())
+            if n:
+                ejemplo = pd.Timestamp(perdidos[perdidos].index[0]).date()
+                problemas.append(
+                    f"{col}: {n} valores historicos pasan a NaN (p. ej. {ejemplo})"
+                )
+
     if len(nuevo):
         ultima = nuevo.iloc[-1]
         claves = ["vix", "yield_2y", "yield_10y", "slope_10y_2y", "spx", "eurusd",
@@ -260,6 +276,10 @@ def autoprueba() -> int:
     c = ctx.copy()
     c["spx"] = float("nan")
     casos.append(("columna entera NaN", c, "NaN"))
+
+    c = ctx.copy()
+    c.loc["2010-01-01":"2010-03-01", "cpi_yoy"] = float("nan")
+    casos.append(("historia a NaN", c, "NaN"))
 
     c = ctx.copy()
     c["columna_extra"] = 1.0

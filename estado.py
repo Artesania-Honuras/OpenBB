@@ -170,6 +170,19 @@ def revisar() -> list[dict]:
             faltan = 14 - len(df.columns)
             add("Datos", "Esquema 14 columnas", faltan <= 0,
                 f"{len(df.columns)} columnas, faltan {max(0, faltan)}")
+
+            # La historia no puede encogerse. El 2026-10-20 la OECD devolvió 20
+            # meses de CPI y el refresco borró 1956-2025 en silencio: el archivo
+            # seguía siendo válido y terminaba hoy. El validador ya lo rechaza,
+            # pero este chequeo lo ve aunque alguien exporte a mano sin validar.
+            indice = pd.to_datetime(df.index)
+            cpi = df["cpi_yoy"].dropna() if "cpi_yoy" in df.columns else pd.Series(dtype=float)
+            inicio = cpi.index.min().date() if len(cpi) else None
+            nan_2026 = int(df.loc[indice >= "2026-01-01"].isna().sum().sum())
+            add("Datos", "Historia del contexto",
+                inicio is not None and inicio <= datetime(1990, 1, 1).date() and nan_2026 == 0,
+                f"CPI desde {inicio} · NaN en 2026: {nan_2026}",
+                critico=True)
         except Exception as e:  # noqa: BLE001
             add("Datos", "contexto_diario.parquet", False, type(e).__name__, critico=True)
     else:

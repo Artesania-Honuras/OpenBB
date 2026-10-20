@@ -480,3 +480,25 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
   - Panel reiniciado a las **21:19** (versión `app.py` 21:16), health **200**.
   - `estado.py`: **26/26**.
 - **Reversión:** no aplica (documentación y dos textos del panel).
+
+---
+
+## C-41 — El refresco perdió 70 años de CPI (y cómo se cerró el agujero)
+
+- **Fecha:** 2026-10-20
+- **Qué pasó:** el equipo reinició a las ~09:45. La tarea de las 09:05 corrió a las 09:50, devolvió **0** y escribió un `OK` verde: 36.637 filas, 14 columnas, último 2026-10-20. El archivo era válido… y había perdido el CPI **desde 1926 hasta 2026-06-14**: 36.509 NaN, con `cpi_yoy` empezando el 15-jun-2026.
+- **Causa:** la OECD pasó a devolver **20 meses** de CPI (2025-01 → 2026-09) e **ignora `start_date`**. `consultar()` sobrescribía la caché con esa ventana recortada y `construir_contexto()` reconstruía la columna solo con lo que había. El validador no lo vio: miraba columnas **enteras** a NaN y la **última** fila, no la historia.
+- **Por qué importa:** un refresco que “funciona” puede destruir datos. La tarjeta del panel estaba en verde y `estado.py` en 26/26. Lo detectó una revisión manual de NaN por columna, no el sistema.
+- **Arreglos:**
+  1. `scripts\obb_env.py` — `_combinar()`: una descarga **nunca encoge la caché**; lo nuevo gana en fechas repetidas. Solo índices temporales (un `RangeIndex` no es una fecha).
+  2. `scripts\refrescar_contexto.py` — el validador **rechaza NaN nuevos en historia**: compara con el contexto anterior y falla con el número de valores y una fecha de ejemplo.
+  3. `scripts\sembrar_cpi.py` — reconstruye la caché del CPI desde el contexto, invirtiendo `value*100` + retraso 45 d + `ffill`. No inventa: reproduce el contexto con **diferencia 0,0 en 25.816 días**.
+  4. `estado.py` — chequeo **“Historia del contexto”**: el CPI debe empezar antes de 1990 y no puede haber NaN en 2026. Ahora son **27** chequeos.
+- **EVIDENCIA:**
+  - Antes: `cpi_yoy` NaN **36.509**, primer dato 2026-06-15, NaN total 284.671.
+  - Restaurado el respaldo: `cpi_yoy` desde **1956-02-15**, NaN total 258.983 (normal: cada serie empieza en su fecha).
+  - Refresco real con el arreglo: **36.637 × 14 · último 2026-10-20 · NaN en 2026: 0 · 0 valores nuevos a NaN · 79 s**.
+  - Caché del CPI: **849 meses** (1956-01 → 2026-09).
+  - Pruebas: validador **8/8**; sembrado **6/6**; `AppTest` del panel **0 excepciones**; `estado.py` **27/27**.
+- **Reversión:** volver a sobrescribir la caché con la descarga recortada. No: es exactamente el fallo.
+- **Nota:** `data\context\contexto_diario_con_nan.parquet` se conserva como evidencia (ignorado por Git).

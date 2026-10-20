@@ -24,7 +24,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from estado_contexto import resumen as resumen_contexto  # noqa: E402
+from estado_contexto import historia_rota, resumen as resumen_contexto  # noqa: E402
 
 API = "http://127.0.0.1:6900"
 PB = 10_000  # 1 punto porcentual = 100 puntos básicos
@@ -664,6 +664,15 @@ with tab_contexto:
                 )
             elif e["estado"] == "ilegible":
                 st.error("El archivo del contexto existe pero no se puede leer.")
+
+            if e.get("cpi_desde"):
+                st.caption(f"CPI desde {e['cpi_desde']} · NaN en 2026: {e['nan_2026']}")
+            if historia_rota(e):
+                st.error(
+                    "**La historia del contexto está incompleta.** El CPI empieza en "
+                    f"{e['cpi_desde']} y hay {e['nan_2026']} NaN en 2026. Restaura "
+                    "`contexto_diario_anterior.parquet` y revisa `C-41`."
+                )
 
             with st.expander("Registro de refrescos (últimas líneas)"):
                 st.code("\n".join(e["lineas_log"]) or "(vacío)", language="text")
