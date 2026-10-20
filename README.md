@@ -661,6 +661,35 @@ auditoría mide lo mismo que se midió.
 ajuste: falta un mecanismo. La prueba cuesta **80 s** (`scripts\auditar_fase.py`), así
 que desde ahora es obligatoria para cualquier regla nueva (`D-32`).
 
+### El macro como filtro de mercado (`E-18`) — la última pregunta
+
+Si no se puede elegir **qué** tener, ¿se puede elegir **cuándo** estar? Se probó la
+regla macro pre-registrada (la de `E-07`, fijada antes de medir) sobre la cesta a peso
+igual: dentro cuando `VIX < 25` y la pendiente 10a-2a es positiva, en caja si no.
+
+Dos protecciones: el VIX se usa con **un día de retraso** (a las 00:00 del día d no se
+conoce su cierre) y el control no es "no hacer nada", sino la **misma serie de
+posiciones desplazada circularmente** — mismos días dentro, mismos cambios, otras
+fechas. Si la regla no supera esa nube, lo que mejora es la exposición, no la señal.
+
+| Variante | Retorno | DD | Calmar | Dentro |
+|---|---|---|---|---|
+| **Cesta sin filtro** | **+420,9 %** | −81,6 % | **5,16** | 100 % |
+| **Regla a priori (VIX<25 + pendiente, lag 1)** | +318,9 % | −75,8 % | **4,21** | 52,9 % |
+| VIX<30 · lag 2 (la mejor de 12) | +447,8 % | −72,0 % | 6,22 | 95,3 % |
+| Regla invertida | +10,5 % | −72,0 % | 0,15 | 47,1 % |
+
+- La regla a priori **pierde** contra la cesta y cae en el **percentil 75** del azar:
+  P(azar ≥ regla) = **25,2 %**.
+- Solo **2 de 12** variantes baten a la cesta, y ninguna es significativa (percentiles
+  68 y 72). Son las mejores de 12: elegirlas sería el mismo error que la fase.
+- El signo **sí** importa (invertirla la hunde a 0,15), pero distinguir algo no es
+  batir a no hacer nada.
+
+**Conclusión:** ❌ el macro **no sirve como filtro de mercado** (`D-33`). OpenBB se
+queda como **panel de información y contexto**, que es lo que sí aporta: saber en qué
+régimen se opera, con datos verificados y en local.
+
 ### Dimensionado (`E-15`) — sleeve del 10 % (sin objeto tras `E-16`)
 
 | sleeve | CAGR mediano | caída típica | 5 % peor | P(caída > 20 %) | P(año perdedor) |

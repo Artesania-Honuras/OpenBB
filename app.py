@@ -848,6 +848,12 @@ with tab_estrategia:
             "Resultado": "24 pares: mediana +342 %, Calmar 3,56 vs 4,52, 18/42 baten la cesta · 7 pares: 1/42",
             "Veredicto": "❌ Rama cerrada",
         },
+        {
+            "ID": "E-18",
+            "Qué se probó": "El macro como filtro de mercado sobre la CESTA (no elegir pares: decidir cuándo estar dentro)",
+            "Resultado": "Regla a priori Calmar 4,21 vs 5,16 de la cesta · percentil 75 del azar · 2/12 variantes baten la cesta, ninguna significativa (p68, p72)",
+            "Veredicto": "❌ No hay señal; el macro queda como contexto",
+        },
     ])
     st.dataframe(experimentos, hide_index=True, width="stretch")
     st.caption(

@@ -1,8 +1,8 @@
 ﻿# INDICE — Memoria del proyecto OpenBB local
 
-> Última actualización: 2026-10-19 · Sesión S-22
+> Última actualización: 2026-10-19 · Sesión S-23
 > Este archivo es lo primero que debe leer cualquier sesión nueva.
-> **Estado en una línea:** **la rama de momentum está cerrada** (`E-16`, `E-17`). La regla `E-14` era la mediana de 42 fases; el walk-forward de `E-13` era la fase 0, pegada al máximo; el de `E-10` era **el máximo exacto**. En mediana, ninguna variante bate a la cesta a peso igual (+370,3 %, Calmar 4,52). No hay nada desplegable y el código está escrito, verificado y **no instalado**.
+> **Estado en una línea:** **no hay señal que desplegar** — ni por selección (`E-16`, `E-17`) ni por tiempo (`E-18`). La rama de momentum está cerrada; el macro como filtro de mercado **tampoco** bate a la cesta (Calmar 4,21 vs 5,16, percentil 75 del azar). OpenBB queda como **panel de información y contexto**, que es lo que sí hace bien.
 
 ---
 
@@ -84,6 +84,7 @@ Están en `CLAUDE.md`, al inicio. Resumen:
 | D-30 | **`E-10`, `E-11`, `E-13` y `E-14` publicaron una fase, no un rango** | `E-17`: el walk-forward de 7 pares da Calmar 19,22 en la fase 0 — el **máximo exacto de 42**; su mediana es 1,55 frente a 15,65 de la cesta. El de 24 pares da 35,82, pegado al máximo (36,45); su mediana es 3,56 frente a 4,52 | 2026-10-19 |
 | D-31 | **La rama de momentum se cierra** | `E-16` + `E-17`: ni la regla fija, ni el walk-forward, ni ninguno de los dos universos superan a la cesta de forma robusta. No se sigue optimizando: no hay mecanismo, hay una rejilla temporal | 2026-10-19 |
 | D-32 | **Ningún resultado de una rejilla temporal se reporta con una sola fase** | `E-16`/`E-17`: se reporta mediana, mínimo y máximo de las 42 fases. La prueba cuesta **80 s** (`C-34`); no hacerla ya no es un problema de coste, es una decisión | 2026-10-19 |
+| D-33 | **El macro no sirve como filtro de mercado; OpenBB es un panel de información** | `E-18`: la regla a priori (`VIX<25` + pendiente) da Calmar **4,21** frente a **5,16** de la cesta y cae en el percentil 75 del azar (P = 25,2 %). Las 2 variantes de 12 que sí baten a la cesta quedan en percentiles 68 y 72: lo que mejora es **estar fuera del mercado**, no la señal. Se cierra la línea de señales | 2026-10-19 |
 
 ### Capacidades verificadas
 
@@ -159,7 +160,7 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 
 | Prioridad | Pendiente | Estado |
 |---|---|---|
-| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **cerrado en negativo** (`E-17`): en momentum no existe. Ni la regla fija ni el walk-forward baten a la cesta en mediana |
+| P1 | ~~Encontrar un gatillo con ventaja OOS real~~ | ❌ **cerrado en negativo** (`E-17` + `E-18`): en momentum no existe, y el macro como filtro temporal tampoco lo aporta |
 | P2 | Refresco programado del contexto (hoy manual) | 🟡 abierto |
 | P3 | ~~Instalar la estrategia en los bots de Freqtrade~~ | ✅ **cerrado en falso positivo evitado**: escrita (`strategies/rotacion_momentum.py`), verificada (296/296 selecciones) y **refutada antes de tocar un bot** (`E-16`). No se copia a Freqtrade |
 | P4 | Clave FRED gratuita (`fred_api_key`) para `tips_yields` | 🟡 opcional |
@@ -176,14 +177,15 @@ No se integra ninguna estrategia al bot si no cumple **las cuatro**:
 | P15 | ~~Tamaño del sleeve~~ | ✅ cerrado — `E-15`/`D-25`: **10 %**, con las cuentas hechas. 5 % si se aplica la puerta al pie de la letra |
 | P16 | **Automatizar la re-optimización semestral** (la del +3.118 %) | ⚪ sin objeto — `E-16`: la regla base no bate a la cesta; re-optimizarla solo optimiza la fase |
 | P17 | **Prueba de fase obligatoria**: 42 fases, reportar rango y mediana | ✅ **hecha y aplicada** — `C-34`, `scripts/auditar_fase.py`, 80 s; criterio 5 de la compuerta (`D-32`) |
+| P18 | ~~¿Sirve el macro para decidir cuándo estar en la cesta?~~ | ❌ **cerrado en negativo** — `E-18`: la regla a priori pierde contra no hacer nada y las que ganan no superan el azar. `D-33` |
 
 ---
 
 ## 8. Cómo retomar en 3 pasos
 
-1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (24 chequeos).
+1. **Estado:** `.\venvs\openbb\Scripts\python.exe estado.py` → leer la tabla (25 chequeos).
 2. **Contexto:** leer este INDICE (secciones 4 y 7) para saber qué está vivo y qué falta.
-3. **Historia:** leer la última entrada de `Log de sesiones.md` y continuar por **`P3`** (escribir la rotación en Freqtrade con regla fija y sleeve del 10 %).
+3. **Historia:** leer la última entrada de `Log de sesiones.md`. La línea de señales está **cerrada**: no hay nada que instalar. Lo abierto es mantenimiento (`P2`, `P6`, `P9`) y, si se quiere entender el mercado-neutral, `P14` (saber, no operar).
 
 > Si el paso 1 muestra un ❌ crítico, se atiende antes de cualquier otra cosa.
 > Si el panel «sigue igual», mirar la huella de versión de la barra lateral (`C-30`): si la hora no coincide con la última modificación de `app.py`, es una pestaña vieja.

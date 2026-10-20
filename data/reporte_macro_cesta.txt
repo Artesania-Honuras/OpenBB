@@ -1,0 +1,46 @@
+====================================================================================================
+MACRO SOBRE LA CESTA — 24 pares, 2021-01-01 -> 2026-10-01, 2099 dias
+====================================================================================================
+cesta a peso igual: +420.9%  DD -81.6%  Calmar 5.16  CAGR +33.3%
+
+### VARIANTES (umbrales fijados antes de medir; el lag 1 es el realista)
+variante                                ret_%     dd_%   calmar   cagr_%  dentro_%  cambios
+VIX<20 + pendiente>0 · lag 1            -17.4    -79.3    -0.22     -3.3     39.6%       97
+VIX<20 · lag 1                          -40.3    -83.3    -0.48     -8.6     66.0%      125
+VIX<25 + pendiente>0 · lag 1           +318.9    -75.8     4.21    +28.3     52.9%       59
+VIX<25 · lag 1                         +218.4    -76.4     2.86    +22.3     86.9%       73
+VIX<30 + pendiente>0 · lag 1           +292.0    -72.7     4.01    +26.8     58.6%       39
+VIX<30 · lag 1                         +446.0    -75.4     5.91    +34.4     95.4%       37
+VIX<20 + pendiente>0 · lag 2           +105.9    -68.3     1.55    +13.4     39.6%       97
+VIX<20 · lag 2                          +53.4    -68.3     0.78     +7.7     65.9%      125
+VIX<25 + pendiente>0 · lag 2           +315.2    -74.9     4.21    +28.1     52.8%       59
+VIX<25 · lag 2                         +301.6    -74.9     4.03    +27.4     86.8%       73
+VIX<30 + pendiente>0 · lag 2           +356.6    -70.2     5.08    +30.3     58.5%       39
+VIX<30 · lag 2                         +447.8    -72.0     6.22    +34.5     95.3%       37
+
+### CONTRASTE — mismo patrón de entradas/salidas, fechas al azar
+  500 desplazamientos circulares de la MISMA serie de posiciones
+  (mismos cambios, mismo tiempo dentro; solo cambian las fechas)
+
+  VIX<25 + pendiente>0 · lag 1
+    Calmar 4.21 · nube p5 -0.50 · p50 1.50 · p95 13.71 · max 24.00
+    percentil 75 · P(azar >= regla) 25.2 %
+
+  Variantes que baten a la cesta en Calmar: 2 de 12
+    VIX<30 · lag 1                     Calmar 5.91 · percentil  68 · P(azar>=) 31.8 % · ❌
+    VIX<30 · lag 2                     Calmar 6.22 · percentil  72 · P(azar>=) 28.2 % · ❌
+
+### CONTROL DE SIGNO — la regla invertida (dentro cuando el régimen es MALO)
+  retorno +10.5%  DD -72.0%  Calmar 0.15
+
+====================================================================================================
+Regla PRE-REGISTRADA (VIX<25 + pendiente>0, lag 1):
+  ¿Mejora el Calmar de la cesta?  NO (4.21 vs 5.16)
+  ¿Supera al mismo patrón con fechas al azar?  NO (percentil 75; se exige >= 95)
+
+Variantes que baten la cesta: 2; de ellas, significativas: 0.
+
+VEREDICTO: ❌ no hay ventaja demostrable. Las variantes que baten a la cesta
+           NO se distinguen de estar fuera del mercado en fechas cualesquiera:
+           el merito es la exposicion, no la señal.
+====================================================================================================

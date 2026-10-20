@@ -577,3 +577,26 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 **Decidido**
 
 - La codificación se comprueba en el chequeo de estado, no a ojo: un defecto de presentación que se repite en cada regeneración es un defecto del proceso, no del archivo.
+
+---
+
+## S-23 — 2026-10-19 — El macro como filtro de la cesta: la última pregunta, cerrada
+
+**Hecho**
+
+- Medido si el régimen macro mejora el Calmar de la cesta si solo se está invertido cuando es favorable. Regla **pre-registrada** (VIX<25 + pendiente>0, la de E-07), no elegida después.
+- Dos protecciones: **lag de 1 y 2 días** (el VIX de hoy no se conoce a las 00:00 de hoy) y contraste contra la **misma serie de posiciones desplazada circularmente** (500 sorteos): mismos días dentro, mismos cambios, otras fechas.
+- Sensibilidad declarada de 12 variantes (VIX 20/25/30 × pendiente sí/no × lag 1/2). **Toda variante que bata a la cesta pasa el mismo examen**, no solo la pre-registrada.
+- Control de signo: la regla invertida.
+
+**Resultado**
+
+- Cesta sin filtro: **+420,9 % · DD −81,6 % · Calmar 5,16**.
+- Regla a priori: **+318,9 % · DD −75,8 % · Calmar 4,21** → pierde, percentil **75**, P(azar ≥) **25,2 %**.
+- 2 de 12 variantes baten la cesta (VIX<30), en percentiles **68 y 72**: no significativas.
+- Regla invertida: Calmar **0,15**. El signo existe; la ventaja, no.
+- Bug corregido en el camino: el contexto guarda fechas **naive** y las velas son UTC; el primer intento dio 0 % dentro en todas las variantes. Un resultado imposible delataba la alineación, no el mercado (C-37).
+
+**Decidido**
+
+- **D-33:** el macro **no sirve como filtro de mercado**. OpenBB queda como **panel de información**, no como fuente de señales. La línea de señales se cierra: no hay nada que instalar.

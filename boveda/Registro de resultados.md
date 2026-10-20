@@ -365,3 +365,34 @@ Los descartados también se registran: evitan repetir el mismo camino.
 **Lo que si sobrevive:** la direccion de E-13 (24 pares > 7 pares) se mantiene en las medianas (Calmar 3,56 vs 1,55). Pero es una comparacion entre dos variantes que **ninguna** supera a la cesta: irrelevante para decidir.
 
 **Evidencia:** data/reporte_fase.txt (las 84 filas, fase a fase), scripts/auditar_fase.py.
+
+---
+
+## E-18 — El macro como filtro de mercado sobre la cesta (la pregunta que faltaba)
+
+**Pregunta.** ¿Mejora el Calmar de la cesta a peso igual si solo se está invertido cuando el régimen macro es favorable? No es elegir pares: es decidir **cuándo estar dentro**. Es la única pregunta que usa lo que OpenBB aporta y que no se había medido.
+
+**Regla pre-registrada** (la de E-07, fijada **antes** de medir): VIX < 25 y pendiente 10a-2a > 0.
+
+**Dos protecciones.**
+1. **Lag:** el VIX del día d se conoce al cierre de d. Se usa el valor de **d-1** (y se mide también d-2, que es lo que tarda FRED). Sin lag, el filtro "sabría" el cierre del día que está operando.
+2. **Contraste con el mismo patrón:** un filtro que te saca del mercado el 30 % del tiempo **baja el DD aunque no sepa nada**. El control es la **misma serie de posiciones desplazada circularmente**: mismos días dentro, mismos cambios, otras fechas. 500 desplazamientos.
+
+**Resultado** (24 pares, 2021-01-01 → 2026-10-01, 2.099 días)
+
+| Variante | Retorno | DD | Calmar | Dentro | Cambios |
+|---|---|---|---|---|---|
+| **Cesta sin filtro** | **+420,9 %** | −81,6 % | **5,16** | 100 % | 0 |
+| **VIX<25 + pendiente>0 · lag 1** | +318,9 % | −75,8 % | **4,21** | 52,9 % | 59 |
+| VIX<30 · lag 1 | +446,0 % | −75,4 % | 5,91 | 95,4 % | 37 |
+| VIX<30 · lag 2 | +447,8 % | −72,0 % | 6,22 | 95,3 % | 37 |
+| Regla invertida (dentro con régimen malo) | +10,5 % | −72,0 % | 0,15 | 47,1 % | 59 |
+
+- La regla pre-registrada **no mejora** el Calmar (4,21 vs 5,16) y cae en el **percentil 75** de la nube del azar: **P(azar ≥) = 25,2 %**.
+- Solo **2 de 12** variantes baten a la cesta, y ninguna es significativa: **percentil 68 y 72** (P = 31,8 % y 28,2 %). La mejora es **estar fuera del mercado**, no la señal.
+- El signo sí importa: invertir la regla hunde el Calmar a 0,15. El macro **distingue** algo, pero no lo suficiente para batir a no hacer nada.
+- La referencia es la cesta **diaria** (5,16); la de 4 h medida en E-16 era 4,52. La regla queda por debajo de **las dos**: la conclusión no depende de ese detalle.
+
+**Veredicto:** ❌ **el macro no sirve como filtro de mercado.** Ni la regla a priori, ni las dos que baten a la cesta, se distinguen de estar fuera en fechas cualesquiera. OpenBB se queda como **panel de información**, no como fuente de señales.
+
+**Evidencia:** data/reporte_macro_cesta.txt, scripts/validar_macro_cesta.py.

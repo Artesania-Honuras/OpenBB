@@ -399,3 +399,14 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 - **Arreglo:** ok exige **2xx/3xx**; los 5xx se **reintentan una vez** (1 s) antes de declarar fallo. Un 4xx falla sin reintento: el servidor contestó, y contestó que no.
 - **EVIDENCIA:** antes BCE ✅ HTTP 504; después BCE ✅ HTTP 200, y si el 504 persiste el veredicto baja a **degradado**, que es lo honesto.
 - **Reversión:** volver a eturn True en el except HTTPError. No se recomienda: es el falso positivo.
+
+---
+
+## C-37 — Test del macro sobre la cesta: script nuevo y un bug de zona horaria
+
+- **Fecha:** 2026-10-19
+- **Que se hizo:** scripts\validar_macro_cesta.py: cesta diaria, régimen macro con lag, coste por cambio, y contraste por **desplazamiento circular** de la misma serie de posiciones (500 sorteos). Escribe data\reporte_macro_cesta.txt en UTF-8 desde Python (no desde la consola, C-35).
+- **Bug encontrado al primer intento:** el contexto (data\context\contexto_diario.parquet) guarda fechas **naive** y las velas son **UTC**. El eindex no encontraba ninguna etiqueta, el régimen quedaba todo False y **todas las variantes daban 0 % dentro del mercado**. Se detectó porque el control invertido daba justo el 100 %: un resultado imposible delata el bug, no la estrategia.
+- **Arreglo:** localizar el índice del contexto a UTC antes de alinear. Lección: **cuando un resultado es demasiado limpio (todo cero), sospechar de la alineación antes que del mercado.**
+- **EVIDENCIA:** E-18.
+- **Reversión:** quitar el test. No se recomienda: es la respuesta a la única pregunta que quedaba abierta.
