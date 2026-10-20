@@ -164,7 +164,7 @@ Hoy tenemos **profundidad macro** y algo de recorrido. Faltan amplitud y convers
 | 2 | Lenguaje | `slope_10y_2y` sin explicar | **Glosario y tooltip** en cada tarjeta: qué es, cómo se lee, qué NO significa | FinanceToolkit (fórmulas transparentes) | Alto | S | **P1** |
 | 3 | Lenguaje | Solo el valor de hoy | **"Qué cambió desde ayer"**: flechas, delta y una frase por serie | Propia + rolling de FT | Alto | S | **P1** |
 | 4 | Lenguaje | Cifras absolutas | **Percentil vs 5 años**: "VIX en percentil 72 → miedo alto pero no extremo" | FinanceToolkit (`standardize`) | Alto | S | **P1** |
-| 5 | Lenguaje | Un solo nivel de densidad | **3 modos**: Principiante / Inversor / Analista (mismos datos, distinto detalle) | Propia | Alto | M | **P1** |
+| 5 | Lenguaje | Un solo nivel de densidad | **2 modos**: Inversor / Analista (mismos datos, distinto detalle) | Propia | Alto | M | **P1** |
 | 6 | Descubrir | No hay buscador | **Buscador de 300k símbolos** con filtros sector, industria, país, market cap | FinanceDatabase | Muy alto | M | **P1** |
 | 7 | Descubrir | No hay ficha | **Ficha de activo**: precio, retorno, volatilidad, drawdown, ratios, comparación con benchmark y contexto macro | FinanceDatabase + FinanceToolkit | Muy alto | L | **P2** |
 | 8 | Descubrir | No hay screening | **Screener**: "semiconductores de Taiwán, mid cap, con dividendo" + ranking + exportar | FinanceToolkit Discovery | Alto | M | **P2** |
@@ -372,7 +372,7 @@ Agente:
 - **Glosario y tooltips** (20 términos).
 - **"Qué cambió desde ayer"**: delta y una frase por serie.
 - **Percentil vs 5 años** para VIX, funding, pendiente y CPI.
-- **3 modos**: Principiante / Inversor / Analista.
+- **2 modos**: Inversor / Analista.
 - **Onboarding de 3 pasos** con un ejemplo real.
 - **Aviso legal y límites** visible.
 
@@ -394,7 +394,7 @@ Agente:
 1. Definir el criterio del semáforo (reglas explícitas, no caja negra).
 2. Redactar los 3 textos de la portada y el glosario.
 3. Implementar deltas y percentiles con pruebas contra cálculo manual.
-4. Implementar los 3 modos (mismos datos, distinto detalle).
+4. Implementar los 2 modos (mismos datos, distinto detalle).
 5. Onboarding y aviso legal.
 6. Prueba con una persona no técnica.
 
@@ -405,7 +405,7 @@ Agente:
 - [ ] El delta de cada serie coincide con el cálculo manual (test).
 - [ ] El percentil coincide con el cálculo en Python (test, 5 series).
 - [ ] El aviso legal es visible sin abrir un modal.
-- [ ] AppTest: 0 excepciones; 3 modos conmutan sin perder el contexto.
+- [ ] AppTest: 0 excepciones; 2 modos conmutan sin perder el contexto.
 
 ### Esfuerzo y riesgo
 
@@ -414,7 +414,7 @@ Agente:
 
 ---
 
-## 15. Fase 2 — Descubrir (4–6 semanas)
+## 15. Fase 2 — Descubrir (6–8 semanas)
 
 **Objetivo:** que el usuario encuentre un activo y lo entienda.
 
@@ -427,6 +427,8 @@ Agente:
 - **Comparador** 2–5 activos vs benchmark.
 - **Informe PDF/CSV** con fuente y fecha.
 - **Fundamentales opcionales** con FinanceToolkit + FMP (clave fuera del repo; fallback Yahoo).
+- **Cobertura global:** proveedor global (`openbb-yfinance` o `yfinance`) como fallback para Europa/Asia/LatAm; primarios intactos.
+- **Registro de cobertura** por símbolo (`cubierto/parcial/no cubierto`) y badges en buscador, ficha y tarjetas.
 
 **Fuera:** cartera, opciones, alertas por activo.
 
@@ -441,7 +443,7 @@ Agente:
 
 - FinanceDatabase (paquete + CSV; ~302.991 símbolos; actualización semanal).
 - FinanceToolkit (opcional) + FMP (opcional).
-- Precios: Yahoo/OpenBB según disponibilidad.
+- Precios: primarios instalados + proveedor global de fallback; registro de cobertura.
 
 ### Tareas
 
@@ -451,22 +453,25 @@ Agente:
 4. Implementar ficha (10 métricas) y comparador.
 5. Implementar exportación PDF/CSV.
 6. Integrar fundamentales opcionales con degradación elegante si no hay clave.
-7. Pruebas de datos: símbolos duplicados, delisted, monedas, zonas horarias.
+7. Validar el proveedor global y construir la **matriz de cobertura** por clase/región.
+8. Implementar el registro de cobertura y los estados "no cubierto".
+9. Pruebas de datos: símbolos duplicados, delisted, monedas, zonas horarias, ajustados.
 
 ### Criterios de aceptación
 
-- [ ] 10 consultas de ejemplo devuelven ≥ 1 resultado correcto.
-- [ ] La ficha muestra **10 métricas** con fuente y fecha.
-- [ ] El comparador acepta **3 activos + benchmark** y calcula retorno, vol y correlación.
-- [ ] El informe se abre y contiene fuente, fecha y aviso legal.
+- [ ] 10 consultas repartidas por clase (1 EE. UU., 1 Canadá, 1 Europa, 1 Asia, 1 ETF, 1 índice, 1 FX, 1 tipo, 1 cripto, 1 materia prima) devuelven resultado o **"no cubierto"** explícito.
+- [ ] **7 fichas** (una por clase de activo; macro aparte) muestran 10 métricas con fuente, fecha e historial.
+- [ ] El comparador acepta **3 activos de clases distintas + benchmark** y calcula retorno, vol y correlación.
+- [ ] **0 fallbacks silenciosos**; la cobertura se ve en buscador, ficha y tarjeta.
+- [ ] El informe se abre y contiene fuente, fecha, cobertura y aviso legal.
 - [ ] **Sin clave FMP**: la búsqueda y la ficha funcionan; los fundamentales muestran "no disponible", sin romper.
 - [ ] Con clave FMP: los estados financieros cargan dentro de los límites del plan free.
 - [ ] AppTest: 0 excepciones; 8 casos límite.
 
 ### Esfuerzo y riesgo
 
-- **4–6 semanas.** Riesgo: calidad y licencias de datos; límites de FMP; mapeo de tickers.
-- **Reversión:** la pestaña Buscar es aditiva; se oculta sin afectar al resto.
+- **6–8 semanas.** Riesgo: calidad y licencias de datos; límites de FMP y del proveedor global; mapeo de tickers; monedas y zonas horarias.
+- **Reversión:** la pestaña Buscar es aditiva; el proveedor global vive detrás de un adaptador y se desactiva sin afectar al resto.
 
 ---
 
@@ -474,9 +479,11 @@ Agente:
 
 **Objetivo:** que el usuario pregunte en español y el agente responda **con sus datos**, citando fuente y fecha, y **mueva el panel**.
 
+> **Ruta recomendada (§24):** **MCP + Claude Desktop** (usa la suscripción, sin clave); Ollama como respaldo offline. El texto de abajo describe la versión local; se ajusta al confirmar la ruta.
+
 ### Alcance
 
-- **Agente local** (Ollama + Qwen/Llama) con las 6 herramientas.
+- **Agente** con **8 herramientas** (incluye `cobertura`).
 - **Chat en el panel** con streaming, citas, tablas y gráficos.
 - **"Explícame esto"** en cada tarjeta.
 - **Evaluación** con 20 preguntas de oro.
@@ -499,7 +506,7 @@ Agente:
 
 ### Tareas
 
-1. Definir las 6 herramientas y sus contratos.
+1. Definir las 8 herramientas y sus contratos.
 2. Implementar el estado compartido panel ↔ agente.
 3. Implementar el chat con streaming y citas.
 4. Implementar "Explícame esto".
@@ -536,7 +543,7 @@ Agente:
 | F1-2 | Glosario/tooltips | 1 | S | — | 0 jerga sin explicar |
 | F1-3 | Qué cambió desde ayer | 1 | S | F0 | Delta coincide con cálculo |
 | F1-4 | Percentiles 5 años | 1 | S | F0 | Coincide con Python |
-| F1-5 | 3 modos | 1 | M | F1-1 | Conmutan sin perder contexto |
+| F1-5 | 2 modos (Inversor/Analista) | 1 | M | F1-1 | Conmutan sin perder contexto |
 | F1-6 | Onboarding | 1 | S | F1-1 | 3 pasos, ejemplo real |
 | F1-7 | Aviso legal | 1 | S | — | Visible sin modal |
 | F2-1 | FinanceDatabase | 2 | M | — | 10 consultas OK |
@@ -546,7 +553,8 @@ Agente:
 | F2-5 | Comparador | 2 | M | F2-4 | 3 activos + benchmark |
 | F2-6 | Informe PDF/CSV | 2 | M | F2-4 | Fuente, fecha, aviso |
 | F2-7 | Fundamentales (opcional) | 2 | M | FMP | Degrada sin clave |
-| F3-1 | Herramientas del agente | 3 | M | F0 | 6 contratos testeados |
+| F2-10 | Proveedor global + cobertura | 2 | L | F2-1 | 7 clases; 0 fallbacks silenciosos |
+| F3-1 | Herramientas del agente | 3 | M | F0 | 8 contratos testeados (incluye `cobertura`) |
 | F3-2 | Chat con citas | 3 | L | F3-1 | 20/20 citas |
 | F3-3 | "Explícame esto" | 3 | M | F3-2 | Abre con contexto |
 | F3-4 | Evaluación 20 preguntas | 3 | M | F3-2 | ≥ 18/20 |
@@ -561,10 +569,10 @@ Agente:
 |---|---|---|
 | **0. Contexto** | 1 semana | Todas las tarjetas comparten contexto y sello; AppTest 0 |
 | **1. Hablar claro** | 2–3 semanas | 3/3 preguntas en < 60 s; 0 jerga sin tooltip |
-| **2. Descubrir** | 4–6 semanas | Buscar, ficha y comparar funcionan; sin clave no rompe |
+| **2. Descubrir** | 6–8 semanas | Buscar, ficha, comparar y **cobertura de 7 clases**; 0 fallbacks silenciosos |
 | **3. Conversar** | 4–6 semanas | ≥ 18/20, 20/20 citas, 0 consejos, offline |
 
-**Total:** ~3–4 meses. **No se abre una fase sin pasar la puerta anterior.**
+**Total:** ~4–5 meses. **No se abre una fase sin pasar la puerta anterior.**
 
 ---
 
@@ -574,6 +582,8 @@ Agente:
 |---|---|
 | Tiempo hasta la primera respuesta útil | < 60 s |
 | Sesiones que encuentran un activo | > 60 % |
+| Búsquedas por clase con resultado o "no cubierto" | 10/10 |
+| Cobertura declarada (fuente, as-of, historial) | 100 % |
 | Preguntas de oro con cifra exacta | ≥ 90 % |
 | Respuestas con fuente y as-of | 100 % |
 | Respuestas con consejo | 0 |
@@ -589,6 +599,7 @@ Agente:
 |---|---|---|---|
 | FinanceDatabase | 0 € | Bajo | **Sí** (local) |
 | FinanceToolkit | 0 € | Medio | **Sí** (opcional) |
+| Proveedor global (`openbb-yfinance`) | 0 € | Medio: no oficial, límites, delayed | **Sí**, solo fallback |
 | FMP (fundamentales) | Free: 250/día, 5 años, EE. UU. | Medio | **Opcional**, clave fuera del repo |
 | Ollama + modelo | 0 € (hardware) | Medio | **Sí** (local) |
 | Cloud LLM | Por uso | Alto (privacidad) | **Opt-in** |
@@ -599,11 +610,11 @@ Agente:
 
 ## 21. Preguntas abiertas (para decidir antes de la Fase 1)
 
-1. ¿El usuario prioritario es **principiante**, **inversor** o **analista**? (recomiendo principiante/inversor).
-2. ¿Se acepta **cloud LLM** o solo local?
-3. ¿Se usa **clave FMP** o solo Yahoo?
-4. ¿Qué mercados primero: **EE. UU., Europa o cripto**?
-5. ¿Historial mínimo por activo: 5, 10 o 20 años?
+1. ~~¿Usuario prioritario: principiante, inversor o analista?~~ **Respondida: inversor + analista** (§24).
+2. ~~¿Cloud LLM o solo local?~~ **Respondida: MCP + Claude Desktop; Ollama de respaldo** (§24).
+3. ¿Se usa **clave FMP** o solo el proveedor global gratuito? (recomiendo `yfinance` para v1; FMP opcional).
+4. ~~¿Mercados primero: EE. UU., Europa o cripto?~~ **Respondida: todos** (§26).
+5. ¿Historial mínimo por activo: 5, 10 o 20 años? (propuesta: **10 años diarios**, con bandera si la fuente no llega).
 6. ¿El informe lleva marca/nombre?
 7. ¿Móvil ahora o después?
 
@@ -645,6 +656,8 @@ Agente:
 | Usuario prioritario | **Inversor y analista** | **Dos modos**, no tres: **Inversor** (por defecto) y **Analista** (denso). El inversor ve 3 respuestas; el analista abre serie, fórmula y fuente en ≤ 2 clics. |
 | Modelo | **Suscripción Anthropic con Claude** | La suscripción **no incluye la API**. Ruta recomendada: **MCP + Claude Desktop** (sin clave). Ollama como respaldo offline. API key solo si se quiere el chat dentro del panel (facturación aparte). |
 | Fuentes | **Carga múltiple de información de diferentes fuentes** | **Registro de fuentes** + adaptadores + contraste; **carga por lotes** de varios activos; fuente y as-of por dato; discrepancia visible. |
+| Tema | **"Así como está, está bien"** (captura: menú nativo System/Light/Dark) | Se usa el **conmutador nativo** de Streamlit; se retira el motor propio; §25.11 corregido. |
+| Mercados | **Todos** | **Cobertura por clase/región** + proveedor global de fallback + estado "no cubierto" visible; §26. |
 
 ### 24.1. Claude: qué permite la suscripción y qué no
 
@@ -669,9 +682,12 @@ Un servidor MCP local (`scripts/mcp_server.py`, futuro), por **stdio**, sin puer
 - `buscar_activo(q)` — catálogo (FinanceDatabase).
 - `ficha(simbolo)` — métricas del activo.
 - `comparar(a, b, benchmark)` — retorno, riesgo, correlación.
+- `cobertura(simbolo, region, clase)` — cubierto/parcial/no cubierto, fuente e historial.
 - `fuentes_estado()` — fuente, as-of y retraso de cada serie.
 
 Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`); el repo solo contiene el servidor y sus pruebas. El panel no cambia: sigue siendo la vista; Claude es la capa de conversación.
+
+**Nota (2026-10-20):** `openbb-mcp-server` 2.0.1 ya está instalado. Antes de escribir un servidor propio, se evalúa como base para exponer los endpoints; la capa curada (`contexto_ultimo`, `percentil`, `cobertura`) seguiría siendo nuestra. Pendiente de probar.
 
 ### 24.3. Múltiples fuentes: registro, contraste y carga por lotes
 
@@ -706,15 +722,17 @@ Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`)
 | Fase | Antes | Ahora |
 |---|---|---|
 | 1 | 3 modos (Principiante/Inversor/Analista) | **2 modos** (Inversor/Analista) + "ver detalle" |
-| 2 | FinanceDatabase + ficha | + **registro de fuentes**, contraste y **carga por lotes** |
+| 2 | FinanceDatabase + ficha | + **registro de fuentes**, contraste, **carga por lotes** y **cobertura de todos los mercados** |
 | 3 | Ollama primero, cloud opcional | **MCP + Claude Desktop** primero (suscripción), Ollama respaldo, API key opcional |
+| 15 | Mercados por prioridad | **Todos**; cobertura real por clase/región y proveedor global (§26) |
 | 20 | Ollama + cloud | + **Claude Desktop/MCP** (sin coste extra), API key opt-in |
-| 17 | — | + `F2-8` registro de fuentes, `F2-9` carga por lotes, `F3-7` servidor MCP |
+| 25 | Conmutador de tema propio | **Tema nativo System/Light/Dark**; sin motor propio (§25.11) |
+| 17 | — | + `F2-8` registro de fuentes, `F2-9` carga por lotes, `F2-10` cobertura, `F3-7` servidor MCP |
 
 ### 24.5. Preguntas que siguen abiertas
 
-4. ¿Mercados primero: EE. UU., Europa o cripto?
-5. ¿Historial mínimo por activo: 5, 10 o 20 años?
+4. ~~¿Mercados primero: EE. UU., Europa o cripto?~~ **Respondida: todos** (§26).
+5. ¿Historial mínimo por activo: 5, 10 o 20 años? (propuesta: **10 años diarios**, con bandera si la fuente no llega).
 6. ¿El informe lleva marca/nombre?
 7. ¿Móvil ahora o después?
 
@@ -768,7 +786,7 @@ Claude Desktop se configura **fuera del repo** (su `claude_desktop_config.json`)
 | Radio / sombra | 8–12 px / sutil |
 | Grid | 12 columnas, gutter 24, ancho máximo 1440 |
 
-Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha o etiqueta). Las dos paletas viven en un único archivo de tokens; §25.11 fija el conmutador y el mecanismo.
+Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha o etiqueta). Las dos paletas viven en un único archivo de tokens; §25.11 fija el uso del **tema nativo** de Streamlit.
 
 ### 25.4. Inventario de componentes
 
@@ -837,13 +855,11 @@ Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha
 | D0.3 | Estándar de gráficos | 0–1 | 0 `st.line_chart` en vistas principales |
 | D0.4 | Grid y layout | 1 | 1440/1280 sin desbordes |
 | D0.5 | Formato numérico es-ES | 1 | 20/20 muestras correctas |
-| D0.6 | Temas Oscuro/Claro + conmutador | 1 | 2/2 sin reiniciar; AA en ambos; persiste |
+| D0.6 | Gráficos coherentes con el tema nativo | 1 | 3/3 modos; AA en Light y Dark; 0 código propio |
 | D0.7 | Estados (skeleton/vacío/error/viejo) | 1 | 4/4 estados |
 | D0.8 | Accesibilidad | 1 | Teclado + contraste + no color-only |
 | D0.9 | Plantilla de informe | 2 | Fuente, fecha y aviso; siempre clara |
 | D0.10 | Marca y móvil | 3 | Logo/favicon; 390 px usable |
-| D0.11 | Tokens editables (acento/densidad) | 1 | 4 presets; cambiar acento = 1 archivo |
-| D0.12 | Matriz visual de temas | 1 | 2 temas × 2 densidades × 3 anchos |
 
 **Pruebas:** 5 capturas de regresión visual (antes/después), test de los 10 segundos con una persona no técnica, contraste medido y formato numérico contra 20 muestras.
 
@@ -855,89 +871,117 @@ Regla: **un solo acento**; el color semántico nunca va solo (siempre con flecha
 - Ocultar la fuente o la fecha para "limpiar".
 - Copiar la estética del terminal.
 
-### 25.11. Temas claro/oscuro y personalización
+### 25.11. Tema: se usa el conmutador nativo (corrección)
 
-> Decisión del usuario (2026-10-20): **tema oscuro y claro, conmutables y modificables**. Esta sección fija el cómo, con los límites reales de Streamlit 1.66.
+> **Corrección (2026-10-20, con la app delante).** La versión anterior de esta sección decía que Streamlit no cambiaba el tema en caliente y proponía un conmutador propio. **Era falso para esta instalación.** Streamlit 1.66 ya trae **System / Light / Dark** en el menú superior y cambia al instante. El usuario lo confirmó: **"así como está, está bien"**.
 
-#### Decisión
-
-| Modo | Comportamiento | Estado |
+| Modo | Quién lo controla | Estado |
 |---|---|---|
-| **Oscuro** (por defecto) | paleta oscura, contraste AA | sí, en caliente |
-| **Claro** | paleta clara, contraste AA | sí, en caliente |
-| **Auto (sistema)** | sigue la preferencia del SO | **opcional P2**; requiere puente JS; no se promete |
+| **System** | Streamlit (preferencia del SO) | nativo |
+| **Light** | Streamlit | nativo |
+| **Dark** (actual) | Streamlit | nativo |
 
-Además: **acento** (4 presets), **densidad** (Cómoda / Compacta) y **Restablecer**. La elección se guarda en la URL (`?tema=claro&acento=azul&densidad=comoda`) y se recuerda al recargar; el enlace es compartible. El PDF usa **siempre la paleta clara**.
+**Decisión:** se usa el conmutador nativo. **No** se construye toggle, ni persistencia por URL, ni puente JS, ni CSS de tema propio.
 
-#### Lo que permite Streamlit 1.66 (verificado)
+**Lo que sí queda:**
 
-| Capacidad | Estado | Uso |
+- Los gráficos eligen plantilla clara/oscura según `st.context.theme.type` (el tema activo de la app); si no está disponible, oscuro.
+- Las tablas propias, los badges y el PDF usan los tokens de §25.3; el PDF siempre en claro.
+- La matriz de prueba pasa a **3 modos × 2 anchos** para verificar que gráficos y tablas no se rompen.
+
+**Lo que se retira:** D0.11 (acento/densidad) y D0.12 (matriz 2×2×3). No se pidieron y el tema nativo ya cubre claro/oscuro.
+
+**Criterio de aceptación:** 3/3 modos nativos; los gráficos cambian de paleta; contraste AA en Light y Dark; **0 código de tema propio**.
+
+---
+
+## 26. Alcance: todos los mercados (cobertura real)
+
+> Respuesta del usuario (2026-10-20): **"alcance: mercados todos"**. Se interpreta como **todas las clases de activo y las regiones principales**, no como "cada valor de cada exchange". La cobertura real se mide, se muestra y se declara; no se promete lo que la fuente no tiene.
+
+### 26.1. Qué significa "todos"
+
+| Clase | Ejemplos | ¿Entra en v1? |
 |---|---|---|
-| `st.context.theme.type` | sí | devuelve el tema **de la app** (`dark`/`light`), no el del sistema |
-| `st.query_params` | sí | persistir tema, acento y densidad |
-| `st.segmented_control` | sí | conmutador |
-| Tema nativo en caliente | **no** | `config.toml` exige reinicio |
+| Renta variable | acciones, ADR, REITs | sí |
+| ETFs / ETNs | fondos cotizados | sí |
+| Índices | S&P 500, Euro Stoxx, Nikkei, MSCI | sí |
+| Divisas | majors, crosses, emergentes | sí |
+| Tipos / renta fija | Treasuries, Bunds, curvas, spreads | sí |
+| Materias primas | energía, metales, agrícolas | sí (spot; futuros según fuente) |
+| Cripto | BTC, ETH, majors | sí |
+| Macro | CPI, PIB, empleo, PMI, bancos centrales | sí |
+| Opciones, warrants, OTC, derivados exóticos | — | **no v1** |
+| Fondos mutuos no cotizados | — | **no v1** |
 
-**Honestidad técnica:** Streamlit no cambia su tema nativo en caliente y no tiene `base = "system"`. La vía robusta es una **capa de tokens CSS** + **plantillas de gráfico** + overrides de widgets. Algunos widgets nativos (tabla, bloques de código) pueden no seguir el cambio al 100 %: se prueban, se documenta la brecha y, si un widget clave no sigue, se sustituye por uno propio o se acepta el tema base. **Auto** se deja para P2 porque exigiría un componente JS que lea `prefers-color-scheme`; no se vende como gratis.
+**Cuenta:** **7 clases de activo** (renta variable, ETF, índice, divisas, tipos, materias primas, cripto) **+ macro** como dominio transversal.
 
-#### Arquitectura: una sola fuente de verdad
+### 26.2. Cobertura instalada hoy (medida, no supuesta)
 
-```
-tokens.json  ->  css(tokens)  ->  panel
-     |               |
-     +-> plotly_template(tokens)
-     +-> altair_theme(tokens)
-     +-> formato_numero(tokens)
-```
+Proveedores disponibles: **18** (`bls`, `cboe`, `cftc`, `congress_gov`, `deribit`, `ecb`, `famafrench`, `federal_reserve`, `finra`, `fred`, `imf`, `jodi`, `nasdaq`, `oecd`, `sec`, `tmx`, `us_treasury`, `usda`).
 
-- `tokens.json`: paletas `light`/`dark`, acento, espaciado, tipografía, radios. **Cero colores hardcodeados en componentes.**
-- El CSS se genera desde tokens: cambiar el acento es **un archivo**, no una caza de hex.
-- Los gráficos reciben la plantilla construida con los mismos tokens; **nunca** `theme="streamlit"` (seguiría el tema fijo del `config.toml`).
-- El PDF y la exportación usan la paleta clara, independientemente del tema del panel.
+| Clase | Proveedor instalado | Cobertura real | Gap |
+|---|---|---|---|
+| Renta variable EE. UU. | Cboe, Nasdaq | precio y búsqueda | — |
+| Renta variable Canadá | TMX | precio y búsqueda | — |
+| Renta variable Europa / Asia / LatAm | — | **no** | falta proveedor global |
+| ETFs | Cboe, Nasdaq, TMX | EE. UU. / Canadá | Europa / Asia |
+| Índices | Cboe, Nasdaq, TMX | EE. UU. / Canadá + selección global | verificar símbolo |
+| Divisas | BCE, TMX | referencia **diaria** | intradía |
+| Tipos | Fed, US Treasury, BCE, FRED | EE. UU. / eurozona | otras curvas |
+| Materias primas | FRED (spot), USDA | spot limitado; agrícolas USDA | futuros históricos |
+| Cripto | Nasdaq (OpenBB) + Binance directo | subconjunto Nasdaq + **7 pares 4h** | más pares y spot global |
+| Macro | FRED, OECD, IMF, BLS, USDA | amplia | — |
+| Opciones | Deribit (cripto) | limitado | fuera v1 |
 
-#### Paletas (contraste AA)
+**Conclusión incómoda:** con lo instalado **no se puede decir "todos los mercados"**. Se cubre EE. UU., Canadá, eurozona, macro global y un subconjunto de cripto. Europa/Asia/LatAm en renta variable exige un proveedor nuevo. Esto se declara antes de prometer el alcance.
 
-| Token | Claro | Oscuro |
-|---|---|---|
-| `bg` | `#FFFFFF` | `#0B0F14` |
-| `surface` | `#F6F8FA` | `#121821` |
-| `border` | `#D0D7DE` | `#1F2A37` |
-| `text` | `#1F2328` | `#E6EDF3` |
-| `muted` | `#57606A` | `#8B98A5` |
-| `positive` | `#1A7F37` | `#3FB950` |
-| `negative` | `#CF222E` | `#F85149` |
-| `warn` | `#9A6700` | `#D29922` |
-| `accent` | `#0969DA` | `#4C8DFF` |
+### 26.3. Cómo se llega a "todos"
 
-Los semánticos son **fijos por tema**; el acento no los sustituye. El color nunca va solo: flecha + texto.
+| Opción | Coste | Cobertura | Riesgo | Decisión |
+|---|---|---|---|---|
+| **`openbb-yfinance`** (o `yfinance` directo) | 0 | global amplia: acciones, ETF, índices, FX, cripto | no oficial, límites de tasa, delayed | **recomendado v1**, verificar compatibilidad |
+| FMP | free 250/día; 5 años; EE. UU.; global de pago | EE. UU. en free | clave y límites | opcional |
+| Polygon / Tiingo / Intrinio | de pago | global o EE. UU. según plan | coste | después de v1 |
+| Cboe / Nasdaq / TMX / BCE / Fed / FRED | ya instalados | EE. UU. / Canadá / eurozona / macro | — | **primarios** |
 
-#### Conmutador
+**Regla:** el primario manda; el global entra como **fallback** y se marca como tal. Si el fallback es la única fuente, la tarjeta lo dice y muestra su retraso. Nunca se mezcla en silencio.
 
-- Cabecera: `Oscuro · Claro` (segmented control), selector de acento y densidad.
-- Al cambiar: se actualiza `st.query_params`, se reconstruyen CSS, plantillas de gráfico y tablas; **sin reiniciar**.
-- **Persistencia:** al cargar se leen los parámetros; si no hay, Oscuro/azul/Cómoda. El enlace resultante reproduce la vista.
-- **Sin parpadeo:** el `config.toml` base es oscuro (coincide con el default) y el override se inyecta al inicio del script; si hay flash al pasar a claro, se mide y se corrige.
-- **Restablecer** vuelve a Oscuro/azul/Cómoda.
+### 26.4. Historial y calidad
 
-#### Criterios de aceptación
+- **Objetivo:** **10 años diarios** por precio; si la fuente tiene menos, se muestra lo disponible con bandera `historial corto`.
+- **Macro:** desde el inicio de la serie (FRED/OECD/IMF), sin recortar.
+- **Cripto:** desde el inicio del par en la fuente.
+- **Intradía:** fuera de v1; la única excepción es el contexto Freqtrade 4h que ya existe.
+- **Precios ajustados** por splits/dividendos; se documenta cuál se usa.
+- Cada símbolo declara **moneda, zona horaria y mercado**; no se comparan monedas distintas sin convertir.
 
-- 2/2 temas conmutan **sin reiniciar**; 100 % de superficies propias siguen el tema.
-- Contraste AA en ambos; 0 señales solo por color.
-- Persistencia tras recarga y enlace compartido.
-- 0 colores hardcodeados; cambiar acento = 1 archivo; 4 presets.
-- Matriz 2 temas × 2 densidades × 3 anchos (1440/1280/1024) sin desbordes.
-- PDF siempre claro.
-- Brecha de widgets nativos documentada (cuáles, por qué y alternativa).
+### 26.5. Cómo se muestra (y cómo evita mentir)
 
-#### Riesgos y mitigación
+- **Buscador:** cada resultado con `Cubierto` / `Parcial` / `No cubierto`.
+- **Ficha:** `Cobertura: EE. UU. · Nasdaq · 10,2 años · diario`.
+- **Tarjeta:** fuente · as-of · retraso · cobertura.
+- **No cubierto:** mensaje claro + acción ("probar otro símbolo", "agregar proveedor"); **nunca** un gráfico vacío ni un dato inventado.
+- **Agente:** herramienta `cobertura(simbolo)`; si no hay datos, responde "no cubierto" con la fuente consultada.
 
-| Riesgo | Mitigación |
-|---|---|
-| Widget nativo no sigue el tema | inventario de widgets; override CSS o reemplazo; se declara |
-| Parpadeo al cambiar | base oscura + CSS al inicio; medición; si persiste, se documenta |
-| Dos fuentes de color | tokens únicos; test que busca hex fuera de `tokens.json` |
-| El acento rompe el contraste | presets validados AA; el acento no toca semánticos |
-| Bucle de `query_params` | comparar antes de escribir; solo rerun si cambia |
+**Registro de cobertura** (una fila por símbolo): `simbolo, clase, region, moneda, zona, fuente_primaria, fallback, as_of, retraso, inicio_historia, estado, notas`.
+
+### 26.6. Criterios de aceptación
+
+- [ ] **10 búsquedas** repartidas: 1 EE. UU., 1 Canadá, 1 Europa, 1 Asia, 1 ETF, 1 índice, 1 FX, 1 tipo, 1 cripto, 1 materia prima → **10/10** con resultado o "no cubierto" explícito.
+- [ ] **7 fichas** (una por clase de activo; macro aparte) con fuente, as-of e historial.
+- [ ] **Comparador de 3 activos** de clases distintas contra un benchmark.
+- [ ] **0 fallbacks silenciosos**; 100 % de tarjetas con cobertura visible.
+- [ ] 10 activos en **< 30 s**; fallo parcial no bloquea el resto.
+- [ ] Agente: 20 preguntas, incluidas "¿cubres Japón?" y "¿de dónde sale este dato?"; **0** coberturas inventadas; **20/20** citas.
+- [ ] La matriz de cobertura es visible en el panel y en la documentación.
+
+### 26.7. Esfuerzo, riesgos y cambios al plan
+
+- **+2–3 semanas en la Fase 2** (de 4–6 a **6–8**), por el proveedor global, el registro y las pruebas.
+- **Riesgos:** `yfinance` no oficial y con límites; mapeo de tickers; monedas y zonas horarias; ajustados vs no ajustados; delisted; licencias.
+- **Reversión:** el proveedor global vive detrás de un adaptador y el registro; se desactiva sin tocar el resto.
+- **Cambios:** Fase 2 suma cobertura global y registro; Fase 3 suma `cobertura`; §19 añade la prueba de 10 búsquedas por clase; §21 pregunta 4 queda respondida.
 
 ---
 

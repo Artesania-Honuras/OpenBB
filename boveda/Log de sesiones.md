@@ -790,11 +790,18 @@ iejo, sin_registro).
   gráficos, jerarquía de la primera pantalla, estados, accesibilidad y criterios D0.1–D0.10.
 - **Sin cambios en la app.**
 
-**Temas claro/oscuro (misma sesión)**
+**Temas claro/oscuro (misma sesión — corregido con la app delante)**
 
-- Decisión del usuario: **oscuro y claro, conmutables y modificables**. Registrada en **§25.11**:
-  Oscuro por defecto, Claro a un clic, acento (4 presets), densidad (Cómoda/Compacta),
-  persistencia por URL y tokens en un solo archivo. **Auto** queda para P2 (requiere puente JS).
-- Verificado en Streamlit 1.66: `st.context.theme.type` refleja el tema de la app, no el del SO;
-  no hay `base = "system"`; el tema nativo no cambia en caliente. La vía es CSS + plantillas propias.
+- Primera propuesta: conmutador propio, Oscuro/Claro, acento y densidad. **Se retira.**
+- Verificado en la app real: Streamlit 1.66 ya trae **System/Light/Dark** en el menú y cambia en
+  caliente; el usuario dijo **"así como está, está bien"**. Se usa el nativo, sin motor propio
+  (**§25.11**). Corrección: lo que no hay es una API para forzar "Auto", pero no hace falta.
+- **Sin cambios en la app.**
+
+**Alcance: todos los mercados (misma sesión)**
+
+- Decisión del usuario: **"alcance: mercados todos"**. Registrado en **§26**: 7 clases de activo.
+- Medido con los proveedores instalados: EE. UU./Canadá/BCE/macro/cripto limitado; **falta proveedor
+  global** para renta variable de Europa/Asia/LatAm. Recomendación: `openbb-yfinance` como fallback,
+  registro de cobertura y estado **"no cubierto"**; nunca fallback silencioso.
 - **Sin cambios en la app.**
