@@ -600,3 +600,29 @@ ube_al_azar/evaluar_config (C-34), con ase=0 bit-identico al historico (comprob
 **Decidido**
 
 - **D-33:** el macro **no sirve como filtro de mercado**. OpenBB queda como **panel de información**, no como fuente de señales. La línea de señales se cierra: no hay nada que instalar.
+
+---
+
+## S-24 — 2026-10-19 — El contexto se refresca solo (P2)
+
+**Hecho**
+
+- scripts\refrescar_contexto.py: descarga las 10 fuentes, **valida antes de guardar**, escribe atómico y conserva contexto_diario_anterior.parquet. Log en data\refresco_contexto.log.
+- Validación: esquema, filas que no retroceden, fecha final, rangos, saltos de escala y **frescura por fuente** con su calendario real (CPI 90 d, PIB 240 d, COT 21 d, FF 110 d…).
+- scripts\instalar_refresco.ps1 + tarea diaria **09:05** (modo interactivo, -StartWhenAvailable). scripts\_refresco_oculto.ps1 evita la ventana de consola y propaga el código de salida.
+- estado.py: chequeo **Refresco programado** (existe, < 48 h, resultado 0). Ahora **26 chequeos**.
+- El .parquet del contexto **sale de git**: es regenerable y el refresco diario ensuciaría el repo.
+
+**Resultado**
+
+- **Falso positivo del validador:** rechazó un contexto correcto porque termina **mañana** por el retraso de publicación. Corregido y documentado: el validador se equivocó antes que el dato.
+- **Bug del chequeo:** $t.State + '|' fallaba por ser un enum; decía «sin registrar» con la tarea registrada. Corregido con .ToString().
+- Prueba del validador: **7/7**.
+- Refresco real: **36.637 filas · 14 columnas · último 2026-10-20 · 130 s**.
+- Tarea lanzada por Windows: **resultado 0**, log OK … 206 s.
+- estado.py: **26/26 ✅** (API y panel levantados tras el reinicio del equipo).
+
+**Decidido**
+
+- **D-34:** un dato que envejece no avisa. El refresco deja de ser una costumbre y pasa a ser un trabajo verificado: si falla, conserva el anterior y se ve en el estado.
+- S4U queda **declarado como limitación**, no escondido: sin permisos de administrador la tarea corre con sesión abierta.

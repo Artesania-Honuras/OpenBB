@@ -13,6 +13,7 @@ __pycache__/
 # Datos binarios regenerables
 data/cache/
 data/context/*.csv
+data/context/*.parquet
 freqtrade_bridge/user_data/
 
 # Secretos (nunca versionar)

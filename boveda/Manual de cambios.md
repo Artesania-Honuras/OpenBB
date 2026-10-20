@@ -410,3 +410,25 @@ ube_al_azar y evaluar_config. El rebalanceo pasa de (i - L) % rebal == 0 a (i - 
 - **Arreglo:** localizar el índice del contexto a UTC antes de alinear. Lección: **cuando un resultado es demasiado limpio (todo cero), sospechar de la alineación antes que del mercado.**
 - **EVIDENCIA:** E-18.
 - **Reversión:** quitar el test. No se recomienda: es la respuesta a la única pregunta que quedaba abierta.
+
+---
+
+## C-38 — Refresco diario del contexto: validado, atómico y con la tarea comprobada
+
+- **Fecha:** 2026-10-19
+- **Qué se hizo:** P2. El contexto se refrescaba a mano (puente_freqtrade.py --exportar). Ahora:
+  1. scripts\refrescar_contexto.py: descarga con orzar=True, **valida**, guarda con escritura atómica y deja copia del anterior. Log en data\refresco_contexto.log.
+  2. scripts\instalar_refresco.ps1: registra la tarea diaria a las 09:05 (idempotente; -Quitar la elimina).
+  3. scripts\_refresco_oculto.ps1: lanza Python sin ventana y **propaga el código de salida**.
+  4. estado.py: nuevo chequeo **«Refresco programado»** (existe, corrió hace < 48 h, resultado 0). 26 chequeos.
+- **Qué valida:** columnas exactas, filas que no retroceden, fecha final, rangos plausibles del último valor, saltos imposibles frente al contexto anterior (×10, cambio de unidades) y **frescura de cada fuente** con su calendario de publicación (CPI 90 d, PIB 240 d, COT 21 d, Fama-French 110 d…). Diez trampas posibles; todas cubiertas.
+- **Falso positivo encontrado (importante):** la primera ejecución **rechazó un contexto correcto** con «fecha final 2026-10-20 != hoy 2026-10-19». El contexto termina **mañana por diseño**: cada serie se desplaza según su retraso de publicación. El validador exigía «termina hoy». Se corrigió a «nunca antes de hoy, nunca más allá de mañana». *El validador se equivocó antes que el dato, y se vio porque el mensaje era imposible de explicar.*
+- **Bug en el chequeo de estado:** $t.State + '|' fallaba porque State es un **enum** y PowerShell intentaba convertir '|' al enum. El chequeo decía «sin registrar» con la tarea registrada. Arreglado con .ToString().
+- **Limitación declarada:** S4U (correr sin sesión abierta) devuelve **Acceso denegado** sin permisos de administrador. La tarea queda en modo **interactivo**: corre con la sesión abierta y, si el equipo estaba apagado, al iniciar sesión (-StartWhenAvailable). No se pide ni se guarda la contraseña del usuario.
+- **Decisión de versionado:** el contexto_diario.parquet **sale de git** (data/context/*.parquet ignorado). Si se versiona, el refresco diario ensucia el repo y el chequeo crítico «Sin cambios pendientes» fallaría cada mañana. Las velas ya estaban fuera por la misma razón. El CSV ya estaba ignorado.
+- **EVIDENCIA:**
+  - validador **7/7** (--autoprueba: columna faltante, vix=0, fecha atrasada, vix×10, columna NaN, columna de más, contexto sano).
+  - refresco real: 36.637 filas · 14 columnas · ultimo 2026-10-20 · 130 s.
+  - tarea ejecutada por Windows: LastTaskResult 0, log OK … 206 s.
+  - estado.py: **26/26 ✅**.
+- **Reversión:** instalar_refresco.ps1 -Quitar; y seguir usando puente_freqtrade.py --exportar --forzar (sin validación ni copia).

@@ -22,7 +22,7 @@ import socket
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -160,9 +160,12 @@ def revisar() -> list[dict]:
 
             df = pd.read_parquet(ruta)
             ultima = pd.to_datetime(df.index).max().date()
-            edad = (datetime.now(timezone.utc).date() - ultima).days
+            edad = (datetime.now().date() - ultima).days
+            # El contexto termina mañana por diseño: cada serie lleva su retraso
+            # de publicación, así que el cierre de hoy se etiqueta como mañana.
+            cuando = ("mañana" if edad == -1 else "hoy" if edad == 0 else f"{edad} d")
             add("Datos", "contexto_diario.parquet", edad <= 2,
-                f"{len(df):,} x {len(df.columns)} · ultimo {ultima} ({edad} d)",
+                f"{len(df):,} x {len(df.columns)} · ultimo {ultima} ({cuando})",
                 critico=True)
             faltan = 14 - len(df.columns)
             add("Datos", "Esquema 14 columnas", faltan <= 0,
@@ -209,6 +212,39 @@ def revisar() -> list[dict]:
         add("Datos", "Reportes en UTF-8", not malos,
             f"{len(reportes)} reportes"
             + (f" · UTF-16: {', '.join(malos[:3])}" if malos else ""))
+
+    # Refresco programado (P2). Una tarea que falla en silencio es peor que no
+    # tenerla: se comprueba que existe, que corrio hace menos de 48 h y que su
+    # ultimo resultado fue 0.
+    try:
+        ps = (
+            "$n = 'OpenBB - refresco de contexto'; "
+            "$t = Get-ScheduledTask -TaskName $n -ErrorAction SilentlyContinue; "
+            "if (-not $t) { 'NO'; exit }; "
+            "$i = Get-ScheduledTaskInfo -TaskName $n; "
+            "$t.State.ToString() + '|' + $i.LastTaskResult + '|' + $i.LastRunTime.ToString('yyyy-MM-dd HH:mm')"
+        )
+        salida = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps],
+            capture_output=True, timeout=40,
+        ).stdout.decode("utf-8", errors="replace").strip()
+        if not salida or salida == "NO":
+            add("Datos", "Refresco programado", False,
+                "sin registrar (scripts\\instalar_refresco.ps1)")
+        else:
+            estado_t, resultado, ultima_ejec = (salida.split("|") + ["", "", ""])[:3]
+            try:
+                horas = (datetime.now() - datetime.strptime(ultima_ejec, "%Y-%m-%d %H:%M")
+                         ).total_seconds() / 3600
+            except ValueError:
+                horas = 1e9
+            en_curso = resultado.strip() == "267009"
+            ok_tarea = (resultado.strip() == "0" or en_curso) and horas <= 48
+            add("Datos", "Refresco programado", ok_tarea,
+                f"{estado_t} · hace {horas:.0f} h · resultado {resultado.strip()}"
+                + (" (en curso)" if en_curso else ""))
+    except Exception as e:  # noqa: BLE001
+        add("Datos", "Refresco programado", False, f"{type(e).__name__}")
 
     # --- Configuracion ----------------------------------------------------
     cfg = ROOT / "freqtrade_bridge" / "backtest.json"

@@ -90,7 +90,7 @@ OpenBB\
 │   └── verificacion_8_familias.ipynb
 ├── data\
 │   ├── cache\                 29 parquet cacheados (NO se versiona)
-│   ├── context\               contexto_diario.parquet (sí se versiona)
+│   ├── context\               contexto_diario.parquet (regenerable, NO se versiona)
 │   ├── reporte_familias.txt
 │   └── reporte_validacion.txt
 ├── freqtrade_bridge\
@@ -227,12 +227,48 @@ obb.currency.price.historical('EURUSD', provider='ecb').to_df()
 
 ### 6.2 Refrescar el contexto macro
 
+La forma verificada (valida antes de guardar, escribe atómico y deja copia del
+anterior):
+
 ```powershell
-.\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --exportar
+.\venvs\openbb\Scripts\python.exe scripts\refrescar_contexto.py
 ```
 
-Reescribe `data\context\contexto_diario.parquet` (36.636 filas × 14 columnas).
-Usa `--forzar` para ignorar la caché.
+- Descarga las 10 fuentes con `forzar=True` (si no, no refresca nada).
+- **Valida**: columnas, filas que no retrocedan, fecha final, rangos plausibles,
+  saltos imposibles frente al contexto anterior y frescura de cada fuente.
+- Si algo falla, **conserva el contexto anterior** y sale con código 1.
+- Guarda con escritura atómica y deja `contexto_diario_anterior.parquet`.
+- Escribe una línea en `data\refresco_contexto.log`.
+
+El contexto termina **mañana** por diseño: cada serie lleva su retraso de
+publicación, así que el cierre de hoy se etiqueta para mañana (`merge_asof` lo
+usa sin ver el futuro).
+
+**Tarea diaria** (a las 09:05, tras el cierre de EE. UU. del día anterior):
+
+```powershell
+# registrar (idempotente)
+powershell -ExecutionPolicy Bypass -File scripts\instalar_refresco.ps1
+
+# probarla ahora
+Start-ScheduledTask -TaskName "OpenBB - refresco de contexto"
+Get-ScheduledTaskInfo -TaskName "OpenBB - refresco de contexto"   # LastTaskResult = 0
+
+# quitarla
+powershell -ExecutionPolicy Bypass -File scripts\instalar_refresco.ps1 -Quitar
+```
+
+Se registra en modo **interactivo**: corre con la sesión abierta. `S4U` (sin
+sesión) exige permisos de administrador que no se piden. Si el equipo estaba
+apagado a las 09:05, se ejecuta al iniciar sesión (`-StartWhenAvailable`).
+`estado.py` comprueba que la tarea existe, que corrió hace menos de 48 h y que
+su último resultado fue 0.
+
+El modo manual sigue disponible: `scripts\puente_freqtrade.py --exportar --forzar`
+(no valida ni conserva el anterior).
+
+El `.parquet` **no se versiona** (es binario regenerable); el CSV tampoco.
 
 ### 6.3 Ver el estado vivo (funding, libro de órdenes)
 
@@ -302,7 +338,7 @@ Reporta: ventanas walk-forward, exposición, Monte Carlo y referencia ajustada.
 | Abrir panel visual | `.\run-openbb-app.ps1` |
 | Consola OpenBB | `.\run-openbb-shell.ps1` |
 | Estado completo | `.\venvs\openbb\Scripts\python.exe estado.py` |
-| Refrescar contexto | `.\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --exportar` |
+| Refrescar contexto | `.\venvs\openbb\Scripts\python.exe scripts\refrescar_contexto.py` |
 | Estado vivo | `.\venvs\openbb\Scripts\python.exe scripts\puente_freqtrade.py --estado` |
 | Validar 1 par | `... validar_estrategia.py --pair BTC_USDT --stake 0.1` |
 | Validar 7 pares | `... validar_estrategia.py --todos --stake 0.1` |
@@ -717,18 +753,20 @@ riesgo.
 
 | Prioridad | Pendiente |
 |---|---|
-| P1 | Gatillo con ventaja fuera de muestra — **redefinido**: la ventaja existe y está medida; falta el **tamaño** |
-| P2 | Refresco automático del contexto |
+| P1 | ~~Gatillo con ventaja fuera de muestra~~ | ❌ **cerrado en negativo** (`E-17` + `E-18`): en momentum no existe, y el macro como filtro temporal tampoco lo aporta |
+| P2 | ~~Refresco automático del contexto~~ | ✅ **hecho** (`C-38`): `scripts\refrescar_contexto.py` con validación y escritura atómica, tarea diaria a las 09:05, log en `data\refresco_contexto.log` |
 | P3 | ~~Instalar estrategia en los bots~~ | ✅ **Cerrado en falso positivo evitado**: escrita y verificada, **refutada por la fase** (`E-16`). No se copia a Freqtrade |
-| P17 | **Prueba de fase obligatoria** para cualquier regla nueva (42 fases, reportar rango) | Abierto. Ya implementada en `scripts\verificar_rotacion.py` |
+| P17 | ~~Prueba de fase obligatoria~~ | ✅ hecha y aplicada (`C-34`): 42 fases, reportar rango |
 | P4 | Clave FRED gratuita (opcional) |
 | P5 | Provider EIA (opcional) |
 | P6 | Tests propios |
 | P7 | Revisar 2 archivos sucios del clon upstream |
-| P8 | Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`) | ✅ hecho (`E-07`): 0/7 → 1/7, sin cambios en el veredicto |
-| P13 | Ampliar el universo a 20-30 pares | ✅ hecho (`E-13`): 24 pares. Sube retorno y Calmar, **no baja el DD** |
-| P14 | Medir la versión mercado-neutral (largo-corto) | Abierto. Es el mecanismo estándar contra este drawdown; **no desplegable en spot** |
-| P15 | **Tamaño del sleeve** según su caída natural del ~87 % | Abierto. Es la decisión que queda (`D-21`) |
+| P8 | ~~Re-ejecutar el walk-forward de 7 pares con el contexto corregido (`C-13`)~~ | ✅ hecho (`E-07`): 0/7 → 1/7, sin cambios en el veredicto |
+| P13 | ~~Ampliar el universo a 20-30 pares~~ | ✅ hecho (`E-13`): 24 pares. Sube retorno y Calmar, **no baja el DD** |
+| P14 | Medir la versión mercado-neutral (largo-corto) | 🟡 abierto. Es el mecanismo estándar contra este drawdown; **no desplegable en spot** |
+| P15 | ~~Tamaño del sleeve~~ | ✅ cerrado (`E-15` / `D-25`): 10 % — y sin objeto tras `E-16` |
+| P16 | Automatizar la re-optimización semestral | ⚪ sin objeto (`E-16`): re-optimizar solo optimiza la fase |
+| P18 | ¿Sirve el macro para decidir cuándo estar en la cesta? | ❌ **cerrado en negativo** (`E-18`): la regla a priori pierde y las que ganan no superan al azar |
 
 ---
 
@@ -755,7 +793,7 @@ cd C:\Users\DELL\.ipython\OpenBB
 .\run-openbb-app.ps1     # ventana 2: restaurar ventana 1 si se cerró
 ```
 
-Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **25/25 ✅**.
+Luego `.\venvs\openbb\Scripts\python.exe estado.py` → debe dar **26/26 ✅**.
 Si el contexto tiene más de dos días, el propio panel avisa; se refresca con
 `... scripts\puente_freqtrade.py --exportar --forzar`.
 
