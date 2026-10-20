@@ -125,13 +125,13 @@ Freqtrade no trae datos externos. Los caminos reales:
 | 5 | Telegram (`/status`) | Saber en qué régimen se está operando | Nulo |
 | 6 | **Evitar** escribir el stake desde fuera | Frágil, rompe el control del bot | Alto |
 
-El parquet debe refrescarse **antes** de arrancar el bot (hoy es manual).
+El parquet se refresca **solo** a las 09:05 desde `C-38` (validado y con copia del anterior).
 
 ---
 
 ## 7. Eje 6 — Operación y app
 
-- Refresco automático diario del contexto (Programador de tareas de Windows) con aviso si falla.
+- ✅ **Refresco automático diario del contexto** (`C-38`): tarea 09:05, valida antes de guardar, conserva el anterior, log y chequeo en `estado.py` (26/26). **Falta** un aviso activo (Telegram/correo) si falla: hoy el aviso es el chequeo de estado.
 - **Calendario de eventos** en el panel (CPI, FOMC) con los próximos 30 días.
 - **Régimen actual vs histórico:** percentil del VIX/funding de hoy frente a 5 años.
 - **"Qué cambió desde ayer":** diff del contexto, no una tabla entera.
@@ -183,9 +183,9 @@ hoy no hay **nada** de alta frecuencia. B y C se deciden con los números de A.
 | 1d | **Control de riesgo** sobre el momentum ✅ `E-11` | ❌ régimen y volatilidad objetivo descartados: cuestan más retorno del que ahorran. ✅ **Calmar** adoptado como criterio de selección (`D-15`) |
 | 1e | **Momentum absoluto por activo** ✅ `E-12` | ❌ descartado: baja el DD pero hunde el Calmar y mata la significación. **La hipótesis del universo quedaba abierta** |
 | 1f | **Ampliar el universo a 24 pares** ✅ `E-13` | ❌ **mi hipótesis era falsa**: retorno y Calmar suben, el DD **empeora** (−80,0 % → −87,1 %). El drawdown es de la clase de activo (`D-21`) |
-| 1g | **Configuración fija + dimensionado** ✅ `E-14`/`E-15` | ✅ **hay regla y hay tamaño**: L=30/K=3/semanal (+820 %, CAGR 47 %, Calmar 9,95) con sleeve del **10 %** (caída típica −13 %, 5 % peor −22 %) ⬅ *lo que se instala* |
-| 1h | **Escribir la rotación en Freqtrade** (`P3`) ⬅ *siguiente paso* | Regla fija sobre 24 pares, `K=3`, semanal, `stake` = 10 %. Primero en el repo de OpenBB y validada contra el validador; el copiado a Freqtrade y el backtest, con los bots parados |
-| 2 | Refresco automático + panel con calendario y régimen | `estado.py` 24/24 sin intervención manual |
+| 1g | **Configuración fija + dimensionado** ✅ `E-14`/`E-15` | ❌ **refutado**: la fase era un parámetro oculto (`E-16`); en mediana la regla no bate a la cesta y el walk-forward tampoco (`E-17`). El dimensionado queda sin objeto |
+| 1h | **Escribir la rotación en Freqtrade** (`P3`) | ✅ **cerrado en falso positivo evitado**: escrita y verificada (296/296), **refutada antes de tocar un bot**. No se copia |
+| 2 | Refresco automático + panel con calendario y régimen | ✅ refresco hecho (`C-38`, tarea 09:05 verificada, **26/26**). ⚪ el calendario y la vista de régimen siguen pendientes |
 | 3 | Decidir Pack B o C | Según lo que dijeron los números de A |
 | 4 | Instalar en un bot **en modo aviso** (sin operar) | Semanas de avisos coherentes antes de arriesgar dinero |
 
